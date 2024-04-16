@@ -5,6 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/bbrighter/hista-api/api/repository"
 )
 
 func CORSMiddleware() gin.HandlerFunc {
@@ -25,6 +27,13 @@ func CORSMiddleware() gin.HandlerFunc {
 }
 
 func Handler(w http.ResponseWriter, r *http.Request) {
+	repo := repository.InitRepository()
+	type Version struct {
+		Version string
+	}
+	var version Version
+	repo.Db.Raw("select version()").Scan(&version)
+
 	// Creating new gin engine
 	g := gin.New()
 	g.Use(CORSMiddleware())
@@ -32,7 +41,7 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	g.GET("/api/users", func(c *gin.Context) {
 		// ... your handler logic here ...
 		c.JSON(200, gin.H{
-			"message": "Hello from /api/users",
+			"message": version.Version,
 		})
 	})
 
