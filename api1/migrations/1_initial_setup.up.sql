@@ -1,0 +1,5 @@
+CREATE TABLE todo_items (
+    id BIGSERIAL PRIMARY KEY,
+    title TEXT NOT NULL,
+    done BOOLEAN NOT NULL DEFAULT false
+);
