@@ -39,7 +39,7 @@ type Version struct {
 //encore:api public method=GET path=/test
 func (s *Service) Get(ctx context.Context) (TodoItems, error) {
 	var todoItems []TodoItem
-	err := s.db.First(&todoItems).Error
+	err := s.db.Find(&todoItems).Error
 	return TodoItems{todoItems}, err
 }
 
