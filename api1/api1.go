@@ -3,6 +3,7 @@ package api1
 import (
 	"context"
 
+	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
@@ -57,11 +58,21 @@ type PostParams struct {
 	Title string `json:"title"`
 }
 
-//encore:api public method=POST path=/test
+//encore:api auth method=POST path=/test
 func (s *Service) Post(ctx context.Context, params PostParams) error {
 	if params.Title == "" {
 		return &errs.Error{Code: errs.InvalidArgument, Message: "Name needed"}
 	}
 	var todoItem = TodoItem{Title: params.Title, Done: false}
 	return s.db.Create(&todoItem).Error
+}
+
+// AuthHandler can be named whatever you prefer (but must be exported).
+//
+//encore:authhandler
+func AuthHandler(ctx context.Context, token string) (auth.UID, error) {
+	if token != *currentToken.Token {
+		return "", &errs.Error{Code: errs.Unauthenticated}
+	}
+	return "julia", nil
 }
