@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"label": "OpenApi Spec",
+			"command": "encore gen client -l typescript -e local -o C:\\Users\\Test\\Documents\\Code\\hista-ui\\src\\api\\generatedApi.ts",
+		},
+		{
+			"type": "shell",
+			"label": "Run in debug mode",
+			"command": "encore run --debug",
+		},
+		{
+			"type": "shell",
+			"label": "Test",
+			"command": "encore test ./...",
+			"group": "test",
+		},
+	]
+}
