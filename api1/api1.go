@@ -29,6 +29,7 @@ func initService() (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+	initToken()
 	return &Service{db: db}, nil
 }
 
@@ -37,7 +38,7 @@ type Version struct {
 	Version string
 }
 
-//encore:api public method=GET path=/test
+//encore:api auth method=GET path=/test
 func (s *Service) Get(ctx context.Context) (TodoItems, error) {
 	var todoItems []TodoItem
 	err := s.db.Find(&todoItems).Error
@@ -71,7 +72,7 @@ func (s *Service) Post(ctx context.Context, params PostParams) error {
 //
 //encore:authhandler
 func AuthHandler(ctx context.Context, token string) (auth.UID, error) {
-	if token != *currentToken.Token {
+	if token != currentToken.Bearer {
 		return "", &errs.Error{Code: errs.Unauthenticated}
 	}
 	return "julia", nil
