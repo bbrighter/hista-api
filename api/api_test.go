@@ -1,4 +1,4 @@
-package api1
+package api
 
 import (
 	"testing"
