@@ -8,20 +8,21 @@ import (
 
 func TestCreateOrReplaceIngredient(t *testing.T) {
 	service, _ := initService()
-	var id uint
+	var ing Ingredient
 	var err error
 
-	id, err = service.createOrReplaceIngredient("Name")
+	ing, err = service.createOrReplaceIngredient("Name")
 	assert.NoError(t, err)
-	assert.EqualValues(t, 1, id)
+	assert.EqualValues(t, 1, ing.ID)
+	assert.EqualValues(t, "Name", ing.Name)
 
 	// Verify idempotency
-	id, err = service.createOrReplaceIngredient("Name")
+	ing, err = service.createOrReplaceIngredient("Name")
 	assert.NoError(t, err)
-	assert.EqualValues(t, 1, id)
+	assert.EqualValues(t, 1, ing.ID)
 
 	// Verify that new items get new names
-	id, err = service.createOrReplaceIngredient("Name2")
+	ing, err = service.createOrReplaceIngredient("Name2")
 	assert.NoError(t, err)
-	assert.EqualValues(t, 2, id)
+	assert.EqualValues(t, 2, ing.ID)
 }

@@ -2,19 +2,19 @@ package meals
 
 import "context"
 
-type IngredientParams struct {
-	Name string `json:"name"`
-}
+// type IngredientParams struct {
+// 	Name string `json:"name"`
+// }
 
 type IDResponse struct {
 	ID uint `json:"id"`
 }
 
-// encore:api public method=PUT path=/ingredient
-func (service Service) PutIngredient(ctx context.Context, params IngredientParams) (IDResponse, error) {
-	id, err := service.createOrReplaceIngredient(params.Name)
-	return IDResponse{ID: id}, err
-}
+// // encore:api public method=PUT path=/ingredient
+// func (service Service) PutIngredient(ctx context.Context, params IngredientParams) (IDResponse, error) {
+// 	ingredient, err := service.createOrReplaceIngredient(params.Name)
+// 	return IDResponse{ID: ingredient.ID}, err
+// }
 
 type IngredientResponse struct {
 	ID   uint   `json:"id"`
@@ -40,7 +40,7 @@ func ingredientsToIngredientsResponse(ingredients []Ingredient) IngredientsRespo
 	return IngredientsResponse{resps}
 }
 
-// encore:api public method=GET path=/ingredient
+// encore:api auth method=GET path=/ingredient
 func (service Service) GetIngredients(ctx context.Context) (IngredientsResponse, error) {
 	ingredients := service.getIngredients()
 	return ingredientsToIngredientsResponse(ingredients), nil

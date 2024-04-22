@@ -4,6 +4,8 @@ CREATE TABLE "ingredients" (
   "name" text NULL,
   PRIMARY KEY ("id")
 );
+-- create index "idx_ingredients_name" to table: "ingredients"
+CREATE UNIQUE INDEX "idx_ingredients_name" ON "ingredients" ("name");
 -- create "meals" table
 CREATE TABLE "meals" (
   "id" bigserial NOT NULL,
