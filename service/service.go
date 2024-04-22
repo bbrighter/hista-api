@@ -1,4 +1,4 @@
-package api
+package service
 
 import (
 	"errors"
@@ -11,16 +11,16 @@ import (
 
 //encore:service
 type Service struct {
-	db *gorm.DB
+	DB *gorm.DB
 }
 
-var histaDB *sqldb.Database = sqldb.NewDatabase("blog", sqldb.DatabaseConfig{
+var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
 	Migrations: "./migrations",
 })
 
 func initDb() (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: histaDB.Stdlib(),
+		Conn: HistaDB.Stdlib(),
 	}))
 	if err != nil {
 		return nil, err
@@ -41,5 +41,5 @@ func initService() (*Service, error) {
 	}
 	internalAuth.InitUsers()
 
-	return &Service{db: db}, nil
+	return &Service{DB: db}, nil
 }

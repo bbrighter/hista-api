@@ -17,5 +17,28 @@
 			"command": "encore test ./...",
 			"group": "test",
 		},
+		{
+			"type": "shell",
+			"label": "Atlas migration",
+			"command": "sh",
+			"args": [
+				"C:/Users/Test/go/src/github.com/bbrighter/hista-api/scripts/generate-migration init"
+			],
+		},
+		{
+			"type": "shell",
+			"label": "Atlas inspect",
+			"command": "atlas schema inspect -w --env local --url 'env://src' --dev-url 'postgresql://hista-api-dpc2:shadow-coglfj3nlv8jiu6322e0@127.0.0.1:9500/hista_db?sslmode=disable&search_path=public'"
+		},
+		{
+			"type": "shell",
+			"label": "Run",
+			"command": "encore run",
+		},
+		{
+			"type": "shell",
+			"label": "Reset database",
+			"command": "encore db reset hista_db"
+		},
 	]
 }
