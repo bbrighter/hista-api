@@ -23,7 +23,7 @@ func deleteIngredientIfUnused(tx *gorm.DB, ingredientId uint) error {
 	var foods []Food
 	var err error
 	if usedIngredients := tx.Where(Food{IngredientID: ingredientId}).Find(&foods).RowsAffected; usedIngredients == 0 {
-		err = tx.Delete(&Ingredient{ID: ingredientId}).Error
+		err = tx.Where(&Ingredient{ID: ingredientId}).Delete(&Ingredient{}).Error
 	}
 	return err
 }
