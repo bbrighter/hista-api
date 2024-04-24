@@ -61,7 +61,11 @@ func (service Service) deleteFood(food Food) error {
 
 func (service Service) changeFoodCondition(food Food, newCondition FoodCondition) error {
 	food.Condition = newCondition
-	return service.db.Where(&Food{ID: food.ID}).Updates(Food{Condition: newCondition}).Error
+	tx := service.db.Where(&Food{ID: food.ID}).Updates(Food{Condition: newCondition})
+	if tx.RowsAffected == 0 {
+		return errors.New("not found")
+	}
+	return tx.Error
 }
 
 func stringToFoodCondition(str string) (FoodCondition, error) {
