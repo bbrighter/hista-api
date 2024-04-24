@@ -2,6 +2,7 @@ package meals
 
 import (
 	"context"
+	"sort"
 	"time"
 
 	"encore.dev/beta/errs"
@@ -52,6 +53,9 @@ func mealsToMealsResponse(meals []Meal) MealsResponse {
 	for _, m := range meals {
 		resps = append(resps, mealToMealMetaResponse(m))
 	}
+	sort.Slice(resps, func(i, j int) bool {
+		return resps[i].Date.Sub(resps[j].Date) > 0
+	})
 	return MealsResponse{resps}
 }
 

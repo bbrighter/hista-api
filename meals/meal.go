@@ -28,7 +28,7 @@ func (service Service) getMeals() []Meal {
 
 func (service Service) getMeal(id uint) (Meal, error) {
 	var meal = Meal{ID: id}
-	if service.db.Debug().Preload("Foods.Ingredient").Preload("Foods").Find(&meal).RowsAffected == 0 {
+	if service.db.Preload("Foods.Ingredient").Preload("Foods").Find(&meal).RowsAffected == 0 {
 		return Meal{}, &errs.Error{Code: errs.NotFound}
 	}
 	return meal, nil

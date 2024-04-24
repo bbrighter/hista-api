@@ -1,6 +1,8 @@
 package meals
 
 import (
+	"errors"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -45,6 +47,7 @@ func (service Service) createFood(mealID uint, condition FoodCondition, ingredie
 }
 
 func (service Service) deleteFood(food Food) error {
+	service.db.Preload("Ingredient").Find(&food)
 	err := service.db.Transaction(func(tx *gorm.DB) error {
 		var foodIngredient = food.Ingredient
 		if err := tx.Delete(&food).Error; err != nil {
@@ -54,4 +57,23 @@ func (service Service) deleteFood(food Food) error {
 	})
 
 	return err
+}
+
+func (service Service) changeFoodCondition(food Food, newCondition FoodCondition) error {
+	food.Condition = newCondition
+	return service.db.Where(&Food{ID: food.ID}).Updates(Food{Condition: newCondition}).Error
+}
+
+func stringToFoodCondition(str string) (FoodCondition, error) {
+	var err error
+	var condition FoodCondition
+	switch str {
+	case "raw":
+		condition = Raw
+	case "cooked":
+		condition = Cooked
+	default:
+		err = errors.New("Invalid condition: " + str)
+	}
+	return condition, err
 }

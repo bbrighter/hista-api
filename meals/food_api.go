@@ -46,6 +46,19 @@ func (service Service) PostFood(ctx context.Context, mealId uint, params FoodPar
 // encore:api auth method=DELETE path=/meal/:mealId/foods/:foodId
 func (service Service) DeleteFood(ctx context.Context, mealId uint, foodId uint) error {
 	var food = Food{ID: foodId, MealID: mealId}
-	service.deleteFood(food)
-	return nil
+	return service.deleteFood(food)
+}
+
+type FoodConditionParams struct {
+	Condition string `query:"condition"`
+}
+
+// encore:api auth method=PATCH path=/meal/:mealId/foods/:foodId/condition
+func (service Service) PatchFoodCondition(ctx context.Context, mealId uint, foodId uint, params FoodConditionParams) error {
+	var food = Food{ID: foodId}
+	condition, err := stringToFoodCondition(params.Condition)
+	if err != nil {
+		return err
+	}
+	return service.changeFoodCondition(food, condition)
 }
