@@ -66,3 +66,16 @@ func TestChangeFoodCondition(t *testing.T) {
 	err = service.changeFoodCondition(Food{ID: 100}, Raw)
 	assert.Error(t, err)
 }
+
+func TestStringToFoodCondition(t *testing.T) {
+	t.Parallel()
+
+	var err error
+	var cond FoodCondition
+	cond, err = stringToFoodCondition("raw")
+	assert.NoError(t, err)
+	assert.Equal(t, Raw, cond)
+
+	cond, err = stringToFoodCondition("bad input")
+	assert.Error(t, err)
+}

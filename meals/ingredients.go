@@ -7,13 +7,15 @@ type Ingredient struct {
 	Name string `gorm:"uniqueIndex"`
 }
 
+type Ingredients []Ingredient
+
 func (service Service) createOrReplaceIngredient(name string) (Ingredient, error) {
 	var ingredient = Ingredient{Name: name}
 	err := service.db.Debug().FirstOrCreate(&ingredient, Ingredient{Name: name}).Error
 	return ingredient, err
 }
 
-func (service Service) getIngredients() []Ingredient {
+func (service Service) getIngredients() Ingredients {
 	var ingredients = []Ingredient{}
 	service.db.Find(&ingredients)
 	return ingredients

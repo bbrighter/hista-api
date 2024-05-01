@@ -8,7 +8,8 @@ import (
 )
 
 func TestCreateMeal(t *testing.T) {
-	service, _ := initService()
+	service, teardown := initTest(t)
+	defer teardown(t)
 
 	var id uint
 	var err error
@@ -19,35 +20,47 @@ func TestCreateMeal(t *testing.T) {
 
 	id, err = service.createMeal(date)
 
-	assert.EqualValues(t, 1, id)
+	assert.GreaterOrEqual(t, id, uint(1))
 	assert.NoError(t, err)
+}
 
-	// Cleanup
-	service.deleteMeal(id)
+func TestGetMeals(t *testing.T) {
+	service, teardown := initTest(t)
+	defer teardown(t)
+
+	var meals []Meal
+	meals = service.getMeals()
+	assert.Len(t, meals, 0)
+
+	service.testCreateMeal(t)
+
+	meals = service.getMeals()
+	assert.Len(t, meals, 1)
 }
 
 func TestGetMeal(t *testing.T) {
-	service, _ := initService()
+	service, teardown := initTest(t)
+	defer teardown(t)
 
-	_, err := service.getMeal(1000)
+	var err error
+
+	_, err = service.getMeal(1000)
 	assert.Error(t, err)
 
-	id, _ := service.createMeal(time.Now())
-	_, err = service.getMeal(id)
+	var meal Meal = service.testCreateMeal(t)
+	_, err = service.getMeal(meal.ID)
 	assert.NoError(t, err)
-
-	service.deleteMeal(id)
 }
 
 func TestDeleteMeal(t *testing.T) {
-	service, _ := initService()
+	service, teardown := initTest(t)
+	defer teardown(t)
 
 	var err error
 	err = service.deleteMeal(1)
 	assert.Error(t, err)
 
-	id, _ := service.createMeal(time.Now())
-	err = service.deleteMeal(id)
+	var meal Meal = service.testCreateMeal(t)
+	err = service.deleteMeal(meal.ID)
 	assert.NoError(t, err)
-
 }

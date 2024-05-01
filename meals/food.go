@@ -14,6 +14,7 @@ type Food struct {
 	Condition    FoodCondition
 	MealID       uint
 }
+type Foods []Food
 
 type FoodCondition string
 
@@ -22,7 +23,7 @@ const (
 	Cooked FoodCondition = "cooked"
 )
 
-func (service Service) getFoods(mealID uint) []Food {
+func (service Service) getFoods(mealID uint) Foods {
 	var foods []Food
 	service.db.Where(&Food{MealID: mealID}).Preload(clause.Associations).Find(&foods)
 	return foods

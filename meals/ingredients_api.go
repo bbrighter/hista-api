@@ -25,23 +25,8 @@ type IngredientsResponse struct {
 	Ingredients []IngredientResponse `json:"ingredients"`
 }
 
-func ingredientToIngredientResponse(ingredient Ingredient) IngredientResponse {
-	return IngredientResponse{
-		ID:   ingredient.ID,
-		Name: ingredient.Name,
-	}
-}
-
-func ingredientsToIngredientsResponse(ingredients []Ingredient) IngredientsResponse {
-	var resps []IngredientResponse
-	for _, ing := range ingredients {
-		resps = append(resps, ingredientToIngredientResponse(ing))
-	}
-	return IngredientsResponse{resps}
-}
-
 // encore:api auth method=GET path=/ingredient
 func (service Service) GetIngredients(ctx context.Context) (IngredientsResponse, error) {
 	ingredients := service.getIngredients()
-	return ingredientsToIngredientsResponse(ingredients), nil
+	return ingredients.toIngredientsResponse(), nil
 }
