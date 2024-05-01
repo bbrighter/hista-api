@@ -2,7 +2,6 @@ package meals
 
 import (
 	"context"
-	"sort"
 	"time"
 
 	"encore.dev/beta/errs"
@@ -23,46 +22,10 @@ type MealsResponse struct {
 	Meals []MealMetaResponse `json:"meals"`
 }
 
-func mealToMealMetaResponse(meal Meal) MealMetaResponse {
-	return MealMetaResponse{
-		ID:   meal.ID,
-		Date: meal.Date,
-	}
-}
-
-func mealToMealResponse(meal Meal) MealResponse {
-	var foodsResponse []FoodResponse
-	for _, f := range meal.Foods {
-		foodsResponse = append(foodsResponse,
-			FoodResponse{
-				ID:         f.ID,
-				Ingredient: ingredientToIngredientResponse(f.Ingredient),
-				Condition:  f.Condition,
-			})
-	}
-	var resp = MealResponse{
-		ID:    meal.ID,
-		Date:  meal.Date,
-		Foods: foodsToFoodsResponse(meal.Foods),
-	}
-	return resp
-}
-
-func mealsToMealsResponse(meals []Meal) MealsResponse {
-	var resps []MealMetaResponse
-	for _, m := range meals {
-		resps = append(resps, mealToMealMetaResponse(m))
-	}
-	sort.Slice(resps, func(i, j int) bool {
-		return resps[i].Date.Sub(resps[j].Date) > 0
-	})
-	return MealsResponse{resps}
-}
-
 // encore:api auth method=GET path=/meals
 func (service Service) GetMeals(ctx context.Context) (MealsResponse, error) {
 	meals := service.getMeals()
-	return mealsToMealsResponse(meals), nil
+	return meals.toMealsResponse(), nil
 }
 
 type MealParams struct {
@@ -81,7 +44,7 @@ func (service Service) PostMeal(ctx context.Context, params MealParams) (IDRespo
 // encore:api auth method=GET path=/meals/:id
 func (service Service) GetMeal(ctx context.Context, id uint) (MealResponse, error) {
 	meal, err := service.getMeal(id)
-	return mealToMealResponse(meal), err
+	return meal.toMealResponse(), err
 }
 
 // encore:api auth method=DELETE path=/meals/:id

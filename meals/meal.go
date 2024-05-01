@@ -14,13 +14,15 @@ type Meal struct {
 	Foods []Food `gorm:"constraint:OnDelete:CASCADE"`
 }
 
+type Meals []Meal
+
 func (service Service) createMeal(date time.Time) (uint, error) {
 	var meal = Meal{Date: date}
 	service.db.Create(&meal)
 	return meal.ID, nil
 }
 
-func (service Service) getMeals() []Meal {
+func (service Service) getMeals() Meals {
 	var meals []Meal
 	service.db.Find(&meals)
 	return meals

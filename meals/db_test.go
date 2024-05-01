@@ -1,11 +1,18 @@
 package meals
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
 )
+
+func initAPITest(t *testing.T) (*Service, context.Context, func(t *testing.T)) {
+	var ctx context.Context = context.TODO()
+	service, teardown := initTest(t)
+	return service, ctx, teardown
+}
 
 func initTest(t *testing.T) (*Service, func(t *testing.T)) {
 	service, err := initService()

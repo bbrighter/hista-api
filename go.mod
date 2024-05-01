@@ -2,10 +2,12 @@ module encore.app
 
 go 1.22.0
 
-require gorm.io/gorm v1.25.9
+require (
+	ariga.io/atlas-go-sdk v0.5.3
+	gorm.io/gorm v1.25.9
+)
 
 require (
-	ariga.io/atlas-go-sdk v0.5.3 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect

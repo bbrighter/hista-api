@@ -12,23 +12,10 @@ type FoodsResponse struct {
 	Foods []FoodResponse `json:"foods"`
 }
 
-func foodsToFoodsResponse(foods []Food) []FoodResponse {
-	var foodsResponse = []FoodResponse{}
-	for _, f := range foods {
-		foodsResponse = append(foodsResponse,
-			FoodResponse{
-				ID:         f.ID,
-				Ingredient: ingredientToIngredientResponse(f.Ingredient),
-				Condition:  f.Condition,
-			})
-	}
-	return foodsResponse
-}
-
 // encore:api auth method=GET path=/meal/:mealId/foods
 func (service Service) GetFoods(ctx context.Context, mealId uint) (FoodsResponse, error) {
-	var foods []Food = service.getFoods(mealId)
-	var resp []FoodResponse = foodsToFoodsResponse(foods)
+	var foods Foods = service.getFoods(mealId)
+	var resp []FoodResponse = foods.toFoodsResponse()
 	return FoodsResponse{Foods: resp}, nil
 }
 
