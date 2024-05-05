@@ -11,7 +11,7 @@ type Ingredients []Ingredient
 
 func (service Service) createOrReplaceIngredient(name string) (Ingredient, error) {
 	var ingredient = Ingredient{Name: name}
-	err := service.db.Debug().FirstOrCreate(&ingredient, Ingredient{Name: name}).Error
+	err := service.db.FirstOrCreate(&ingredient, Ingredient{Name: name}).Error
 	return ingredient, err
 }
 

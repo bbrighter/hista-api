@@ -20,10 +20,7 @@
 		{
 			"type": "shell",
 			"label": "Atlas migration",
-			"command": "sh",
-			"args": [
-				"C:/Users/Test/go/src/github.com/bbrighter/hista-api/scripts/generate-migration init"
-			],
+			"command": "sh C:/Users/Test/go/src/github.com/bbrighter/hista-api/scripts/generate-migration init",
 		},
 		{
 			"type": "shell",
@@ -40,5 +37,13 @@
 			"label": "Reset database",
 			"command": "encore db reset hista_db"
 		},
+		{
+			"type": "shell",
+			"label": "Update hash for migrations",
+			"command": "atlas migrate hash",
+			"options": {
+				"cwd": "${workspaceFolder}/service",
+			}
+		}
 	]
 }

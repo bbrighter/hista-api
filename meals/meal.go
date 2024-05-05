@@ -1,9 +1,9 @@
 package meals
 
 import (
-	"errors"
 	"time"
 
+	"encore.app/errors"
 	"encore.dev/beta/errs"
 	"gorm.io/gorm"
 )
@@ -39,7 +39,7 @@ func (service Service) getMeal(id uint) (Meal, error) {
 func (service Service) deleteMeal(mealId uint) error {
 	var meal Meal
 	if service.db.Find(&meal).RowsAffected == 0 {
-		return errors.New("not found")
+		return errors.ErrorNotFound
 	}
 	return service.db.Transaction(func(tx *gorm.DB) error {
 		var foods []Food
