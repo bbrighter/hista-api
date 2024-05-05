@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 import (
 	"encore.app/errors"
@@ -7,11 +7,11 @@ import (
 )
 
 type Condition struct {
-	ID        uint
-	Symptom   Symptom
-	SymptomID uint
-	Severity  ConditionSeverity
-	StateID   uint
+	ID               uint
+	Symptom          Symptom
+	SymptomID        uint
+	Severity         ConditionSeverity
+	ConditionEventID uint
 }
 
 type Conditions []Condition
@@ -26,22 +26,22 @@ const (
 	VeryHigh ConditionSeverity = 5
 )
 
-func newCondition(severity ConditionSeverity, stateID uint) *Condition {
+func newCondition(severity ConditionSeverity, conditionEventID uint) *Condition {
 	return &Condition{
-		Severity: severity,
-		StateID:  stateID,
+		Severity:         severity,
+		ConditionEventID: conditionEventID,
 	}
 }
 
 // Get all conditions including their conditionTypes
-func getConditions(service *Service, stateID uint) Conditions {
+func getConditions(service *Service, eventID uint) Conditions {
 	var conditions Conditions
-	service.db.Where(&Condition{StateID: stateID}).Preload(clause.Associations).Find(&conditions)
+	service.db.Where(&Condition{ConditionEventID: eventID}).Preload(clause.Associations).Find(&conditions)
 	return conditions
 }
 
 // Create a new condition.
-// Requires a severity and stateId
+// Requires a severity and conditionEventID
 func (condition *Condition) create(service *Service, symptomName string, symptomCategoryId uint) error {
 	if condition == nil {
 		return errors.ErrorNil
@@ -49,8 +49,8 @@ func (condition *Condition) create(service *Service, symptomName string, symptom
 	if condition.Severity == 0 || condition.Severity > 5 {
 		return errors.ErrorAttributeMustBeSet("severity")
 	}
-	if condition.StateID == 0 {
-		return errors.ErrorAttributeMustBeSet("stateId")
+	if condition.ConditionEventID == 0 {
+		return errors.ErrorAttributeMustBeSet("conditionEventId")
 	}
 	var symptom = &Symptom{Name: symptomName, SymptomCategoryID: symptomCategoryId}
 	var err error

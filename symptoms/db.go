@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 import (
 	"encore.dev/storage/sqldb"

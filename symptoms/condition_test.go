@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 import (
 	"testing"
@@ -11,7 +11,7 @@ func TestNewCondition(t *testing.T) {
 
 	var condition *Condition = newCondition(High, 1)
 	assert.Equal(t, High, condition.Severity)
-	assert.Equal(t, uint(1), condition.StateID)
+	assert.Equal(t, uint(1), condition.ConditionEventID)
 	assert.Equal(t, uint(0), condition.ID)
 	assert.Equal(t, Symptom{}, condition.Symptom)
 }
@@ -20,8 +20,8 @@ func TestGetConditions(t *testing.T) {
 	service, teardown := initTest(t)
 	defer teardown(t)
 
-	var state State = service.testCreateState(t)
-	var conditions Conditions = getConditions(service, state.ID)
+	var event ConditionEvent = service.testCreateConditionEvent(t)
+	var conditions Conditions = getConditions(service, event.ID)
 
 	assert.Len(t, conditions, 1)
 	assert.EqualValues(t, 1, conditions[0].Symptom.ID)
@@ -41,8 +41,8 @@ func TestCreateCondition(t *testing.T) {
 	err = condition.create(service, "Name", 2)
 	assert.Error(t, err)
 
-	var state State = service.testCreateState(t)
-	condition.StateID = state.ID
+	var event ConditionEvent = service.testCreateConditionEvent(t)
+	condition.ConditionEventID = event.ID
 	err = condition.create(service, "New Name", 1)
 	assert.NoError(t, err)
 }
@@ -56,8 +56,8 @@ func TestDeleteCondition(t *testing.T) {
 	err = condition.delete(service)
 	assert.Error(t, err)
 
-	var state State = service.testCreateState(t)
-	condition = &state.Conditions[0]
+	var event ConditionEvent = service.testCreateConditionEvent(t)
+	condition = &event.Conditions[0]
 	err = condition.delete(service)
 	assert.NoError(t, err)
 }
@@ -66,8 +66,8 @@ func TestChangeSeverity(t *testing.T) {
 	service, teardown := initTest(t)
 	defer teardown(t)
 
-	var state State = service.testCreateState(t)
-	var condition *Condition = &state.Conditions[0]
+	var event ConditionEvent = service.testCreateConditionEvent(t)
+	var condition *Condition = &event.Conditions[0]
 	var err error = condition.changeSeverity(service, Low)
 	assert.NoError(t, err)
 	assert.Equal(t, Low, condition.Severity)

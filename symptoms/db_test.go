@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 import (
 	"context"
@@ -22,7 +22,7 @@ func initTest(t *testing.T) (*Service, func(t *testing.T)) {
 }
 
 func (service Service) teardown(t *testing.T) {
-	var models = []interface{}{&Condition{}, &State{}, &Symptom{}, &SymptomCategory{}}
+	var models = []interface{}{&Condition{}, &ConditionEvent{}, &Symptom{}, &SymptomCategory{}}
 	var err error
 	for _, model := range models {
 		err = service.db.Where("1=1").Delete(model).Error
@@ -30,27 +30,27 @@ func (service Service) teardown(t *testing.T) {
 	}
 }
 
-func (service Service) testCreateState(t *testing.T) State {
+func (service Service) testCreateConditionEvent(t *testing.T) ConditionEvent {
 	var category = SymptomCategory{
 		ID:   1,
 		Name: "Category",
 	}
 	var err error = service.db.Create(&category).Error
 	assert.NoError(t, err)
-	var state = State{
+	var event = ConditionEvent{
 		ID:   1,
 		Date: time.Now(),
 		Conditions: []Condition{
 			{
-				ID:        1,
-				Symptom:   Symptom{ID: 1, Name: "Name", SymptomCategoryID: 1},
-				SymptomID: 1,
-				Severity:  1,
-				StateID:   1,
+				ID:               1,
+				Symptom:          Symptom{ID: 1, Name: "Name", SymptomCategoryID: 1},
+				SymptomID:        1,
+				Severity:         1,
+				ConditionEventID: 1,
 			},
 		},
 	}
-	err = service.db.Create(&state).Error
+	err = service.db.Create(&event).Error
 	assert.NoError(t, err)
-	return state
+	return event
 }

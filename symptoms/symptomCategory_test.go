@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 import (
 	"testing"
@@ -20,7 +20,7 @@ func TestGetSymptomCategories(t *testing.T) {
 	var cats []SymptomCategory = getSymptomCategories(service)
 	assert.Len(t, cats, 0)
 
-	service.testCreateState(t)
+	service.testCreateConditionEvent(t)
 	cats = getSymptomCategories(service)
 	assert.Len(t, cats, 1)
 	var cat1 SymptomCategory = cats[0]
@@ -48,7 +48,7 @@ func TestUpdateSymptomCategory(t *testing.T) {
 	service, teardown := initTest(t)
 	defer teardown(t)
 
-	service.testCreateState(t)
+	service.testCreateConditionEvent(t)
 
 	var err error
 	var cat = &SymptomCategory{ID: 1}
@@ -84,7 +84,7 @@ func TestDeleteSymptomCategory(t *testing.T) {
 	assert.Error(t, err)
 
 	// Cannot delete with attached symptoms
-	service.testCreateState(t)
+	service.testCreateConditionEvent(t)
 	cat = &SymptomCategory{ID: 1}
 	err = cat.delete(service)
 	assert.Error(t, err)

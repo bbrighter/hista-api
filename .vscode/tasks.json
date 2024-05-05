@@ -20,7 +20,7 @@
 		{
 			"type": "shell",
 			"label": "Atlas migration",
-			"command": "sh C:/Users/Test/go/src/github.com/bbrighter/hista-api/scripts/generate-migration init",
+			"command": "sh C:/Users/Test/go/src/github.com/bbrighter/hista-api/scripts/generate-migration ${input:migrationName}",
 		},
 		{
 			"type": "shell",
@@ -44,6 +44,13 @@
 			"options": {
 				"cwd": "${workspaceFolder}/service",
 			}
+		}
+	],
+	"inputs": [
+		{
+			"id": "migrationName",
+			"description": "Name of the new Atlas migration",
+			"type": "promptString",
 		}
 	]
 }

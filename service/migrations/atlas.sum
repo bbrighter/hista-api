@@ -1,5 +1,5 @@
-h1:StyBpu4bn6b99DfhZiRhrZ10rWB/4biXLuni/7JDiOA=
+h1:XORrlwgY4rg1mR/pmu2sOVvsyffJBvxMgOFoHJRSyqw=
 1_init.down.sql h1:15NV5mIEUpphQ3cvxy+GLXfI0CY0eU9vuGGCQ62zejw=
 1_init.up.sql h1:MWdGV01wBCYAtGsjmqLSx0JPr7vhp05VdclEXZaqpkw=
-2_init.down.sql h1:+jK4I33c9kzDSRIigAzlqgWXJ3CjwoyiKcNikCrB6D4=
-2_init.up.sql h1:2Ow7zf+h3kITXfyj72MxPOwN/26q8CBvBlJHPydn3FE=
+2_symptoms.down.sql h1:dSXGGCvOJuwA+Y7tCgl3an4ozQ+DSSc6r2dcO/CL4cM=
+2_symptoms.up.sql h1:6Wa7vjXSB6Mz1PqPHVasRkbKc/Xxdo3IpscMp/d8KTo=

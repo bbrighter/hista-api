@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 import (
 	"testing"
@@ -50,8 +50,8 @@ func TestDeleteIfUnused(t *testing.T) {
 	var rows int64 = service.db.Find(&conditionTypes).RowsAffected
 	assert.EqualValues(t, 0, rows)
 
-	var state = service.testCreateState(t)
-	var usedConditionType Symptom = state.Conditions[0].Symptom
+	var event = service.testCreateConditionEvent(t)
+	var usedConditionType Symptom = event.Conditions[0].Symptom
 
 	err = usedConditionType.deleteIfUnused(service.db)
 	assert.NoError(t, err)

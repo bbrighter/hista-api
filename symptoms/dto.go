@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 func (symptom Symptom) toResponse() SymptomResponse {
 	return SymptomResponse{
@@ -32,26 +32,26 @@ func (condition Condition) toResponse() ConditionResponse {
 	}
 }
 
-func (states States) toResponse() StatesResponse {
-	var resp []StateMetaResponse
-	for _, s := range states {
+func (events ConditionEvents) toResponse() ConditionEventsResponse {
+	var resp []ConditionEventMetaResponse
+	for _, s := range events {
 		resp = append(resp,
-			StateMetaResponse{
+			ConditionEventMetaResponse{
 				ID:   s.ID,
 				Date: s.Date,
 			})
 	}
-	return StatesResponse{States: resp}
+	return ConditionEventsResponse{ConditionEvents: resp}
 }
 
-func (state State) toResponse() StateResponse {
+func (event ConditionEvent) toResponse() ConditionEventResponse {
 	var conditionResp []ConditionResponse
-	for _, con := range state.Conditions {
+	for _, con := range event.Conditions {
 		conditionResp = append(conditionResp, con.toResponse())
 	}
-	var resp = StateResponse{
-		ID:         state.ID,
-		Date:       state.Date,
+	var resp = ConditionEventResponse{
+		ID:         event.ID,
+		Date:       event.Date,
 		Conditions: conditionResp,
 	}
 	return resp

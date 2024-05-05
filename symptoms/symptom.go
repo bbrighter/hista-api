@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 import (
 	"encore.app/errors"

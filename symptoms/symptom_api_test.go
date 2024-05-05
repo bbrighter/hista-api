@@ -1,4 +1,4 @@
-package states
+package symptoms
 
 import (
 	"testing"
@@ -16,7 +16,7 @@ func TestGetSymptomsAPI(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, resp.Categories, 0)
 
-	service.testCreateState(t)
+	service.testCreateConditionEvent(t)
 	resp, err = service.GetSymptoms(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, resp.Categories, 1)
