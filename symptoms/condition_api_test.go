@@ -55,6 +55,10 @@ func TestDeleteConditionAPI(t *testing.T) {
 
 	var conditionID uint = event.Conditions[0].ID
 	var err error
-	err = service.DeleteCondition(ctx, conditionID)
+	var cats SymptomCategoriesResponse
+	cats, err = service.DeleteCondition(ctx, conditionID)
 	assert.NoError(t, err)
+	assert.Len(t, cats.Categories, 1)
+	cat1 := cats.Categories[0]
+	assert.Len(t, cat1.Symptoms, 0)
 }
