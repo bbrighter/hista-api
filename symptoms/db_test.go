@@ -45,7 +45,7 @@ func (service Service) testCreateConditionEvent(t *testing.T) ConditionEvent {
 				ID:               1,
 				Symptom:          Symptom{ID: 1, Name: "Name", SymptomCategoryID: 1},
 				SymptomID:        1,
-				Severity:         1,
+				Severity:         Medium,
 				ConditionEventID: 1,
 			},
 		},

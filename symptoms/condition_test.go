@@ -6,16 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestNewCondition(t *testing.T) {
-	t.Parallel()
-
-	var condition *Condition = newCondition(High, 1)
-	assert.Equal(t, High, condition.Severity)
-	assert.Equal(t, uint(1), condition.ConditionEventID)
-	assert.Equal(t, uint(0), condition.ID)
-	assert.Equal(t, Symptom{}, condition.Symptom)
-}
-
 func TestGetConditions(t *testing.T) {
 	service, teardown := initTest(t)
 	defer teardown(t)
@@ -27,7 +17,7 @@ func TestGetConditions(t *testing.T) {
 	assert.EqualValues(t, 1, conditions[0].Symptom.ID)
 }
 
-func TestCreateConditionByName(t *testing.T) {
+func TestCreateConditionBySymptomName(t *testing.T) {
 	service, teardown := initTest(t)
 	defer teardown(t)
 
@@ -37,12 +27,12 @@ func TestCreateConditionByName(t *testing.T) {
 	err = service.db.Create(&symptomCategory).Error
 	assert.NoError(t, err)
 
-	var condition = newCondition(High, 1)
+	var condition = &Condition{Severity: High, ConditionEventID: 1}
 
 	categories, err = condition.createConditionBySymptomName(service, "Name", 2)
 	assert.Error(t, err)
 
-	condition = newCondition(High, 1)
+	condition = &Condition{Severity: High, ConditionEventID: 1}
 	var event ConditionEvent = service.testCreateConditionEvent(t)
 	condition.ConditionEventID = event.ID
 	categories, err = condition.createConditionBySymptomName(service, "New Name", 1)
@@ -73,7 +63,7 @@ func TestDeleteCondition(t *testing.T) {
 	service, teardown := initTest(t)
 	defer teardown(t)
 
-	var condition = newCondition(High, 1)
+	var condition = &Condition{Severity: High, ConditionEventID: 1}
 	var err error
 	err = condition.delete(service)
 	assert.Error(t, err)
@@ -97,7 +87,7 @@ func TestChangeSeverity(t *testing.T) {
 	service.db.Find(condition)
 	assert.Equal(t, Low, condition.Severity)
 
-	condition = newCondition(High, 10000)
+	condition = &Condition{Severity: High, ConditionEventID: 1000}
 	err = condition.changeSeverity(service, VeryHigh)
 	assert.Error(t, err)
 }

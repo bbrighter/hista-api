@@ -44,6 +44,17 @@ func TestGetConditionEventAPI(t *testing.T) {
 	assert.ErrorContains(t, err, "not found")
 }
 
+func TestPatchDateAPI(t *testing.T) {
+	service, ctx, teardown := initAPITest(t)
+	defer teardown(t)
+	service.testCreateConditionEvent(t)
+
+	var err error
+	var params = ConditionEventRequestParams{Date: time.Now()}
+	err = service.PatchDate(ctx, 1, params)
+	assert.NoError(t, err)
+}
+
 func TestDeleteConditionEventAPI(t *testing.T) {
 	service, ctx, teardown := initAPITest(t)
 	defer teardown(t)

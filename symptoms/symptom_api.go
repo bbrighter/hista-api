@@ -23,3 +23,16 @@ func (service Service) GetSymptoms(ctx context.Context) (SymptomCategoriesRespon
 	var categories SymptomCategories = getSymptomCategories(&service)
 	return categories.toResponse(), nil
 }
+
+type PostSymptomCategoryRequest struct {
+	Name string `json:"name"`
+}
+
+// encore:api auth method=POST path=/symptoms/categories
+func (service *Service) PostSymptomCategory(ctx context.Context, params PostSymptomCategoryRequest) (IDResponse, error) {
+	var category = &SymptomCategory{
+		Name: params.Name,
+	}
+	var err error = category.create(service)
+	return IDResponse{ID: category.ID}, err
+}
