@@ -3,8 +3,9 @@ package symptoms
 import "context"
 
 type SymptomResponse struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	CategoryID uint   `json:"categoryId"`
 }
 
 type SymptomCategoryResponse struct {

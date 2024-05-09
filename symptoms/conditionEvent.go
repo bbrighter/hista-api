@@ -38,7 +38,7 @@ func getConditionEvents(service *Service) ConditionEvents {
 
 func getConditionEvent(service *Service, id uint) (ConditionEvent, error) {
 	var event = ConditionEvent{ID: id}
-	if service.db.Preload("Conditions.ConditionType").Preload(clause.Associations).Find(&event).RowsAffected == 0 {
+	if service.db.Preload("Conditions.Symptom").Preload(clause.Associations).Find(&event).RowsAffected == 0 {
 		return event, errors.ErrorNotFound
 	}
 	return event, nil
@@ -65,4 +65,14 @@ func (event *ConditionEvent) delete(service *Service) error {
 		return tx.Delete(event).Error
 	})
 	return err
+}
+
+func (event *ConditionEvent) patch(service *Service, date time.Time) error {
+	if event.ID == 0 {
+		return errors.ErrorIDMissing
+	}
+	if service.db.Find(event).RowsAffected == 0 {
+		return errors.ErrorNotFound
+	}
+	return service.db.Model(event).Update("date", date).Error
 }

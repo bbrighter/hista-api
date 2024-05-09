@@ -27,23 +27,45 @@ func TestGetConditions(t *testing.T) {
 	assert.EqualValues(t, 1, conditions[0].Symptom.ID)
 }
 
-func TestCreateCondition(t *testing.T) {
+func TestCreateConditionByName(t *testing.T) {
 	service, teardown := initTest(t)
 	defer teardown(t)
 
 	var err error
+	var categories SymptomCategories
 	var symptomCategory = SymptomCategory{ID: 2, Name: "Category"}
 	err = service.db.Create(&symptomCategory).Error
 	assert.NoError(t, err)
 
 	var condition = newCondition(High, 1)
 
-	err = condition.create(service, "Name", 2)
+	categories, err = condition.createConditionBySymptomName(service, "Name", 2)
 	assert.Error(t, err)
 
+	condition = newCondition(High, 1)
 	var event ConditionEvent = service.testCreateConditionEvent(t)
 	condition.ConditionEventID = event.ID
-	err = condition.create(service, "New Name", 1)
+	categories, err = condition.createConditionBySymptomName(service, "New Name", 1)
+	assert.NoError(t, err)
+	assert.Equal(t, condition.Symptom.Name, "New Name")
+	assert.GreaterOrEqual(t, len(categories), 1)
+}
+
+func TestCreateConditionByID(t *testing.T) {
+	service, teardown := initTest(t)
+	defer teardown(t)
+
+	var err error
+	var condition = &Condition{SymptomID: 1, ConditionEventID: 1}
+
+	err = condition.createConditionBySymptomID(service)
+	assert.Error(t, err)
+
+	event := service.testCreateConditionEvent(t)
+	var symptomId uint = event.Conditions[0].Symptom.ID
+	condition = &Condition{SymptomID: symptomId, ConditionEventID: event.ID}
+
+	err = condition.createConditionBySymptomID(service)
 	assert.NoError(t, err)
 }
 

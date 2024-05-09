@@ -3,8 +3,6 @@ package symptoms
 import (
 	"context"
 	"time"
-
-	"encore.dev/beta/errs"
 )
 
 type ConditionEventRequestParams struct {
@@ -58,7 +56,8 @@ func (service *Service) GetConditionEvent(ctx context.Context, eventId uint) (Co
 
 // encore:api auth method=PATCH path=/condition-events/:eventId
 func (service *Service) PatchDate(ctx context.Context, eventId uint, params ConditionEventRequestParams) error {
-	return &errs.Error{Code: errs.NotFound, Message: "Endpoint doesn't exist."}
+	var event = &ConditionEvent{ID: eventId}
+	return event.patch(service, params.Date)
 }
 
 // encore:api auth method=DELETE path=/condition-events/:eventId

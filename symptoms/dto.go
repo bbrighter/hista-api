@@ -1,16 +1,19 @@
 package symptoms
 
+import "sort"
+
 func (symptom Symptom) toResponse() SymptomResponse {
 	return SymptomResponse{
-		ID:   symptom.ID,
-		Name: symptom.Name,
+		ID:         symptom.ID,
+		Name:       symptom.Name,
+		CategoryID: symptom.SymptomCategoryID,
 	}
 }
 
 func (cats SymptomCategories) toResponse() SymptomCategoriesResponse {
-	var resp []SymptomCategoryResponse
+	var resp = []SymptomCategoryResponse{}
 	for _, cat := range cats {
-		var symptomsResp []SymptomResponse
+		var symptomsResp = []SymptomResponse{}
 		for _, sym := range cat.Symptoms {
 			symptomsResp = append(symptomsResp, sym.toResponse())
 		}
@@ -41,11 +44,14 @@ func (events ConditionEvents) toResponse() ConditionEventsResponse {
 				Date: s.Date,
 			})
 	}
+	sort.Slice(resp, func(i, j int) bool {
+		return resp[i].Date.Sub(resp[j].Date) > 0
+	})
 	return ConditionEventsResponse{ConditionEvents: resp}
 }
 
 func (event ConditionEvent) toResponse() ConditionEventResponse {
-	var conditionResp []ConditionResponse
+	var conditionResp = []ConditionResponse{}
 	for _, con := range event.Conditions {
 		conditionResp = append(conditionResp, con.toResponse())
 	}

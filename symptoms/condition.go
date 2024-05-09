@@ -40,29 +40,49 @@ func getConditions(service *Service, eventID uint) Conditions {
 	return conditions
 }
 
-// Create a new condition.
-// Requires a severity and conditionEventID
-func (condition *Condition) create(service *Service, symptomName string, symptomCategoryId uint) error {
+// Create a new condition based on the name. New symptoms are only created if the name in the corresponding category doesn't exist.
+// Requires a conditionEventID
+func (condition *Condition) createConditionBySymptomName(service *Service, symptomName string, symptomCategoryId uint) (SymptomCategories, error) {
 	if condition == nil {
-		return errors.ErrorNil
-	}
-	if condition.Severity == 0 || condition.Severity > 5 {
-		return errors.ErrorAttributeMustBeSet("severity")
+		return SymptomCategories{}, errors.ErrorNil
 	}
 	if condition.ConditionEventID == 0 {
-		return errors.ErrorAttributeMustBeSet("conditionEventId")
+		return SymptomCategories{}, errors.ErrorAttributeMustBeSet("ConditionEventId")
 	}
 	var symptom = &Symptom{Name: symptomName, SymptomCategoryID: symptomCategoryId}
 	var err error
 	err = symptom.createOrReplace(service)
 	if err != nil {
-		return err
+		return SymptomCategories{}, err
 	}
 	condition.Symptom = *symptom
+	condition.Severity = Medium
 
-	return service.db.Create(condition).Error
+	err = service.db.Create(condition).Error
+	var symptoms SymptomCategories = getSymptomCategories(service)
+	return symptoms, err
 }
 
+// Create a new condition by SymptomID.
+// Requires a ConditionEventID and SymptomID
+func (condition *Condition) createConditionBySymptomID(service *Service) error {
+	if condition == nil {
+		return errors.ErrorNil
+	}
+	if condition.SymptomID == 0 {
+		return errors.ErrorAttributeMustBeSet("SymptomID")
+	}
+	if condition.ConditionEventID == 0 {
+		return errors.ErrorAttributeMustBeSet("ConditionEventID")
+	}
+	condition.Severity = Medium
+	var err error = service.db.Create(condition).Error
+	service.db.Preload(clause.Associations).Find(condition)
+	return err
+}
+
+// Delete a condition. Must contain ID.
+// If the condition was the last one using a symptom, the symptom is deleted as well.
 func (condition *Condition) delete(service *Service) error {
 	if condition == nil {
 		return errors.ErrorNil
@@ -70,13 +90,13 @@ func (condition *Condition) delete(service *Service) error {
 	if condition.ID == 0 {
 		return errors.ErrorAttributeMustBeSet("id")
 	}
-	service.db.Preload("ConditionType").Find(condition)
+	service.db.Preload(clause.Associations).Find(condition)
 	var err error = service.db.Transaction(func(tx *gorm.DB) error {
-		var conditionType Symptom = condition.Symptom
+		var symptom Symptom = condition.Symptom
 		if err := tx.Delete(condition).Error; err != nil {
 			return err
 		}
-		return conditionType.deleteIfUnused(tx)
+		return symptom.deleteIfUnused(tx)
 	})
 	return err
 }
@@ -86,7 +106,7 @@ func (condition *Condition) changeSeverity(service *Service, newSeverity Conditi
 		return errors.ErrorAttributeMustBeSet("id")
 	}
 	condition.Severity = newSeverity
-	tx := service.db.Debug().Model(condition).Updates(Condition{Severity: newSeverity})
+	tx := service.db.Model(condition).Updates(Condition{Severity: newSeverity})
 	if tx.RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}

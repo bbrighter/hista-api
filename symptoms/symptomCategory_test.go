@@ -25,6 +25,7 @@ func TestGetSymptomCategories(t *testing.T) {
 	assert.Len(t, cats, 1)
 	var cat1 SymptomCategory = cats[0]
 	assert.Len(t, cat1.Symptoms, 1)
+	assert.GreaterOrEqual(t, cat1.Symptoms[0].SymptomCategoryID, uint(1))
 }
 
 func TestCreateSymptomCategory(t *testing.T) {
