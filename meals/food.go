@@ -1,8 +1,7 @@
 package meals
 
 import (
-	"errors"
-
+	"encore.app/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -64,7 +63,7 @@ func (service Service) changeFoodCondition(food Food, newCondition FoodCondition
 	food.Condition = newCondition
 	tx := service.db.Where(&Food{ID: food.ID}).Updates(Food{Condition: newCondition})
 	if tx.RowsAffected == 0 {
-		return errors.New("not found")
+		return errors.ErrorNotFound
 	}
 	return tx.Error
 }
@@ -78,7 +77,7 @@ func stringToFoodCondition(str string) (FoodCondition, error) {
 	case "cooked":
 		condition = Cooked
 	default:
-		err = errors.New("Invalid condition: " + str)
+		err = errors.NewError("Invalid condition: "+str, 400)
 	}
 	return condition, err
 }
