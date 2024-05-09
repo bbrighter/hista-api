@@ -58,3 +58,37 @@ func TestGetConditionEvent(t *testing.T) {
 	_, err = getConditionEvent(service, 1000)
 	assert.Error(t, err)
 }
+
+func TestDeleteConditionEvent(t *testing.T) {
+	service, teardown := initTest(t)
+	var event ConditionEvent = service.testCreateConditionEvent(t)
+	defer teardown(t)
+
+	var err error
+	err = event.delete(service)
+	assert.NoError(t, err)
+	rows := service.db.Find(&ConditionEvents{}).RowsAffected
+	assert.EqualValues(t, 0, rows)
+
+	event.ID = 1000
+	err = event.delete(service)
+	assert.Error(t, err)
+}
+
+func TestPatchConditionEvent(t *testing.T) {
+	service, teardown := initTest(t)
+	var event ConditionEvent = service.testCreateConditionEvent(t)
+	defer teardown(t)
+
+	var err error
+	var setTime time.Time = time.Date(2000, 1, 1, 1, 1, 1, 0, time.UTC)
+	err = event.patch(service, setTime)
+	assert.NoError(t, err)
+	var result = ConditionEvent{ID: event.ID}
+	service.db.Find(&result)
+	assert.True(t, setTime.Equal(result.Date))
+
+	var nonexistingEvent = ConditionEvent{ID: 1000}
+	err = nonexistingEvent.patch(service, time.Now())
+	assert.Error(t, err)
+}

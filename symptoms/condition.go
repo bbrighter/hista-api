@@ -26,13 +26,6 @@ const (
 	VeryHigh ConditionSeverity = 5
 )
 
-func newCondition(severity ConditionSeverity, conditionEventID uint) *Condition {
-	return &Condition{
-		Severity:         severity,
-		ConditionEventID: conditionEventID,
-	}
-}
-
 // Get all conditions including their conditionTypes
 func getConditions(service *Service, eventID uint) Conditions {
 	var conditions Conditions
