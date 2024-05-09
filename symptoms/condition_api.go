@@ -11,9 +11,14 @@ type ConditionRequestParams struct {
 	CategoryID  uint   `json:"categoryId"`
 }
 
+type PostConditionResponse struct {
+	Condition ConditionResponse         `json:"condition"`
+	Symptoms  SymptomCategoriesResponse `json:"symptoms"`
+}
+
 // encore:api auth method=POST path=/condition-events/:eventId/conditions
-func (service *Service) PostCondition(ctx context.Context, eventId uint, params ConditionRequestParams) (ConditionResponse, error) {
-	var resp ConditionResponse
+func (service *Service) PostCondition(ctx context.Context, eventId uint, params ConditionRequestParams) (PostConditionResponse, error) {
+	var resp PostConditionResponse
 	if params.SymptomName == "" {
 		return resp, errors.ErrorAttributeMustBeSet("symptomName")
 	}
@@ -21,9 +26,11 @@ func (service *Service) PostCondition(ctx context.Context, eventId uint, params 
 		return resp, errors.ErrorAttributeMustBeSet("categoryId")
 	}
 	var err error
+	var symptoms SymptomCategories
 	var condition = Condition{ConditionEventID: eventId, Severity: Medium}
-	_, err = condition.createConditionBySymptomName(service, params.SymptomName, params.CategoryID)
-	resp = condition.toResponse()
+	symptoms, err = condition.createConditionBySymptomName(service, params.SymptomName, params.CategoryID)
+	resp.Condition = condition.toResponse()
+	resp.Symptoms = symptoms.toResponse()
 	return resp, err
 }
 
@@ -47,8 +54,13 @@ func (service *Service) PatchCondition(ctx context.Context, conditionID uint, pa
 	return condition.changeSeverity(service, params.Severity)
 }
 
+type ConditionsResponse []ConditionResponse
+
 // encore:api auth method=DELETE path=/conditions/:conditionID
-func (service *Service) DeleteCondition(ctx context.Context, conditionID uint) error {
+func (service *Service) DeleteCondition(ctx context.Context, conditionID uint) (SymptomCategoriesResponse, error) {
 	var condition = &Condition{ID: conditionID}
-	return condition.delete(service)
+	var err error = condition.delete(service)
+	var symptoms SymptomCategories = getSymptomCategories(service)
+	return symptoms.toResponse(), err
+
 }
