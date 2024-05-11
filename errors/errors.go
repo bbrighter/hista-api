@@ -18,3 +18,5 @@ var ErrorIDMissing = NewError("id must be set", errs.InvalidArgument)
 func ErrorAttributeMustBeSet(attribute string) error {
 	return NewError(attribute+" must be set", errs.InvalidArgument)
 }
+
+var ErrorUnauthenticated = NewError("unauthenticated", errs.Unauthenticated)

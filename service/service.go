@@ -1,9 +1,6 @@
 package service
 
 import (
-	"errors"
-
-	"encore.app/internalAuth"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -35,11 +32,5 @@ func initService() (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	internalAuth.CurrentToken = internalAuth.CurrentToken.InitToken()
-	if internalAuth.CurrentToken == nil {
-		return nil, errors.New("Token not initialized")
-	}
-	internalAuth.InitUsers()
-
 	return &Service{DB: db}, nil
 }
