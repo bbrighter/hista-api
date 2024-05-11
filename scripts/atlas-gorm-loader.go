@@ -7,6 +7,7 @@ import (
 
 	_ "ariga.io/atlas-go-sdk/recordriver"
 	"ariga.io/atlas-provider-gorm/gormschema"
+	"encore.app/internalAuth"
 	"encore.app/meals"
 	"encore.app/symptoms"
 )
@@ -20,6 +21,8 @@ var models = []any{
 	&symptoms.SymptomCategory{},
 	&symptoms.Symptom{},
 	&symptoms.ConditionEvent{},
+	&internalAuth.Token{},
+	&internalAuth.User{},
 }
 
 func main() {
