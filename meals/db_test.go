@@ -22,7 +22,11 @@ func initTest(t *testing.T) (*Service, func(t *testing.T)) {
 }
 
 func (service Service) teardown(t *testing.T) {
-	var models = []interface{}{&Food{}, &Meal{}, &Ingredient{}}
+	var models = []interface{}{
+		&Food{},
+		&Ingredient{},
+		&Meal{},
+	}
 	var err error
 	for _, model := range models {
 		err = service.db.Where("1=1").Delete(model).Error
