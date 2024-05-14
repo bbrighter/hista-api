@@ -24,8 +24,8 @@ func initTest(t *testing.T) (*Service, func(t *testing.T)) {
 func (service Service) teardown(t *testing.T) {
 	var models = []interface{}{
 		&Food{},
-		&Ingredient{},
 		&Meal{},
+		&Ingredient{},
 	}
 	var err error
 	for _, model := range models {
