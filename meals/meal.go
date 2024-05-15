@@ -53,3 +53,9 @@ func (service Service) deleteMeal(mealId uint) error {
 		return tx.Delete(&Meal{ID: mealId}).Error
 	})
 }
+
+func GetMealsAndDependencies(db *gorm.DB) Meals {
+	var meals Meals
+	db.Preload("Foods.Ingredient").Preload("Foods").Find(&meals)
+	return meals
+}
