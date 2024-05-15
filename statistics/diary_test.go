@@ -50,6 +50,8 @@ func TestDiaryFrom(t *testing.T) {
 	var firstDiary = diaries[0] // First is latest
 	assert.Equal(t, firstDiary.Content, "Ingredient")
 	assert.Equal(t, firstDiary.Date.Day(), time.Now().Add(time.Hour).Day())
+	assert.Equal(t, firstDiary.Severity, "cooked")
 	var secondDiary = diaries[1] // Second happened earlier
 	assert.Equal(t, secondDiary.Content, "Symptom")
+	assert.Equal(t, secondDiary.Severity, "4")
 }
