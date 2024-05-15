@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"sort"
+	"strconv"
 	"time"
 
 	"encore.app/meals"
@@ -9,10 +10,11 @@ import (
 )
 
 type RawDiary struct {
-	Date    time.Time `json:"date"`
-	Hour    int       `json:"hour"`
-	Type    Category  `json:"type"`
-	Content string    `json:"content"`
+	Date     time.Time `json:"date"`
+	Hour     int       `json:"hour"`
+	Type     Category  `json:"type"`
+	Content  string    `json:"content"`
+	Severity string    `json:"severity"`
 }
 
 type Category string
@@ -27,10 +29,11 @@ func diaryFrom(meals meals.Meals, events symptoms.ConditionEvents) []RawDiary {
 	for _, meal := range meals {
 		for _, food := range meal.Foods {
 			var diary = RawDiary{
-				Date:    meal.Date,
-				Hour:    meal.Date.Hour(),
-				Type:    Food,
-				Content: food.Ingredient.Name,
+				Date:     meal.Date,
+				Hour:     meal.Date.Hour(),
+				Type:     Food,
+				Content:  food.Ingredient.Name,
+				Severity: string(food.Condition),
 			}
 			diaries = append(diaries, diary)
 		}
@@ -39,10 +42,11 @@ func diaryFrom(meals meals.Meals, events symptoms.ConditionEvents) []RawDiary {
 	for _, event := range events {
 		for _, cond := range event.Conditions {
 			var diary = RawDiary{
-				Date:    event.Date,
-				Hour:    event.Date.Hour(),
-				Type:    Symptom,
-				Content: cond.Symptom.Name,
+				Date:     event.Date,
+				Hour:     event.Date.Hour(),
+				Type:     Symptom,
+				Content:  cond.Symptom.Name,
+				Severity: strconv.Itoa(int(cond.Severity)),
 			}
 			diaries = append(diaries, diary)
 		}
