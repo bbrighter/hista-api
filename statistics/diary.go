@@ -1,6 +1,7 @@
 package statistics
 
 import (
+	"sort"
 	"time"
 
 	"encore.app/meals"
@@ -26,7 +27,7 @@ func diaryFrom(meals meals.Meals, events symptoms.ConditionEvents) []RawDiary {
 	for _, meal := range meals {
 		for _, food := range meal.Foods {
 			var diary = RawDiary{
-				Date:    meal.Date.Truncate(time.Hour * 24),
+				Date:    meal.Date,
 				Hour:    meal.Date.Hour(),
 				Type:    Food,
 				Content: food.Ingredient.Name,
@@ -38,7 +39,7 @@ func diaryFrom(meals meals.Meals, events symptoms.ConditionEvents) []RawDiary {
 	for _, event := range events {
 		for _, cond := range event.Conditions {
 			var diary = RawDiary{
-				Date:    event.Date.Truncate(time.Hour * 24),
+				Date:    event.Date,
 				Hour:    event.Date.Hour(),
 				Type:    Symptom,
 				Content: cond.Symptom.Name,
@@ -46,14 +47,8 @@ func diaryFrom(meals meals.Meals, events symptoms.ConditionEvents) []RawDiary {
 			diaries = append(diaries, diary)
 		}
 	}
+	sort.Slice(diaries, func(i, j int) bool {
+		return diaries[j].Date.Before(diaries[i].Date)
+	})
 	return diaries
-}
-
-func getDiaryData(service *Service) (meals.Meals, symptoms.ConditionEvents) {
-	var meals meals.Meals
-	service.db.Preload("Foods.Ingredient").Preload("Foods").Find(&meals)
-	var events symptoms.ConditionEvents
-	service.db.Preload("Conditions.Symptom").Preload("Conditions").Find(&events)
-	return meals, events
-
 }
