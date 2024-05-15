@@ -14,7 +14,7 @@ func TestDiaryFrom(t *testing.T) {
 	var meals = meals.Meals{
 		meals.Meal{
 			ID:   1,
-			Date: time.Now(),
+			Date: time.Now().Add(time.Hour),
 			Foods: []meals.Food{{
 				ID: 10,
 				Ingredient: meals.Ingredient{
@@ -47,7 +47,9 @@ func TestDiaryFrom(t *testing.T) {
 	var diaries []RawDiary
 	diaries = diaryFrom(meals, events)
 	assert.Len(t, diaries, 2)
-	var firstDiary = diaries[0]
+	var firstDiary = diaries[0] // First is latest
 	assert.Equal(t, firstDiary.Content, "Ingredient")
-	assert.Equal(t, firstDiary.Date.Day(), time.Now().Day())
+	assert.Equal(t, firstDiary.Date.Day(), time.Now().Add(time.Hour).Day())
+	var secondDiary = diaries[1] // Second happened earlier
+	assert.Equal(t, secondDiary.Content, "Symptom")
 }
