@@ -1,6 +1,11 @@
 package statistics
 
-import "context"
+import (
+	"context"
+
+	"encore.app/meals"
+	"encore.app/symptoms"
+)
 
 type DiaryResp struct {
 	Diaries []RawDiary `json:"diaries"`
@@ -8,7 +13,8 @@ type DiaryResp struct {
 
 // encore:api auth method=GET path=/diary
 func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
-	meals, events := getDiaryData(service)
+	meals := meals.GetMealsAndDependencies(service.db)
+	events := symptoms.GetConditionEventsAndDependencies(service.db)
 	diaries := diaryFrom(meals, events)
 	return DiaryResp{Diaries: diaries}, nil
 }

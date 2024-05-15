@@ -92,3 +92,15 @@ func TestPatchConditionEvent(t *testing.T) {
 	err = nonexistingEvent.patch(service, time.Now())
 	assert.Error(t, err)
 }
+
+func TestGetConditionEventsAndDependencies(t *testing.T) {
+	service, teardown := initTest(t)
+	service.testCreateConditionEvent(t)
+	defer teardown(t)
+
+	var events ConditionEvents = GetConditionEventsAndDependencies(service.db)
+	assert.Len(t, events, 1)
+	var event ConditionEvent = events[0]
+	assert.Len(t, event.Conditions, 1)
+	assert.Equal(t, event.Conditions[0].Symptom.Name, "Name")
+}

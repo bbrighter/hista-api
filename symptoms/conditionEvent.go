@@ -76,3 +76,9 @@ func (event *ConditionEvent) patch(service *Service, date time.Time) error {
 	}
 	return service.db.Model(event).Update("date", date).Error
 }
+
+func GetConditionEventsAndDependencies(db *gorm.DB) ConditionEvents {
+	var events ConditionEvents
+	db.Preload("Conditions.Symptom").Preload("Conditions").Find(&events)
+	return events
+}

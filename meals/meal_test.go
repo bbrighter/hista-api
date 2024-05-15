@@ -64,3 +64,17 @@ func TestDeleteMeal(t *testing.T) {
 	err = service.deleteMeal(meal.ID)
 	assert.NoError(t, err)
 }
+
+func TestGetMealsAndDependencies(t *testing.T) {
+	service, teardown := initTest(t)
+	service.testCreateMeal(t)
+	defer teardown(t)
+
+	var meals Meals
+	meals = GetMealsAndDependencies(service.db)
+	assert.Len(t, meals, 1)
+	var meal Meal = meals[0]
+	assert.Len(t, meal.Foods, 1)
+	assert.Equal(t, meal.Foods[0].Ingredient.Name, "Name")
+
+}

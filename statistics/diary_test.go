@@ -10,7 +10,6 @@ import (
 )
 
 func TestDiaryFrom(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 	var meals = meals.Meals{
 		meals.Meal{
@@ -51,22 +50,4 @@ func TestDiaryFrom(t *testing.T) {
 	var firstDiary = diaries[0]
 	assert.Equal(t, firstDiary.Content, "Ingredient")
 	assert.Equal(t, firstDiary.Date.Day(), time.Now().Day())
-}
-
-func TestGetDiaryData(t *testing.T) {
-	t.Skip()
-	service, teardown := initTest(t)
-	service.testCreateData(t)
-	defer teardown(t)
-
-	meals, events := getDiaryData(service)
-	assert.Len(t, meals, 1)
-	meal := meals[0]
-	assert.Len(t, meal.Foods, 1)
-	assert.Equal(t, meal.Foods[0].Ingredient.Name, "Ingredient")
-
-	assert.Len(t, events, 1)
-	event := events[0]
-	assert.Len(t, event.Conditions, 1)
-	assert.Equal(t, event.Conditions[0].Symptom.Name, "Symptom")
 }
