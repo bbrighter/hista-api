@@ -14,7 +14,7 @@ type DiaryResp struct {
 // encore:api auth method=GET path=/diary
 func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
 	meals := meals.GetMealsAndDependencies(service.db)
-	events := symptoms.GetConditionEventsAndDependencies(service.db)
-	diaries := diaryFrom(meals, events)
+	events, cats := symptoms.GetConditionEventsAndDependencies(service.db)
+	diaries := diaryFrom(meals, events, cats)
 	return DiaryResp{Diaries: diaries}, nil
 }

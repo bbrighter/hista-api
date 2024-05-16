@@ -44,8 +44,13 @@ func TestDiaryFrom(t *testing.T) {
 			}},
 		},
 	}
+	var cats = symptoms.SymptomCategories{
+		symptoms.SymptomCategory{
+			ID:   1000,
+			Name: "Category",
+		}}
 	var diaries []RawDiary
-	diaries = diaryFrom(meals, events)
+	diaries = diaryFrom(meals, events, cats)
 	assert.Len(t, diaries, 2)
 	var firstDiary = diaries[0] // First is latest
 	assert.Equal(t, firstDiary.Content, "Ingredient")
@@ -54,4 +59,5 @@ func TestDiaryFrom(t *testing.T) {
 	var secondDiary = diaries[1] // Second happened earlier
 	assert.Equal(t, secondDiary.Content, "Symptom")
 	assert.Equal(t, secondDiary.Severity, "4")
+	assert.Equal(t, secondDiary.Category, "Category")
 }
