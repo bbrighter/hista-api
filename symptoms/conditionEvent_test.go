@@ -98,9 +98,13 @@ func TestGetConditionEventsAndDependencies(t *testing.T) {
 	service.testCreateConditionEvent(t)
 	defer teardown(t)
 
-	var events ConditionEvents = GetConditionEventsAndDependencies(service.db)
+	var events ConditionEvents
+	var cats SymptomCategories
+	events, cats = GetConditionEventsAndDependencies(service.db)
 	assert.Len(t, events, 1)
 	var event ConditionEvent = events[0]
 	assert.Len(t, event.Conditions, 1)
 	assert.Equal(t, event.Conditions[0].Symptom.Name, "Name")
+
+	assert.Len(t, cats, 1)
 }
