@@ -36,14 +36,17 @@ func (note Note) patch(service *Service, date *time.Time, text *string) (Note, e
 	if note.ID == 0 {
 		return Note{}, errors.ErrorIDMissing
 	}
+	tx := service.db.Model(&note)
 	var newNote = note
 	if date != nil {
 		newNote.Date = *date
+		tx.Select("date")
 	}
 	if text != nil {
 		newNote.Text = *text
+		tx.Select("text") // Make sure that text gets updated, even if ""
 	}
-	tx := service.db.Model(&note).Clauses(clause.Returning{}).Updates(&newNote)
+	tx = tx.Clauses(clause.Returning{}).Updates(&newNote)
 	if tx.RowsAffected == 0 {
 		return Note{}, errors.ErrorNotFound
 	}

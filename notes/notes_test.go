@@ -49,6 +49,18 @@ func TestPatchNote(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, newContent, newNote.Text)
 
+	newContent2 := "text2"
+	newTime2 := time.Now().Add(-time.Hour * 2)
+	newNote, err = note.patch(service, &newTime2, &newContent2)
+	assert.NoError(t, err)
+	assert.Equal(t, newContent2, newNote.Text)
+	assert.True(t, note.Date.After(newNote.Date))
+
+	emptyContent := ""
+	newNote, err = note.patch(service, nil, &emptyContent)
+	assert.NoError(t, err)
+	assert.Equal(t, emptyContent, newNote.Text)
+
 	nonExistingNote = Note{ID: 100000}
 	_, err = nonExistingNote.patch(service, nil, nil)
 	assert.Error(t, err)

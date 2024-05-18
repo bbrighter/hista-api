@@ -21,6 +21,12 @@ func (service *Service) GetNotes(ctx context.Context) (NotesResp, error) {
 	return notes.toResp(), nil
 }
 
+// encore:api auth method=POST path=/notes
+func (service *Service) PostNote(ctx context.Context) (NoteResp, error) {
+	note := createNote(service)
+	return note.toResp(), nil
+}
+
 // encore:api auth method=DELETE path=/notes/:noteId
 func (service *Service) DeleteNote(ctx context.Context, noteId uint) error {
 	var note = Note{ID: noteId}
@@ -29,7 +35,7 @@ func (service *Service) DeleteNote(ctx context.Context, noteId uint) error {
 
 type NoteParams struct {
 	Date *time.Time `json:"date" encore:"optional"`
-	Text *string    `json:"string" encore:"optional"`
+	Text *string    `json:"text" encore:"optional"`
 }
 
 // encore:api auth method=PATCH path=/notes/:noteId
