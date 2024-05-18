@@ -9,6 +9,7 @@ import (
 	"ariga.io/atlas-provider-gorm/gormschema"
 	"encore.app/internalAuth"
 	"encore.app/meals"
+	"encore.app/notes"
 	"encore.app/symptoms"
 )
 
@@ -23,6 +24,7 @@ var models = []any{
 	&symptoms.ConditionEvent{},
 	&internalAuth.Token{},
 	&internalAuth.User{},
+	&notes.Note{},
 }
 
 func main() {

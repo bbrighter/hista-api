@@ -1,7 +1,9 @@
-h1:08jgu9T4JJ2wjJCfxsti+nMwpAF7hoRA+3SA4sZjjWw=
+h1:bgtUqO5Uy5KR0X0UFKOXPfDpa41HGc9EaOvjRO6RNK8=
 1_init.down.sql h1:15NV5mIEUpphQ3cvxy+GLXfI0CY0eU9vuGGCQ62zejw=
 1_init.up.sql h1:MWdGV01wBCYAtGsjmqLSx0JPr7vhp05VdclEXZaqpkw=
 2_symptoms.down.sql h1:c0Ww2l+LzPFjosZ5uryMM+iGb7604Qa2NVO8PiULl8E=
 2_symptoms.up.sql h1:7F2tJEKItdokBn6yZ64OB+mnPLGlW3+M/TvPh7V0NnA=
-3_authentification.down.sql h1:d4jputfyz0wnHBpqerRC72E8jerdQ7SnZhK46DGdr+A=
-3_authentification.up.sql h1:BoE2c+8NC6eAEwW2jxr/0mpvEMUge1PZ71VY9DtObQs=
+3_authentification.down.sql h1:RZmUO8sVjqEoxh49G2G89L5U/W8qi7p617p63rep6IQ=
+3_authentification.up.sql h1:82zzWhXExVTwOwT33GS3D0ik92VLsy7G9+cnBVnxy2Y=
+4_notes.down.sql h1:Ou5ls04l5usVdfG7PW4hS8DWopzdTYkXMREfqodFUCw=
+4_notes.up.sql h1:OI/FqpdKvEfExqQYfr0mtnucYEdm2ZGAaFw0oe6Phwk=
