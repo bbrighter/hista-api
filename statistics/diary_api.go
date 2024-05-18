@@ -15,6 +15,7 @@ type DiaryResp struct {
 func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
 	meals := meals.GetMealsAndDependencies(service.db)
 	events, cats := symptoms.GetConditionEventsAndDependencies(service.db)
-	diaries := diaryFrom(meals, events, cats)
+	var input = Input{Meals: meals, Events: events, Categories: cats}
+	diaries := diaryFrom(input)
 	return DiaryResp{Diaries: diaries}, nil
 }

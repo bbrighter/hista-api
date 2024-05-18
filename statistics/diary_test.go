@@ -4,60 +4,35 @@ import (
 	"testing"
 	"time"
 
-	"encore.app/meals"
-	"encore.app/symptoms"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDiaryFrom(t *testing.T) {
 	t.Parallel()
-	var meals = meals.Meals{
-		meals.Meal{
-			ID:   1,
-			Date: time.Now().Add(time.Hour),
-			Foods: []meals.Food{{
-				ID: 10,
-				Ingredient: meals.Ingredient{
-					ID:   100,
-					Name: "Ingredient",
-				},
-				IngredientID: 100,
-				Condition:    meals.Cooked,
-				MealID:       1,
-			}},
-		},
-	}
-	var events = symptoms.ConditionEvents{
-		symptoms.ConditionEvent{
-			ID:   1,
-			Date: time.Now(),
-			Conditions: []symptoms.Condition{{
-				ID: 10,
-				Symptom: symptoms.Symptom{
-					ID:                100,
-					Name:              "Symptom",
-					SymptomCategoryID: 1000,
-				},
-				SymptomID:        100,
-				Severity:         symptoms.High,
-				ConditionEventID: 1,
-			}},
-		},
-	}
-	var cats = symptoms.SymptomCategories{
-		symptoms.SymptomCategory{
-			ID:   1000,
-			Name: "Category",
-		}}
-	var diaries []RawDiary
-	diaries = diaryFrom(meals, events, cats)
+
+	var input Input = testInput()
+	var diaries []RawDiary = diaryFrom(input)
 	assert.Len(t, diaries, 2)
-	var firstDiary = diaries[0] // First is latest
+	var firstDiary RawDiary = diaries[0] // First is latest
 	assert.Equal(t, firstDiary.Content, "Ingredient")
-	assert.Equal(t, firstDiary.Date.Day(), time.Now().Add(time.Hour).Day())
+	assert.Equal(t, firstDiary.Date.Day(), time.Now().Add(2*time.Hour).Day())
 	assert.Equal(t, firstDiary.Severity, "cooked")
-	var secondDiary = diaries[1] // Second happened earlier
+	var secondDiary RawDiary = diaries[1] // Second happened earlier
 	assert.Equal(t, secondDiary.Content, "Symptom")
 	assert.Equal(t, secondDiary.Severity, "4")
 	assert.Equal(t, secondDiary.Category, "Category")
+}
+
+func TestMealBasedDiary(t *testing.T) {
+	t.Parallel()
+
+	var input Input = testInput()
+	var diaries []MealBasedDiary = mealBasedDiary(input)
+	assert.Len(t, diaries, 1)
+	var diary MealBasedDiary = diaries[0]
+	assert.Equal(t, diary.Food, "Ingredient")
+	assert.Equal(t, diary.Condition, "cooked")
+	assert.Len(t, diary.SymptomsWithin1h, 0)
+	assert.Len(t, diary.SymptomsWithin12h, 1)
+	assert.Len(t, diary.SymptomsWithin24h, 1)
 }
