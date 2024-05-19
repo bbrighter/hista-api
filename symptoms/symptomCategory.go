@@ -26,7 +26,8 @@ func (cat *SymptomCategory) create(service *Service) error {
 	if cat.Name == "" {
 		return errors.ErrorAttributeMustBeSet("name")
 	}
-	return service.db.Create(cat).Error
+
+	return service.db.FirstOrCreate(cat, cat).Error
 }
 
 // // Update the name of symptom category by ID
