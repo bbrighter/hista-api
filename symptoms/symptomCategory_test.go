@@ -36,6 +36,25 @@ func TestCreateSymptomCategory(t *testing.T) {
 	var catWithoutName = &SymptomCategory{}
 	err = catWithoutName.create(service)
 	assert.Error(t, err)
+
+}
+
+func TestCreateSymptomCategoryNoDuplicates(t *testing.T) {
+	service, teardown := initTest(t)
+	defer teardown(t)
+
+	var cat = &SymptomCategory{Name: "Category"}
+	var err error
+	err = cat.create(service)
+	assert.NoError(t, err)
+
+	var duplicateCat = &SymptomCategory{Name: "Category"}
+	err = duplicateCat.create(service)
+	assert.NoError(t, err)
+
+	var numberOfCategories int64
+	service.db.Find(&SymptomCategory{}, &SymptomCategory{Name: "Category"}).Count(&numberOfCategories)
+	assert.EqualValues(t, 1, numberOfCategories)
 }
 
 // func TestUpdateSymptomCategory(t *testing.T) {
