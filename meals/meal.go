@@ -22,10 +22,10 @@ func (service Service) createMeal(date time.Time) (uint, error) {
 	return meal.ID, nil
 }
 
-func (service Service) getMeals() Meals {
+func (service Service) getMeals() (Meals, error) {
 	var meals []Meal
-	service.db.Find(&meals)
-	return meals
+	var err error = service.db.Find(&meals).Error
+	return meals, err
 }
 
 func (service Service) getMeal(id uint) (Meal, error) {
