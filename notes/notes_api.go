@@ -17,8 +17,8 @@ type NoteResp struct {
 
 // encore:api auth method=GET path=/notes
 func (service *Service) GetNotes(ctx context.Context) (NotesResp, error) {
-	notes := getNotes(service)
-	return notes.toResp(), nil
+	notes, err := getNotes(service)
+	return notes.toResp(), err
 }
 
 // encore:api auth method=POST path=/notes

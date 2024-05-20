@@ -29,12 +29,15 @@ func TestGetMeals(t *testing.T) {
 	defer teardown(t)
 
 	var meals []Meal
-	meals = service.getMeals()
+	var err error
+	meals, err = service.getMeals()
+	assert.NoError(t, err)
 	assert.Len(t, meals, 0)
 
 	service.testCreateMeal(t)
 
-	meals = service.getMeals()
+	meals, err = service.getMeals()
+	assert.NoError(t, err)
 	assert.Len(t, meals, 1)
 }
 
@@ -71,7 +74,9 @@ func TestGetMealsAndDependencies(t *testing.T) {
 	defer teardown(t)
 
 	var meals Meals
-	meals = GetMealsAndDependencies(service.db)
+	var err error
+	meals, err = GetMealsAndDependencies(service.db)
+	assert.NoError(t, err)
 	assert.Len(t, meals, 1)
 	var meal Meal = meals[0]
 	assert.Len(t, meal.Foods, 1)

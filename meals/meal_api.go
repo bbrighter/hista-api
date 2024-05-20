@@ -24,8 +24,8 @@ type MealsResponse struct {
 
 // encore:api auth method=GET path=/meals
 func (service Service) GetMeals(ctx context.Context) (MealsResponse, error) {
-	meals := service.getMeals()
-	return meals.toMealsResponse(), nil
+	meals, err := service.getMeals()
+	return meals.toMealsResponse(), err
 }
 
 type MealParams struct {

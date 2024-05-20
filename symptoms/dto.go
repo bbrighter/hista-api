@@ -36,7 +36,7 @@ func (condition Condition) toResponse() ConditionResponse {
 }
 
 func (events ConditionEvents) toResponse() ConditionEventsResponse {
-	var resp []ConditionEventMetaResponse
+	var resp = []ConditionEventMetaResponse{}
 	for _, s := range events {
 		resp = append(resp,
 			ConditionEventMetaResponse{

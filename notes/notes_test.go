@@ -20,11 +20,14 @@ func TestGetNotes(t *testing.T) {
 	defer teardown(t)
 
 	var notes []Note
-	notes = getNotes(service)
+	var err error
+	notes, err = getNotes(service)
+	assert.NoError(t, err)
 	assert.Len(t, notes, 0)
 
 	createNote(service)
-	notes = getNotes(service)
+	notes, err = getNotes(service)
+	assert.NoError(t, err)
 	assert.Len(t, notes, 1)
 }
 

@@ -25,10 +25,10 @@ func createNote(service *Service) Note {
 }
 
 // Get all notes including text
-func getNotes(service *Service) Notes {
+func getNotes(service *Service) (Notes, error) {
 	var notes = []Note{}
-	service.db.Find(&notes)
-	return notes
+	var err error = service.db.Find(&notes).Error
+	return notes, err
 }
 
 // Patch note. Date and text are optional
