@@ -13,8 +13,14 @@ type DiaryResp struct {
 
 // encore:api auth method=GET path=/diary
 func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
-	meals := meals.GetMealsAndDependencies(service.db)
-	events, cats := symptoms.GetConditionEventsAndDependencies(service.db)
+	meals, err := meals.GetMealsAndDependencies(service.db)
+	if err != nil {
+		return DiaryResp{}, err
+	}
+	events, cats, err := symptoms.GetConditionEventsAndDependencies(service.db)
+	if err != nil {
+		return DiaryResp{}, err
+	}
 	var input = Input{Meals: meals, Events: events, Categories: cats}
 	diaries := diaryFrom(input)
 	return DiaryResp{Diaries: diaries}, nil

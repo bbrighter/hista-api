@@ -74,7 +74,9 @@ func TestGetMealsAndDependencies(t *testing.T) {
 	defer teardown(t)
 
 	var meals Meals
-	meals = GetMealsAndDependencies(service.db)
+	var err error
+	meals, err = GetMealsAndDependencies(service.db)
+	assert.NoError(t, err)
 	assert.Len(t, meals, 1)
 	var meal Meal = meals[0]
 	assert.Len(t, meal.Foods, 1)

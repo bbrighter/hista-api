@@ -103,7 +103,9 @@ func TestGetConditionEventsAndDependencies(t *testing.T) {
 
 	var events ConditionEvents
 	var cats SymptomCategories
-	events, cats = GetConditionEventsAndDependencies(service.db)
+	var err error
+	events, cats, err = GetConditionEventsAndDependencies(service.db)
+	assert.NoError(t, err)
 	assert.Len(t, events, 1)
 	var event ConditionEvent = events[0]
 	assert.Len(t, event.Conditions, 1)

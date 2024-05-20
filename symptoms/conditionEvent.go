@@ -77,10 +77,17 @@ func (event *ConditionEvent) patch(service *Service, date time.Time) error {
 	return service.db.Model(event).Update("date", date).Error
 }
 
-func GetConditionEventsAndDependencies(db *gorm.DB) (ConditionEvents, SymptomCategories) {
+func GetConditionEventsAndDependencies(db *gorm.DB) (ConditionEvents, SymptomCategories, error) {
 	var events ConditionEvents
-	db.Preload("Conditions.Symptom").Preload("Conditions").Find(&events)
 	var cats SymptomCategories
-	db.Find(&cats)
-	return events, cats
+	if err := db.Preload("Conditions.Symptom").
+		Preload("Conditions").
+		Find(&events).
+		Error; err != nil {
+		return events, cats, err
+	}
+	if err := db.Find(&cats).Error; err != nil {
+		return events, cats, err
+	}
+	return events, cats, nil
 }
