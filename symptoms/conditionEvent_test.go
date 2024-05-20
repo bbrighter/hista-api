@@ -33,11 +33,14 @@ func TestGetConditionEvents(t *testing.T) {
 	defer teardown(t)
 
 	var events ConditionEvents
-	events = getConditionEvents(service)
+	var err error
+	events, err = getConditionEvents(service)
+	assert.NoError(t, err)
 	assert.Len(t, events, 0)
 
 	var event ConditionEvent = service.testCreateConditionEvent(t)
-	events = getConditionEvents(service)
+	events, err = getConditionEvents(service)
+	assert.NoError(t, err)
 	assert.Len(t, events, 1)
 	assert.Equal(t, event.ID, events[0].ID)
 	assert.False(t, events[0].Date.IsZero(), "date is set; no comparison because time.Now is used")

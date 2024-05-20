@@ -30,10 +30,10 @@ func (event *ConditionEvent) create(service *Service) error {
 	return service.db.Create(event).Error
 }
 
-func getConditionEvents(service *Service) ConditionEvents {
+func getConditionEvents(service *Service) (ConditionEvents, error) {
 	var events ConditionEvents
-	service.db.Find(&events)
-	return events
+	var err error = service.db.Find(&events).Error
+	return events, err
 }
 
 func getConditionEvent(service *Service, id uint) (ConditionEvent, error) {

@@ -31,7 +31,8 @@ type ConditionEventMetaResponse struct {
 
 // encore:api auth method=GET path=/condition-events
 func (service *Service) GetConditionEvents(ctx context.Context) (ConditionEventsResponse, error) {
-	return getConditionEvents(service).toResponse(), nil
+	events, err := getConditionEvents(service)
+	return events.toResponse(), err
 }
 
 type ConditionEventResponse struct {
