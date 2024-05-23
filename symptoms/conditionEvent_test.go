@@ -14,8 +14,7 @@ func TestNewConditionEvent(t *testing.T) {
 }
 
 func TestCreateConditionEvent(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var event *ConditionEvent
 	var err error
@@ -26,31 +25,27 @@ func TestCreateConditionEvent(t *testing.T) {
 	event = newConditionEvent(time.Now())
 	err = event.create(service)
 	assert.NoError(t, err)
+
+	// clean up
+	err = event.delete(service)
+	assert.NoError(t, err)
 }
 
 func TestGetConditionEvents(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var events ConditionEvents
 	var err error
 	events, err = getConditionEvents(service)
 	assert.NoError(t, err)
-	assert.Len(t, events, 0)
-
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	events, err = getConditionEvents(service)
-	assert.NoError(t, err)
 	assert.Len(t, events, 1)
-	assert.Equal(t, event.ID, events[0].ID)
+	assert.Equal(t, uint(1), events[0].ID)
 	assert.False(t, events[0].Date.IsZero(), "date is set; no comparison because time.Now is used")
 }
 
 func TestGetConditionEvent(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	service.testCreateConditionEvent(t)
 	var event ConditionEvent
 	var err error
 	event, err = getConditionEvent(service, 1)
@@ -63,11 +58,10 @@ func TestGetConditionEvent(t *testing.T) {
 }
 
 func TestDeleteConditionEvent(t *testing.T) {
-	service, teardown := initTest(t)
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var err error
+	var event = ConditionEvent{ID: 1}
 	err = event.delete(service)
 	assert.NoError(t, err)
 	rows := service.db.Find(&ConditionEvents{}).RowsAffected
@@ -79,12 +73,11 @@ func TestDeleteConditionEvent(t *testing.T) {
 }
 
 func TestPatchConditionEvent(t *testing.T) {
-	service, teardown := initTest(t)
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var err error
 	var setTime time.Time = time.Date(2000, 1, 1, 1, 1, 1, 0, time.UTC)
+	var event = ConditionEvent{ID: 1}
 	err = event.patch(service, setTime)
 	assert.NoError(t, err)
 	var result = ConditionEvent{ID: event.ID}
@@ -97,9 +90,7 @@ func TestPatchConditionEvent(t *testing.T) {
 }
 
 func TestGetConditionEventsAndDependencies(t *testing.T) {
-	service, teardown := initTest(t)
-	service.testCreateConditionEvent(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var events ConditionEvents
 	var cats SymptomCategories
@@ -109,7 +100,7 @@ func TestGetConditionEventsAndDependencies(t *testing.T) {
 	assert.Len(t, events, 1)
 	var event ConditionEvent = events[0]
 	assert.Len(t, event.Conditions, 1)
-	assert.Equal(t, event.Conditions[0].Symptom.Name, "Name")
+	assert.Equal(t, event.Conditions[0].Symptom.Name, "Symptom")
 
 	assert.Len(t, cats, 1)
 }

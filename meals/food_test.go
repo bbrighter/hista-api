@@ -7,47 +7,38 @@ import (
 )
 
 func TestGetFood(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var foods []Food
 
-	// empty response
 	foods = service.getFoods(1)
-	assert.Len(t, foods, 0)
-
-	// one meal one food
-	var meal Meal = service.testCreateMeal(t)
-	foods = service.getFoods(meal.ID)
 	assert.Len(t, foods, 1)
 }
 
 func TestCreateFood(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var food Food
 	var err error
 
 	// Food for non-existing meal
-	food, err = service.createFood(1, Cooked, "IngredientName")
+	_, err = service.createFood(100, Cooked, "Meal doesn't exist")
 	assert.Error(t, err)
 
 	// Valid food
-	var meal Meal = service.testCreateMeal(t)
-	food, err = service.createFood(meal.ID, Cooked, "IngredientName")
+	var food Food
+	food, err = service.createFood(1, Cooked, "New name")
 	assert.NoError(t, err)
-	assert.Equal(t, "IngredientName", food.Ingredient.Name)
+	assert.Equal(t, "New name", food.Ingredient.Name)
+
+	// Cleanup
+	service.deleteFood(food)
 }
 
 func TestDeleteFood(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var meal Meal = service.testCreateMeal(t)
 	var err error
-	err = service.deleteFood(meal.Foods[0])
-
+	err = service.deleteFood(Food{ID: 1})
 	assert.NoError(t, err)
 
 	err = service.deleteFood(Food{ID: 100})
@@ -55,12 +46,10 @@ func TestDeleteFood(t *testing.T) {
 }
 
 func TestChangeFoodCondition(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var meal Meal = service.testCreateMeal(t)
 	var err error
-	err = service.changeFoodCondition(meal.Foods[0], Raw)
+	err = service.changeFoodCondition(Food{ID: 1}, Raw)
 	assert.NoError(t, err)
 
 	err = service.changeFoodCondition(Food{ID: 100}, Raw)

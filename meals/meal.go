@@ -37,8 +37,7 @@ func (service Service) getMeal(id uint) (Meal, error) {
 }
 
 func (service Service) deleteMeal(mealId uint) error {
-	var meal Meal
-	if service.db.Find(&meal).RowsAffected == 0 {
+	if service.db.Find(&Meal{ID: mealId}).RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}
 	return service.db.Transaction(func(tx *gorm.DB) error {

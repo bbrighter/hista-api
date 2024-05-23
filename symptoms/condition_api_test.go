@@ -34,12 +34,10 @@ import (
 // }
 
 func TestPatchConditionAPI(t *testing.T) {
-	service, ctx, teardown := initAPITest(t)
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	defer teardown(t)
+	service, ctx := initAPITest(t)
 
 	var params = PatchSeverityRequestParams{Severity: High}
-	var conditionID uint = event.Conditions[0].ID
+	var conditionID uint = 1
 	var err error
 	err = service.PatchCondition(ctx, conditionID, params)
 	assert.NoError(t, err)
@@ -49,11 +47,9 @@ func TestPatchConditionAPI(t *testing.T) {
 }
 
 func TestDeleteConditionAPI(t *testing.T) {
-	service, ctx, teardown := initAPITest(t)
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	defer teardown(t)
+	service, ctx := initAPITest(t)
 
-	var conditionID uint = event.Conditions[0].ID
+	var conditionID uint = 1
 	var err error
 	var cats SymptomCategoriesResponse
 	cats, err = service.DeleteCondition(ctx, conditionID)

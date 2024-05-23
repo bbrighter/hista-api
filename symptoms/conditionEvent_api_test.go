@@ -8,29 +8,30 @@ import (
 )
 
 func TestCreateConditionEventAPI(t *testing.T) {
-	service, ctx, teardown := initAPITest(t)
-	defer teardown(t)
+	service, ctx := initAPITest(t)
 
 	var params = ConditionEventRequestParams{Date: time.Now()}
 	resp, err := service.CreateConditionEvent(ctx, params)
 
 	assert.NoError(t, err)
-	assert.NotEqualValues(t, 0, resp.ID)
+	assert.GreaterOrEqual(t, resp.ID, uint(2))
+
+	// clean up
+	var event ConditionEvent
+	service.db.Last(&event)
+	err = event.delete(service)
+	assert.NoError(t, err)
 }
 
 func TestGetConditionEventsAPI(t *testing.T) {
-	service, ctx, teardown := initAPITest(t)
-	defer teardown(t)
-	service.testCreateConditionEvent(t)
+	service, ctx := initAPITest(t)
 
 	events, _ := service.GetConditionEvents(ctx)
 	assert.Len(t, events.ConditionEvents, 1)
 }
 
 func TestGetConditionEventAPI(t *testing.T) {
-	service, ctx, teardown := initAPITest(t)
-	defer teardown(t)
-	service.testCreateConditionEvent(t)
+	service, ctx := initAPITest(t)
 
 	var event ConditionEventResponse
 	var err error
@@ -45,9 +46,7 @@ func TestGetConditionEventAPI(t *testing.T) {
 }
 
 func TestPatchDateAPI(t *testing.T) {
-	service, ctx, teardown := initAPITest(t)
-	defer teardown(t)
-	service.testCreateConditionEvent(t)
+	service, ctx := initAPITest(t)
 
 	var err error
 	var params = ConditionEventRequestParams{Date: time.Now()}
@@ -56,9 +55,7 @@ func TestPatchDateAPI(t *testing.T) {
 }
 
 func TestDeleteConditionEventAPI(t *testing.T) {
-	service, ctx, teardown := initAPITest(t)
-	defer teardown(t)
-	service.testCreateConditionEvent(t)
+	service, ctx := initAPITest(t)
 
 	var err error
 	err = service.DeleteConditionEvent(ctx, 1)

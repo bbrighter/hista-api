@@ -7,14 +7,9 @@ import (
 )
 
 func TestGetSymptomCategories(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var cats []SymptomCategory = getSymptomCategories(service)
-	assert.Len(t, cats, 0)
-
-	service.testCreateConditionEvent(t)
-	cats = getSymptomCategories(service)
 	assert.Len(t, cats, 1)
 	var cat1 SymptomCategory = cats[0]
 	assert.Len(t, cat1.Symptoms, 1)
@@ -22,10 +17,9 @@ func TestGetSymptomCategories(t *testing.T) {
 }
 
 func TestCreateSymptomCategory(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var cat = &SymptomCategory{Name: "Category"}
+	var cat = &SymptomCategory{Name: "New Category"}
 	var err error
 	err = cat.create(service)
 
@@ -37,24 +31,30 @@ func TestCreateSymptomCategory(t *testing.T) {
 	err = catWithoutName.create(service)
 	assert.Error(t, err)
 
+	// Cleanup
+	err = service.db.Delete(&cat).Error
+	assert.NoError(t, err)
 }
 
 func TestCreateSymptomCategoryNoDuplicates(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var cat = &SymptomCategory{Name: "Category"}
+	var cat = &SymptomCategory{Name: "New Category"}
 	var err error
 	err = cat.create(service)
 	assert.NoError(t, err)
 
-	var duplicateCat = &SymptomCategory{Name: "Category"}
+	var duplicateCat = &SymptomCategory{Name: "New Category"}
 	err = duplicateCat.create(service)
 	assert.NoError(t, err)
 
 	var numberOfCategories int64
-	service.db.Find(&SymptomCategory{}, &SymptomCategory{Name: "Category"}).Count(&numberOfCategories)
+	service.db.Find(&SymptomCategory{}, &SymptomCategory{Name: "New Category"}).Count(&numberOfCategories)
 	assert.EqualValues(t, 1, numberOfCategories)
+
+	// Cleanup
+	err = service.db.Delete(&SymptomCategory{}, &SymptomCategory{Name: "New Category"}).Error
+	assert.NoError(t, err)
 }
 
 // func TestUpdateSymptomCategory(t *testing.T) {
