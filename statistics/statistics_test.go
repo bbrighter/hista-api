@@ -25,18 +25,17 @@ func TestFindFoodForSymptoms(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, results.Statistics, 1)
 	var res Statistic = results.Statistics[0]
-	assert.EqualValues(t, 1, res.SymptomID)
-	assert.Equal(t, 4, res.SymptomSeverity)
-	assert.Len(t, res.SymptomMeals, 1)
-	var stat = res.SymptomMeals[0]
+	assert.EqualValues(t, 1, res.IngredientID)
+	assert.Equal(t, "cooked", res.FoodCondition)
+	assert.Len(t, res.Statistic, 1)
+	var stat = res.Statistic[0]
 	assert.True(t, mealTime.Equal(stat.MealDate), mealTime.String(), stat.MealDate.String())
 	// assert.True(t, symptomTime.Equal(stat.ConditionEventDate))
-	assert.EqualValues(t, 1, stat.IngredientID)
-	assert.Equal(t, "cooked", stat.FoodCondition)
+	assert.EqualValues(t, 1, stat.SymptomID)
+	assert.Equal(t, 4, stat.SymptomSeverity)
 
 	var futureDate time.Time = mealTime.Add(1000 * time.Hour)
 	results, err = findFoodForSymptoms(service, futureDate, futureDate.Add(time.Hour), symptomIds)
 	assert.NoError(t, err)
-	assert.Len(t, results.Statistics, 1)
-	assert.Len(t, results.Statistics[0].SymptomMeals, 0)
+	assert.Len(t, results.Statistics, 0)
 }

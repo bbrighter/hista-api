@@ -1,21 +1,20 @@
 package statistics
 
 import (
-	"slices"
 	"time"
 )
 
 type SymptomMeal struct {
-	MealDate time.Time `json:"foodDate"`
-	// ConditionEventDate time.Time `json:"symptomDate"`
-	IngredientID  uint   `json:"ingredientId"`
-	FoodCondition string `json:"foodCondition"`
+	MealDate           time.Time `json:"foodDate"`
+	ConditionEventDate time.Time `json:"symptomDate"`
+	SymptomID          uint      `json:"symptomId"`
+	SymptomSeverity    int       `json:"symptomSeverity"`
 }
 
 type Statistic struct {
-	SymptomID       uint          `json:"symptomId"`
-	SymptomSeverity int           `json:"symptomSeverity"`
-	SymptomMeals    []SymptomMeal `json:"statistic"`
+	IngredientID  uint          `json:"ingredientId"`
+	FoodCondition string        `json:"foodCondition"`
+	Statistic     []SymptomMeal `json:"statistic"`
 }
 
 type Statistics struct {
@@ -34,7 +33,7 @@ func findFoodForSymptoms(service *Service, fromDate time.Time, toDate time.Time,
 
 	var result []Result
 
-	var err error = service.db.Debug().
+	var err error = service.db.
 		Select(
 			"meals.date as meal_date",
 			"condition_events.date as condition_event_date",
@@ -55,22 +54,19 @@ func findFoodForSymptoms(service *Service, fromDate time.Time, toDate time.Time,
 	}
 
 	var statistics = []Statistic{}
-	for _, id := range symptomIds {
-		var stat = Statistic{
-			SymptomID:    id,
-			SymptomMeals: []SymptomMeal{}}
-		statistics = append(statistics, stat)
-	}
 	for _, res := range result {
-		var symptomStatistic = SymptomMeal{
-			MealDate: res.MealDate,
-			// ConditionEventDate: res.ConditionEventDate,
-			IngredientID:  res.IngredientID,
-			FoodCondition: res.FoodCondition,
+		var exists bool = false
+		var meal = SymptomMeal{MealDate: res.MealDate, ConditionEventDate: res.ConditionEventDate, SymptomID: res.SymptomID, SymptomSeverity: res.SymptomSeverity}
+		for _, stat := range statistics {
+			if res.IngredientID == stat.IngredientID && res.FoodCondition == stat.FoodCondition {
+				exists = true
+			}
+			stat.Statistic = append(stat.Statistic, meal)
 		}
-		var statisticIndex int = slices.IndexFunc(statistics, func(s Statistic) bool { return s.SymptomID == res.SymptomID })
-		statistics[statisticIndex].SymptomMeals = append(statistics[statisticIndex].SymptomMeals, symptomStatistic)
-		statistics[statisticIndex].SymptomSeverity = res.SymptomSeverity
+		if !exists {
+			statistics = append(statistics, Statistic{IngredientID: res.IngredientID, FoodCondition: res.FoodCondition, Statistic: []SymptomMeal{meal}})
+		}
+
 	}
 	return Statistics{Statistics: statistics}, err
 }
