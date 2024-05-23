@@ -26,7 +26,7 @@ func TestFindFoodForSymptoms(t *testing.T) {
 	assert.Len(t, results.Statistics, 1)
 	var res Statistic = results.Statistics[0]
 	assert.EqualValues(t, 1, res.IngredientID)
-	assert.Equal(t, "cooked", res.FoodCondition)
+	assert.Equal(t, "raw", res.FoodCondition)
 	assert.Len(t, res.Statistic, 1)
 	var stat = res.Statistic[0]
 	assert.True(t, mealTime.Equal(stat.MealDate), mealTime.String(), stat.MealDate.String())
