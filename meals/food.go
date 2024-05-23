@@ -29,6 +29,9 @@ func (service Service) getFoods(mealID uint) Foods {
 }
 
 func (service Service) createFood(mealID uint, condition FoodCondition, ingredientName string) (Food, error) {
+	if rows := service.db.Find(&Meal{ID: mealID}).RowsAffected; rows == 0 {
+		return Food{}, errors.ErrorNotFound
+	}
 	var ingredient Ingredient
 	var err error
 	var food Food

@@ -7,56 +7,51 @@ import (
 )
 
 func TestCreateOrReplace(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var category = SymptomCategory{Name: "Category", ID: 2}
 	var err error
-	err = service.db.Create(&category).Error
-	assert.NoError(t, err)
 
-	var conditonType = &Symptom{Name: "New name", SymptomCategoryID: 2}
-	err = conditonType.createOrReplace(service)
+	var symptom = &Symptom{Name: "Symptom", SymptomCategoryID: 1}
+	err = symptom.createOrReplace(service)
 	assert.NoError(t, err)
-	assert.GreaterOrEqual(t, conditonType.ID, uint(1))
+	assert.GreaterOrEqual(t, symptom.ID, uint(1))
 
-	var differentConditonType = &Symptom{Name: "Other name", SymptomCategoryID: 2}
+	var differentConditonType = &Symptom{Name: "Other symptom", SymptomCategoryID: 1}
 	err = differentConditonType.createOrReplace(service)
 	assert.NoError(t, err)
-	assert.NotEqual(t, conditonType.ID, differentConditonType.ID)
+	assert.NotEqual(t, symptom.ID, differentConditonType.ID)
 
-	var sameConditionType = &Symptom{Name: "New name", SymptomCategoryID: 2}
+	var sameConditionType = &Symptom{Name: "Symptom", SymptomCategoryID: 1}
 	err = sameConditionType.createOrReplace(service)
 	assert.NoError(t, err)
-	assert.Equal(t, conditonType.ID, sameConditionType.ID)
+	assert.Equal(t, symptom.ID, sameConditionType.ID)
+
+	// Cleanup
+	err = service.db.Delete(&differentConditonType).Error
+	assert.NoError(t, err)
 }
 
 func TestDeleteIfUnused(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var category = SymptomCategory{ID: 2, Name: "Other category"}
-	var unusedConditionType = Symptom{ID: 1, Name: "Name", SymptomCategoryID: 2}
+	var unusedSymptom = Symptom{ID: 2, Name: "Unused symptom", SymptomCategoryID: 1}
 	var err error
-	err = service.db.Create(&category).Error
-	assert.NoError(t, err)
-	err = service.db.Create(&unusedConditionType).Error
+	err = service.db.Create(&unusedSymptom).Error
 	assert.NoError(t, err)
 
-	err = unusedConditionType.deleteIfUnused(service.db)
+	err = unusedSymptom.deleteIfUnused(service.db)
 	assert.NoError(t, err)
 
-	var conditionTypes []Symptom
-	var rows int64 = service.db.Find(&conditionTypes).RowsAffected
-	assert.EqualValues(t, 0, rows)
+	var symptoms []Symptom
+	var rows int64 = service.db.Find(&symptoms).RowsAffected
+	assert.EqualValues(t, 1, rows)
 
-	var event = service.testCreateConditionEvent(t)
-	var usedConditionType Symptom = event.Conditions[0].Symptom
+	var usedSymptom = Symptom{ID: 1}
 
-	err = usedConditionType.deleteIfUnused(service.db)
+	err = usedSymptom.deleteIfUnused(service.db)
 	assert.NoError(t, err)
 
-	rows = service.db.Find(&conditionTypes).RowsAffected
+	rows = service.db.Find(&symptoms).RowsAffected
 	assert.EqualValues(t, 1, rows)
 
 }

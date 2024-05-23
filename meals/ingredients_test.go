@@ -8,8 +8,7 @@ import (
 
 func TestCreateOrReplaceIngredient(t *testing.T) {
 	t.Skip()
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 	var ing Ingredient
 	var err error
 
@@ -30,31 +29,23 @@ func TestCreateOrReplaceIngredient(t *testing.T) {
 }
 
 func TestGetIngredients(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var ingredients []Ingredient
 
-	ingredients = service.getIngredients()
-	assert.Len(t, ingredients, 0)
-
-	service.createOrReplaceIngredient("New")
 	ingredients = service.getIngredients()
 	assert.Len(t, ingredients, 1)
 }
 
 func TestDeleteIngredientIfUnused(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
-
-	var meal Meal = service.testCreateMeal(t)
-	var ingredient Ingredient = meal.Foods[0].Ingredient
+	service := initTest(t)
 
 	var err error
-	err = deleteIngredientIfUnused(service.db, ingredient.ID)
+	err = deleteIngredientIfUnused(service.db, 1)
 	assert.NoError(t, err)
 	// Ingredient is used and should not be removed
 	var rows int64
+	var ingredient Ingredient
 	rows = service.db.Find(&ingredient).RowsAffected
 	assert.EqualValues(t, 1, rows)
 

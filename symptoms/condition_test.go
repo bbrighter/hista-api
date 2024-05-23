@@ -7,79 +7,72 @@ import (
 )
 
 func TestGetConditions(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	var conditions Conditions = getConditions(service, event.ID)
+	var conditions Conditions = getConditions(service, 1)
 
 	assert.Len(t, conditions, 1)
 	assert.EqualValues(t, 1, conditions[0].Symptom.ID)
 }
 
 func TestCreateConditionBySymptomName(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var err error
 	var categories SymptomCategories
-	var symptomCategory = SymptomCategory{ID: 2, Name: "Category"}
-	err = service.db.Create(&symptomCategory).Error
-	assert.NoError(t, err)
 
 	var condition = &Condition{Severity: High, ConditionEventID: 1}
 
-	categories, err = condition.createConditionBySymptomName(service, "Name", 2)
+	categories, err = condition.createConditionBySymptomName(service, "Name", 1000)
 	assert.Error(t, err)
 
 	condition = &Condition{Severity: High, ConditionEventID: 1}
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	condition.ConditionEventID = event.ID
 	categories, err = condition.createConditionBySymptomName(service, "New Name", 1)
 	assert.NoError(t, err)
 	assert.Equal(t, condition.Symptom.Name, "New Name")
 	assert.GreaterOrEqual(t, len(categories), 1)
+
+	// clean up
+	err = condition.delete(service)
+	assert.NoError(t, err)
 }
 
 func TestCreateConditionByID(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var err error
-	var condition = &Condition{SymptomID: 1, ConditionEventID: 1}
 
+	var condition = &Condition{SymptomID: 1, ConditionEventID: 100}
 	err = condition.createConditionBySymptomID(service)
 	assert.Error(t, err)
 
-	event := service.testCreateConditionEvent(t)
-	var symptomId uint = event.Conditions[0].Symptom.ID
-	condition = &Condition{SymptomID: symptomId, ConditionEventID: event.ID}
+	condition = &Condition{SymptomID: 1, ConditionEventID: 1}
 
 	err = condition.createConditionBySymptomID(service)
+	assert.NoError(t, err)
+
+	// clean up
+	err = condition.delete(service)
 	assert.NoError(t, err)
 }
 
 func TestDeleteCondition(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var condition = &Condition{Severity: High, ConditionEventID: 1}
+	var condition = &Condition{ConditionEventID: 1000}
 	var err error
 	err = condition.delete(service)
 	assert.Error(t, err)
 
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	condition = &event.Conditions[0]
+	condition = &Condition{ID: 1}
 	err = condition.delete(service)
 	assert.NoError(t, err)
 }
 
 func TestChangeSeverity(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var event ConditionEvent = service.testCreateConditionEvent(t)
-	var condition *Condition = &event.Conditions[0]
+	var condition = &Condition{ID: 1}
 	var err error = condition.changeSeverity(service, Low)
 	assert.NoError(t, err)
 	assert.Equal(t, Low, condition.Severity)

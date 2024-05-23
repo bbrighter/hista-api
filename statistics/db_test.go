@@ -10,34 +10,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func initAPITest(t *testing.T) (*Service, context.Context, func(t *testing.T)) {
+func initAPITest(t *testing.T) (*Service, context.Context) {
 	var ctx context.Context = context.TODO()
-	service, teardown := initTest(t)
-	return service, ctx, teardown
+	service := initTest(t)
+	return service, ctx
 }
 
-func initTest(t *testing.T) (*Service, func(t *testing.T)) {
+func initTest(t *testing.T) *Service {
 	service, err := initService()
 	assert.NoError(t, err)
 
-	return service, service.teardown
-}
-
-func (service Service) teardown(t *testing.T) {
-	var models = []interface{}{
-		&meals.Food{},
-		&meals.Meal{},
-		&meals.Ingredient{},
-		&symptoms.Condition{},
-		&symptoms.ConditionEvent{},
-		&symptoms.Symptom{},
-		&symptoms.SymptomCategory{},
-	}
-	var err error
-	for _, model := range models {
-		err = service.db.Debug().Where("1=1").Delete(model).Error
-		assert.NoError(t, err)
-	}
+	return service
 }
 
 func testInput() Input {

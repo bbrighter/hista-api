@@ -3,53 +3,18 @@ package meals
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func initAPITest(t *testing.T) (*Service, context.Context, func(t *testing.T)) {
+func initAPITest(t *testing.T) (*Service, context.Context) {
 	var ctx context.Context = context.TODO()
-	service, teardown := initTest(t)
-	return service, ctx, teardown
+	service := initTest(t)
+	return service, ctx
 }
 
-func initTest(t *testing.T) (*Service, func(t *testing.T)) {
+func initTest(t *testing.T) *Service {
 	service, err := initService()
 	assert.NoError(t, err)
-
-	return service, service.teardown
-}
-
-func (service Service) teardown(t *testing.T) {
-	var models = []interface{}{
-		&Food{},
-		&Meal{},
-		&Ingredient{},
-	}
-	var err error
-	for _, model := range models {
-		err = service.db.Where("1=1").Delete(model).Error
-		assert.NoError(t, err)
-	}
-}
-
-func (service Service) testCreateMeal(t *testing.T) Meal {
-	var food = Food{
-		ID: 1,
-		Ingredient: Ingredient{
-			ID:   1,
-			Name: "Name",
-		},
-		IngredientID: 1,
-	}
-	var meal = Meal{
-		ID:    1,
-		Date:  time.Now(),
-		Foods: []Food{food},
-	}
-	var err error = service.db.Create(&meal).Error
-	assert.NoError(t, err)
-
-	return meal
+	return service
 }
