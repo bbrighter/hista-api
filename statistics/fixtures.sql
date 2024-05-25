@@ -1,29 +1,32 @@
 INSERT INTO "meals" ("date", "id") 
-VALUES ('2024-05-22 20:37:37.477', 1)
+VALUES ('2024-05-22 12:00:00.000', 1)
 ON CONFLICT ("id")
-DO NOTHING;
+DO UPDATE SET
+    "date"='2024-05-22 12:00:00.000';
 
 SELECT setval('meals_id_seq', 2, true);
 
 INSERT INTO "ingredients" ("name", "id")
 VALUES ('Name',1)
 ON CONFLICT ("id")
-DO NOTHING;
+DO UPDATE SET 
+    "name" = 'Name';
 
 SELECT setval('ingredients_id_seq', 2, true);
 
 INSERT INTO "foods" ("ingredient_id","condition","meal_id", "id") 
 VALUES (1,'cooked',1,1)
 ON CONFLICT ("id") 
-DO NOTHING;
+DO UPDATE SET 
+    "condition" = 'cooked';
 
 SELECT setval('foods_id_seq', 2, true);
 
 INSERT INTO "condition_events" ("date", "id")
-VALUES ('2024-05-22 20:37:37.477', 1)
+VALUES ('2024-05-22 22:00:00.000', 1)
 ON CONFLICT ("id")
 DO UPDATE SET 
-    "date"='2024-05-22 20:37:37.477';
+    "date"='2024-05-22 22:00:00.000';
 
 SELECT setval('condition_events_id_seq',2,true);
 
