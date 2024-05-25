@@ -14,8 +14,8 @@ type StatisticParams struct {
 }
 
 // encore:api auth method=GET path=/statistics
-func (service *Service) GetSymptomsBySymptomIDs(ctx context.Context, params StatisticParams) (Statistics, error) {
-	var resp = Statistics{}
+func (service *Service) GetSymptomsBySymptomIDs(ctx context.Context, params StatisticParams) (StatisticsResponse, error) {
+	var resp = StatisticsResponse{}
 	print("These are the params:", params.FromDate.String(), params.ToDate.String(), params.SymptomIDs)
 	if params.FromDate.IsZero() {
 		return resp, errors.ErrorAttributeMustBeSet("fromDate")

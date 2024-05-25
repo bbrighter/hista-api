@@ -5,37 +5,62 @@ import (
 	"time"
 
 	"encore.app/meals"
+	"encore.app/symptoms"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestFindFoodForSymptoms(t *testing.T) {
 	service := initTest(t)
 
+	// Get dates from database
+	var fromDate, toDate, timeOfMeal, timeOfSymptom time.Time
 	var meal meals.Meal
 	service.db.First(&meal)
-	var mealTime time.Time = meal.Date
+	var event symptoms.ConditionEvent
+	service.db.First(&event)
+	timeOfMeal = meal.Date
+	timeOfSymptom = event.Date
+	fromDate = timeOfMeal.Add(-time.Hour * 24 * 7) // one week before meal
+	toDate = timeOfMeal                            // until meal
 
-	var fromDate, toDate time.Time
 	var symptomIds = []uint{1}
-	fromDate = mealTime.Add(-time.Hour * 72)
-	toDate = mealTime.Add(time.Hour)
-	var results Statistics
 	var err error
+	// Regular test
+	var results StatisticsResponse
 	results, err = findFoodForSymptoms(service, fromDate, toDate, symptomIds)
 	assert.NoError(t, err)
 	assert.Len(t, results.Statistics, 1)
-	var res Statistic = results.Statistics[0]
-	assert.EqualValues(t, 1, res.IngredientID)
-	assert.Equal(t, "raw", res.FoodCondition)
-	assert.Len(t, res.Statistic, 1)
-	var stat = res.Statistic[0]
-	assert.True(t, mealTime.Equal(stat.MealDate), mealTime.String(), stat.MealDate.String())
-	// assert.True(t, symptomTime.Equal(stat.ConditionEventDate))
-	assert.EqualValues(t, 1, stat.SymptomID)
-	assert.Equal(t, 4, stat.SymptomSeverity)
+	var stat StatisticByFood = results.Statistics[0]
+	assert.EqualValues(t, 1, stat.IngredientID)
+	assert.Equal(t, "cooked", stat.FoodCondition)
+	assert.Equal(t, 0, stat.Hours1)
+	assert.Equal(t, 1, stat.Hours24)
+	assert.Equal(t, 1, stat.Hours72)
 
-	var futureDate time.Time = mealTime.Add(1000 * time.Hour)
+	// No data
+	var futureDate time.Time = timeOfMeal.Add(time.Hour * 24 * 365)
 	results, err = findFoodForSymptoms(service, futureDate, futureDate.Add(time.Hour), symptomIds)
 	assert.NoError(t, err)
 	assert.Len(t, results.Statistics, 0)
+
+	// Add more data and run complex test
+	var timeOfNewMeal = timeOfSymptom.Add(-time.Hour * 24 * 2) // 2 days before symptom
+	var newMeal = meals.Meal{Date: timeOfNewMeal}
+	err = service.db.Create(&newMeal).Error
+	assert.NoError(t, err)
+	var food = meals.Food{IngredientID: 1, Condition: meals.Cooked, MealID: newMeal.ID}
+	err = service.db.Create(&food).Error
+	assert.NoError(t, err)
+
+	results, err = findFoodForSymptoms(service, fromDate, toDate, symptomIds)
+	assert.NoError(t, err)
+	assert.Len(t, results.Statistics, 1)
+	stat = results.Statistics[0]
+	assert.Equal(t, stat.Hours1, 0)
+	assert.Equal(t, stat.Hours24, 1)
+	assert.Equal(t, stat.Hours72, 2)
+
+	// Cleanup
+	service.db.Delete(&food)
+	service.db.Delete(&newMeal)
 }

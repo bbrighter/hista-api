@@ -1,5 +1,5 @@
 INSERT INTO "meals" ("date", "id") 
-VALUES ('2024-05-22 20:37:37.477', 1)
+VALUES ('2024-05-22 12:00:00.000', 1)
 ON CONFLICT ("id")
 DO NOTHING;
 
@@ -20,10 +20,10 @@ DO NOTHING;
 SELECT setval('foods_id_seq', 2, true);
 
 INSERT INTO "condition_events" ("date", "id")
-VALUES ('2024-05-22 20:37:37.477', 1)
+VALUES ('2024-05-22 22:00:00.000', 1)
 ON CONFLICT ("id")
 DO UPDATE SET 
-    "date"='2024-05-22 20:37:37.477';
+    "date"='2024-05-22 22:00:00.000';
 
 SELECT setval('condition_events_id_seq',2,true);
 
