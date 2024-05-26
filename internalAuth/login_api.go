@@ -32,5 +32,5 @@ func (service *Service) Login(ctx context.Context, params LoginParams) (LoginRes
 	}
 	var token Token
 	token, err = user.firstOrCreateValidToken(service)
-	return LoginResponse{Token: token.Bearer}, nil
+	return LoginResponse{Token: token.Bearer}, err
 }
