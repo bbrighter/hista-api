@@ -17,14 +17,15 @@ type AuthParams struct {
 //encore:authhandler
 func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, error) {
 	var uid uuid.UUID
-	var err error
+	var err, unauthenticated error
+	unauthenticated = errors.ErrorUnauthenticated
 	uid, err = uuid.FromString(params.Authorization)
 	if err != nil {
 		return "", errors.NewError("invalid uuid", errs.InvalidArgument)
 	}
 	user, err := getUserByName(params.UserName)
 	if err != nil {
-		return "", errors.ErrorUnauthenticated
+		return "", unauthenticated
 	}
 	var token = Token{
 		Bearer: uid,
@@ -33,7 +34,7 @@ func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, error) {
 	var valid bool
 	valid, err = token.isValid()
 	if !valid {
-		return "", errors.ErrorNotFound
+		return "", unauthenticated
 	}
 	return auth.UID(user.Name), err
 }
