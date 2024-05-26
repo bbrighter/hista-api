@@ -7,15 +7,10 @@ import (
 )
 
 func TestLoginAPI(t *testing.T) {
-	service, ctx, teardown := initAPITest(t)
-	service.useTestPassword(t)
-	defer teardown(t)
-
-	var user User
-	service.db.First(&user)
+	service, ctx := initAPITest(t)
 
 	var params = LoginParams{
-		UserName: "Julia",
+		UserName: "Test",
 		Password: "TestPW",
 	}
 

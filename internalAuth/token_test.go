@@ -9,16 +9,15 @@ import (
 )
 
 func TestIsValidToken(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var userJulia *User
+	var testUser *User
 	var err error
-	userJulia, err = getUserByName("Julia")
+	testUser, err = getUserByName("Test")
 	assert.NoError(t, err)
-	token, _ := userJulia.firstOrCreateValidToken(service)
+	token, _ := testUser.firstOrCreateValidToken(service)
 
-	var validToken = &Token{Bearer: token.Bearer, UserID: userJulia.ID}
+	var validToken = &Token{Bearer: token.Bearer, UserID: testUser.ID}
 
 	var valid bool
 	valid, err = validToken.isValid()
@@ -26,7 +25,7 @@ func TestIsValidToken(t *testing.T) {
 	assert.True(t, valid)
 
 	guid, _ := uuid.NewV4()
-	var invalidToken = &Token{Bearer: guid, UserID: userJulia.ID}
+	var invalidToken = &Token{Bearer: guid, UserID: testUser.ID}
 	var invalid bool
 	invalid, err = invalidToken.isValid()
 	assert.NoError(t, err)
@@ -34,51 +33,57 @@ func TestIsValidToken(t *testing.T) {
 }
 
 func TestFirstOrCreateToken(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
-	var userJulia *User
+	var testUser = &User{
+		ID: 2,
+	}
 	var err error
-	userJulia, err = getUserByName("Julia")
 	var tok Token
-	tok, err = userJulia.firstOrCreateValidToken(service)
-	assert.NoError(t, err)
-	assert.GreaterOrEqual(t, tok.Expires, time.Now())
+	for _, user := range memorizedUsers {
+		tok, err = user.firstOrCreateValidToken(service)
+		assert.NoError(t, err)
+		assert.GreaterOrEqual(t, tok.Expires, time.Now())
+	}
 
-	assert.Len(t, memorizedUsers, 1, "memorizedUsers")
-	userJulia = memorizedUsers[0]
-	assert.Len(t, userJulia.Tokens, 1, "Julia must have a token")
+	assert.Len(t, memorizedUsers, 2, "memorizedUsers")
+	for _, user := range memorizedUsers {
+		assert.Len(t, user.Tokens, 1, user.Name+" must have a token")
+	}
 
 	// A still valid token is not re-created, but reused
 	var sameToken Token
-	sameToken, err = userJulia.firstOrCreateValidToken(service)
+	sameToken, err = testUser.firstOrCreateValidToken(service)
 	assert.Equal(t, tok.Bearer, sameToken.Bearer)
 	assert.Equal(t, tok.ID, sameToken.ID)
 	assert.True(t, tok.Expires.Round(time.Second).Equal(sameToken.Expires.Round(time.Second)))
 }
 
 func TestCleanupTokens(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var err error
 	err = cleanupTokens(service)
 	assert.NoError(t, err)
 
 	// Check that an outdated token is removed
-	var userID uint = memorizedUsers[0].ID
 	guid, _ := uuid.NewV4()
 	var token = Token{
 		Bearer:  guid,
 		Expires: time.Now().Add(-time.Hour),
-		UserID:  userID,
+		UserID:  2, // Test user
+		ID:      3,
 	}
-	err = service.db.Create(&token).Error
+	err = service.db.Save(&token).Error
 	assert.NoError(t, err)
 	updateMemorizedUsers(service)
-	assert.Len(t, memorizedUsers[0].Tokens, 1, "One token is created")
+	var testUser *User
+	testUser, _ = getUserByName("Test")
+	assert.Len(t, testUser.Tokens, 2, "One token is created")
 
 	err = cleanupTokens(service)
 	assert.NoError(t, err)
-	assert.Len(t, memorizedUsers[0].Tokens, 0, "Outdated token is removed")
+
+	testUser, _ = getUserByName("Test") // need to update testuser again
+	assert.Len(t, testUser.Tokens, 1, "Outdated token is removed")
 }
