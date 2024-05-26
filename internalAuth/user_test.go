@@ -7,17 +7,14 @@ import (
 )
 
 func TestUpdateMemorizedUsers(t *testing.T) {
-	service, teardown := initTest(t)
-	// service.testCreate(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	updateMemorizedUsers(service)
-	assert.Len(t, memorizedUsers, 1)
+	assert.Len(t, memorizedUsers, 2)
 }
 
 func TestInitializeUsers(t *testing.T) {
-	service, teardown := initTest(t)
-	defer teardown(t)
+	service := initTest(t)
 
 	var err error
 	err = service.initializeUsers()
@@ -31,17 +28,14 @@ func TestHashing(t *testing.T) {
 }
 
 func TestIsValidPassword(t *testing.T) {
-	_, teardown := initTest(t)
-	defer teardown(t)
-
-	var user = User{Name: "Julia"}
+	var user = User{Name: "Test"}
 	var isValid, isNotValid bool
 	var err error
 	isNotValid, err = user.isValidPassword("super")
 	assert.NoError(t, err)
 	assert.False(t, isNotValid)
 
-	isValid, err = user.isValidPassword("123pi")
+	isValid, err = user.isValidPassword("TestPW")
 	assert.NoError(t, err)
 	assert.True(t, isValid)
 
