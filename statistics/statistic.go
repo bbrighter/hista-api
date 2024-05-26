@@ -4,19 +4,7 @@ import (
 	"time"
 )
 
-type StatisticByFood struct {
-	IngredientID  uint   `json:"ingredientId"`
-	FoodCondition string `json:"foodCondition"`
-	Hours72       int    `json:"hours72"`
-	Hours24       int    `json:"hours24"`
-	Hours1        int    `json:"hours1"`
-}
-
-type StatisticsResponse struct {
-	Statistics []StatisticByFood `json:"statistics"`
-}
-
-type Result struct {
+type SymptomsResult struct {
 	IngredientID  uint
 	FoodCondition string
 	Hours72       int
@@ -24,8 +12,8 @@ type Result struct {
 	Hours1        int
 }
 
-func getFoodsAndSymptoms(service *Service, fromDate time.Time, toDate time.Time, symptomIds []uint) ([]Result, error) {
-	var result []Result
+func countFoodBySymptoms(service *Service, fromDate time.Time, toDate time.Time, symptomIds []uint) ([]SymptomsResult, error) {
+	var result []SymptomsResult
 	subquery := service.db.Select(
 		"foods.ingredient_id as ingredient_id",
 		"foods.condition as food_condition",
@@ -57,18 +45,29 @@ func getFoodsAndSymptoms(service *Service, fromDate time.Time, toDate time.Time,
 	return result, err
 }
 
-func findFoodForSymptoms(service *Service, fromDate time.Time, toDate time.Time, symptomIds []uint) (StatisticsResponse, error) {
+type StatisticsByFood struct {
+	IngredientID  uint   `json:"ingredientId"`
+	FoodCondition string `json:"foodCondition"`
+	Hours72       int    `json:"hours72"`
+	Hours24       int    `json:"hours24"`
+	Hours1        int    `json:"hours1"`
+}
+
+type FoodStatisticsResponse struct {
+	Statistics []StatisticsByFood `json:"statistics"`
+}
+
+func findFoodForSymptoms(service *Service, fromDate time.Time, toDate time.Time, symptomIds []uint) (FoodStatisticsResponse, error) {
 	var err error
-	var results []Result
-	results, err = getFoodsAndSymptoms(service, fromDate, toDate, symptomIds)
+	var results []SymptomsResult
+	results, err = countFoodBySymptoms(service, fromDate, toDate, symptomIds)
 	if err != nil {
-		return StatisticsResponse{}, err
+		return FoodStatisticsResponse{}, err
 	}
 
-	var stats = []StatisticByFood{}
+	var stats = []StatisticsByFood{}
 	for _, res := range results {
-		println("res", res.FoodCondition, res.IngredientID, res.Hours1, res.Hours24, res.Hours72)
-		var stat = StatisticByFood{
+		var stat = StatisticsByFood{
 			IngredientID:  res.IngredientID,
 			FoodCondition: res.FoodCondition,
 			Hours72:       res.Hours72,
@@ -77,5 +76,80 @@ func findFoodForSymptoms(service *Service, fromDate time.Time, toDate time.Time,
 		}
 		stats = append(stats, stat)
 	}
-	return StatisticsResponse{Statistics: stats}, nil
+	return FoodStatisticsResponse{Statistics: stats}, nil
+}
+
+type FoodResult struct {
+	SymptomID uint
+	Severity  int
+	Hours72   int
+	Hours24   int
+	Hours1    int
+}
+
+func countSymptomsByFood(service *Service, fromDate time.Time, toDate time.Time, ingredientIds []uint) ([]FoodResult, error) {
+	var result []FoodResult
+	subquery := service.db.Select(
+		"conditions.symptom_id as symptom_id",
+		"conditions.severity as severity",
+		"condition_events.id as condition_event_id",
+		"MAX(CASE WHEN condition_events.date BETWEEN meals.date AND meals.date + interval '72 hour' THEN 1 ELSE 0 END) as hours72",
+		"MAX(CASE WHEN condition_events.date BETWEEN meals.date AND meals.date + interval '24 hour' THEN 1 ELSE 0 END) as hours24",
+		"MAX(CASE WHEN condition_events.date BETWEEN meals.date AND meals.date + interval '1 hour'  THEN 1 ELSE 0 END) as hours1",
+	).
+		Table("meals").
+		Joins("JOIN foods ON meals.id = foods.meal_id").
+		Joins("JOIN condition_events ON condition_events.date BETWEEN meals.date  AND meals.date + interval '72 hour'").
+		Joins("JOIN conditions ON conditions.condition_event_id = condition_events.id").
+		Where("foods.ingredient_id in (?)", ingredientIds).
+		Where("condition_events.date BETWEEN ? AND ?", fromDate, toDate).
+		Group("symptom_id, severity, condition_events.id")
+
+	var err error = service.db.Debug().
+		Table("(?) as u", subquery).
+		Select(
+			"u.symptom_id as symptom_id",
+			"u.severity as severity",
+			"SUM(u.hours72) as hours72",
+			"SUM(u.hours24) as hours24",
+			"SUM(u.hours1) as hours1",
+		).
+		Group("symptom_id, severity").
+		Scan(&result).Error
+
+	return result, err
+}
+
+type StatisticBySymptom struct {
+	SymptomID uint `json:"symptomId"`
+	Severity  int  `json:"severity"`
+	Hours72   int  `json:"hours72"`
+	Hours24   int  `json:"hours24"`
+	Hours1    int  `json:"hours1"`
+}
+
+type SymptomStatisticsResponse struct {
+	Statistics []StatisticBySymptom `json:"statistics"`
+}
+
+func findSymptomsForFoods(service *Service, fromDate time.Time, toDate time.Time, ingredientIds []uint) (SymptomStatisticsResponse, error) {
+	var err error
+	var results []FoodResult
+	results, err = countSymptomsByFood(service, fromDate, toDate, ingredientIds)
+	if err != nil {
+		return SymptomStatisticsResponse{}, err
+	}
+
+	var stats = []StatisticBySymptom{}
+	for _, res := range results {
+		var stat = StatisticBySymptom{
+			SymptomID: res.SymptomID,
+			Severity:  res.Severity,
+			Hours72:   res.Hours72,
+			Hours24:   res.Hours24,
+			Hours1:    res.Hours1,
+		}
+		stats = append(stats, stat)
+	}
+	return SymptomStatisticsResponse{Statistics: stats}, nil
 }

@@ -26,11 +26,11 @@ func TestFindFoodForSymptoms(t *testing.T) {
 	var symptomIds = []uint{1}
 	var err error
 	// Regular test
-	var results StatisticsResponse
+	var results FoodStatisticsResponse
 	results, err = findFoodForSymptoms(service, fromDate, toDate, symptomIds)
 	assert.NoError(t, err)
 	assert.Len(t, results.Statistics, 1)
-	var stat StatisticByFood = results.Statistics[0]
+	var stat StatisticsByFood = results.Statistics[0]
 	assert.EqualValues(t, 1, stat.IngredientID)
 	assert.Equal(t, "cooked", stat.FoodCondition)
 	assert.Equal(t, 0, stat.Hours1)
@@ -63,4 +63,31 @@ func TestFindFoodForSymptoms(t *testing.T) {
 	// Cleanup
 	service.db.Delete(&food)
 	service.db.Delete(&newMeal)
+}
+
+func TestFindSymptomsForFoods(t *testing.T) {
+	service := initTest(t)
+	// Get dates from database
+	var fromDate, toDate, timeOfSymptom time.Time
+	var meal meals.Meal
+	service.db.First(&meal)
+	var event symptoms.ConditionEvent
+	service.db.First(&event)
+	timeOfSymptom = event.Date
+	fromDate = timeOfSymptom.Add(-time.Hour * 24 * 7) // one week before meal
+	toDate = timeOfSymptom
+
+	var err error
+	var ids = []uint{1}
+	// Regular test
+	var results SymptomStatisticsResponse
+	results, err = findSymptomsForFoods(service, fromDate, toDate, ids)
+	assert.NoError(t, err)
+	assert.Len(t, results.Statistics, 1)
+	var stat StatisticBySymptom = results.Statistics[0]
+	assert.EqualValues(t, 1, stat.SymptomID)
+	assert.Equal(t, 4, stat.Severity)
+	assert.Equal(t, 0, stat.Hours1)
+	assert.Equal(t, 1, stat.Hours24)
+	assert.Equal(t, 1, stat.Hours72)
 }
