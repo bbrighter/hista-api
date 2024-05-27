@@ -1,6 +1,8 @@
 package service
 
 import (
+	"time"
+
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -19,9 +21,12 @@ func initDb() (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: HistaDB.Stdlib(),
 	}))
+
 	if err != nil {
 		return nil, err
 	}
+	sqlDb, _ := db.DB()
+	sqlDb.SetConnMaxLifetime(time.Second)
 	return db, nil
 }
 
