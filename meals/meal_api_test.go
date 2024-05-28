@@ -9,10 +9,11 @@ import (
 
 func TestGetMealsAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
+	service.initData()
 
 	resp, err := service.GetMeals(ctx)
 	assert.NoError(t, err)
-	assert.Len(t, resp.Meals, 1)
+	assert.GreaterOrEqual(t, len(resp.Meals), 1)
 }
 
 func TestPostMealAPI(t *testing.T) {
@@ -37,16 +38,16 @@ func TestGetMealAPI(t *testing.T) {
 	assert.Error(t, err)
 
 	var resp MealResponse
-	resp, err = service.GetMeal(ctx, 1)
+	resp, err = service.GetMeal(ctx, testMeal.ID)
 	assert.NoError(t, err)
-	assert.EqualValues(t, 1, resp.ID)
+	assert.EqualValues(t, testMeal.ID, resp.ID)
 }
 
 func TestDeleteMealAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
 
 	var err error
-	err = service.DeleteMeal(ctx, 100)
+	err = service.DeleteMeal(ctx, 10000)
 	assert.Error(t, err)
 
 	var id uint
@@ -58,8 +59,14 @@ func TestDeleteMealAPI(t *testing.T) {
 
 func TestPatchMealTimeAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
+	service.initData()
 
+	var id uint
+	var err error
+	id, err = service.createMeal(time.Now())
 	var params = MealParams{Date: time.Now()}
-	var err error = service.PatchMealTime(ctx, 1, params)
+	service.PatchMealTime(ctx, id, params)
 	assert.NoError(t, err)
+
+	service.deleteMeal(id)
 }

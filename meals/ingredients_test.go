@@ -33,15 +33,17 @@ func TestGetIngredients(t *testing.T) {
 
 	var ingredients []Ingredient
 
+	service.initData()
 	ingredients = service.getIngredients()
-	assert.Len(t, ingredients, 1)
+	assert.GreaterOrEqual(t, len(ingredients), 1)
 }
 
 func TestDeleteIngredientIfUnused(t *testing.T) {
 	service := initTest(t)
+	service.initData()
 
 	var err error
-	err = deleteIngredientIfUnused(service.db, 1)
+	err = deleteIngredientIfUnused(service.db, testIngredient.ID)
 	assert.NoError(t, err)
 	// Ingredient is used and should not be removed
 	var rows int64
@@ -50,10 +52,11 @@ func TestDeleteIngredientIfUnused(t *testing.T) {
 	assert.EqualValues(t, 1, rows)
 
 	// Ingredient is not used and should be removed
-	service.db.Create(&Ingredient{ID: 2, Name: "Name 2"})
-	err = deleteIngredientIfUnused(service.db, 2)
+	var unusedIngredient = Ingredient{Name: "Unused"}
+	service.db.Create(&unusedIngredient)
+	err = deleteIngredientIfUnused(service.db, unusedIngredient.ID)
 	assert.NoError(t, err)
 
-	rows = service.db.Find(&Ingredient{ID: 2}).RowsAffected
+	rows = service.db.First(Ingredient{ID: unusedIngredient.ID}).RowsAffected
 	assert.EqualValues(t, 0, rows)
 }

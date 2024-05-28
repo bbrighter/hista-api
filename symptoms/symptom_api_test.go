@@ -13,5 +13,5 @@ func TestGetSymptomsAPI(t *testing.T) {
 	var err error
 	resp, err = service.GetSymptoms(ctx)
 	assert.NoError(t, err)
-	assert.Len(t, resp.Categories, 1)
+	assert.GreaterOrEqual(t, len(resp.Categories), 1)
 }

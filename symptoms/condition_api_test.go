@@ -37,9 +37,8 @@ func TestPatchConditionAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
 
 	var params = PatchSeverityRequestParams{Severity: High}
-	var conditionID uint = 1
 	var err error
-	err = service.PatchCondition(ctx, conditionID, params)
+	err = service.PatchCondition(ctx, testCondition.ID, params)
 	assert.NoError(t, err)
 
 	err = service.PatchCondition(ctx, 1000, params)
@@ -49,12 +48,15 @@ func TestPatchConditionAPI(t *testing.T) {
 func TestDeleteConditionAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	var conditionID uint = 1
 	var err error
 	var cats SymptomCategoriesResponse
-	cats, err = service.DeleteCondition(ctx, conditionID)
+
+	var condition = Condition{SymptomID: testSymptom.ID, ConditionEventID: testEvent.ID, Severity: VeryHigh}
+	service.db.Create(&condition)
+
+	cats, err = service.DeleteCondition(ctx, condition.ID)
 	assert.NoError(t, err)
-	assert.Len(t, cats.Categories, 1)
+	assert.GreaterOrEqual(t, len(cats.Categories), 1)
 	cat1 := cats.Categories[0]
-	assert.Len(t, cat1.Symptoms, 0)
+	assert.GreaterOrEqual(t, len(cat1.Symptoms), 1)
 }

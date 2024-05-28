@@ -3,15 +3,18 @@ package statistics
 import (
 	"context"
 	_ "embed"
-	"log"
 	"testing"
 	"time"
 
 	"encore.app/meals"
 	"encore.app/symptoms"
-	"encore.dev"
 	"github.com/stretchr/testify/assert"
 )
+
+var testMeal *meals.Meal
+var testIngredient *meals.Ingredient
+var testEvent *symptoms.ConditionEvent
+var testSymptom *symptoms.Symptom
 
 func initAPITest(t *testing.T) (*Service, context.Context) {
 	var ctx context.Context = context.TODO()
@@ -19,19 +22,35 @@ func initAPITest(t *testing.T) (*Service, context.Context) {
 	return service, ctx
 }
 
-//go:embed fixtures.sql
-var fixtures string
-
 func initTest(t *testing.T) *Service {
 	service, err := initService()
-	if encore.Meta().Environment.Cloud == encore.CloudLocal {
-		if _, err := histaDB.Exec(context.Background(), fixtures); err != nil {
-			log.Fatalln("unable to add fixtures:", err)
-		}
-	}
 	assert.NoError(t, err)
+	service.initData()
 
 	return service
+}
+
+func (service *Service) initData() {
+	var meal = meals.Meal{Date: time.Date(2021, 1, 1, 1, 0, 0, 0, time.Local)}
+	service.db.Debug().FirstOrCreate(&meal, &meal)
+	var ingredient = meals.Ingredient{Name: "statistics_ingredient"}
+	service.db.FirstOrCreate(&ingredient, &ingredient)
+	var food = meals.Food{IngredientID: ingredient.ID, MealID: meal.ID, Condition: meals.Cooked}
+	service.db.FirstOrCreate(&food, &food)
+
+	var event = symptoms.ConditionEvent{Date: time.Date(2021, 1, 1, 3, 0, 0, 0, time.Local)}
+	service.db.Debug().FirstOrCreate(&event, &event)
+	var symptomCategory = symptoms.SymptomCategory{Name: "statistics_category"}
+	service.db.FirstOrCreate(&symptomCategory, &symptomCategory)
+	var symptom = symptoms.Symptom{Name: "statistics_symptom", SymptomCategoryID: symptomCategory.ID}
+	service.db.FirstOrCreate(&symptom, &symptom)
+	var condition = symptoms.Condition{SymptomID: symptom.ID, ConditionEventID: event.ID, Severity: symptoms.High}
+	service.db.FirstOrCreate(&condition, &condition)
+
+	testMeal = &meal
+	testEvent = &event
+	testSymptom = &symptom
+	testIngredient = &ingredient
 }
 
 func testInput() Input {

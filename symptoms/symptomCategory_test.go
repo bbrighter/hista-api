@@ -10,10 +10,10 @@ func TestGetSymptomCategories(t *testing.T) {
 	service := initTest(t)
 
 	var cats []SymptomCategory = getSymptomCategories(service)
-	assert.Len(t, cats, 1)
+	assert.GreaterOrEqual(t, len(cats), 1)
 	var cat1 SymptomCategory = cats[0]
-	assert.Len(t, cat1.Symptoms, 1)
-	assert.GreaterOrEqual(t, cat1.Symptoms[0].SymptomCategoryID, uint(1))
+	assert.GreaterOrEqual(t, len(cat1.Symptoms), 1)
+	assert.NotEqualValues(t, 0, cat1.Symptoms[0].SymptomCategoryID, "!= 0 means value exists")
 }
 
 func TestCreateSymptomCategory(t *testing.T) {

@@ -29,7 +29,7 @@ const (
 // Get all conditions including their conditionTypes
 func getConditions(service *Service, eventID uint) Conditions {
 	var conditions Conditions
-	service.db.Debug().Where(&Condition{ConditionEventID: eventID}).Preload(clause.Associations).Find(&conditions)
+	service.db.Where(&Condition{ConditionEventID: eventID}).Preload(clause.Associations).Find(&conditions)
 	return conditions
 }
 

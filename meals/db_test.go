@@ -2,13 +2,15 @@ package meals
 
 import (
 	"context"
-	_ "embed"
-	"log"
 	"testing"
+	"time"
 
-	"encore.dev"
 	"github.com/stretchr/testify/assert"
 )
+
+var testMeal *Meal
+var testFood *Food
+var testIngredient *Ingredient
 
 func initAPITest(t *testing.T) (*Service, context.Context) {
 	var ctx context.Context = context.TODO()
@@ -16,16 +18,22 @@ func initAPITest(t *testing.T) (*Service, context.Context) {
 	return service, ctx
 }
 
-//go:embed fixtures.sql
-var fixtures string
-
 func initTest(t *testing.T) *Service {
 	service, err := initService()
 	assert.NoError(t, err)
-	if encore.Meta().Environment.Cloud == encore.CloudLocal {
-		if _, err := histaDB.Exec(context.Background(), fixtures); err != nil {
-			log.Fatalln("unable to add fixtures:", err)
-		}
-	}
+	service.initData()
 	return service
+}
+
+func (service *Service) initData() {
+	var meal = &Meal{Date: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)}
+	service.db.FirstOrCreate(&meal, &meal)
+	var ingredient = &Ingredient{Name: "Ingredient"}
+	service.db.FirstOrCreate(&ingredient, &ingredient)
+	var food = &Food{IngredientID: ingredient.ID, Condition: Cooked, MealID: meal.ID}
+	service.db.FirstOrCreate(&food, &food)
+
+	testMeal = meal
+	testFood = food
+	testIngredient = ingredient
 }
