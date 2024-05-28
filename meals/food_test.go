@@ -10,9 +10,8 @@ func TestGetFood(t *testing.T) {
 	service := initTest(t)
 
 	var foods []Food
-
-	foods = service.getFoods(1)
-	assert.Len(t, foods, 1)
+	foods = service.getFoods(testMeal.ID)
+	assert.GreaterOrEqual(t, len(foods), 1)
 }
 
 func TestCreateFood(t *testing.T) {
@@ -26,7 +25,7 @@ func TestCreateFood(t *testing.T) {
 
 	// Valid food
 	var food Food
-	food, err = service.createFood(1, Cooked, "New name")
+	food, err = service.createFood(testMeal.ID, Cooked, "New name")
 	assert.NoError(t, err)
 	assert.Equal(t, "New name", food.Ingredient.Name)
 
@@ -36,12 +35,13 @@ func TestCreateFood(t *testing.T) {
 
 func TestDeleteFood(t *testing.T) {
 	service := initTest(t)
+	service.initData()
 
 	var err error
-	err = service.deleteFood(Food{ID: 1})
+	err = service.deleteFood(Food{ID: testFood.ID})
 	assert.NoError(t, err)
 
-	err = service.deleteFood(Food{ID: 100})
+	err = service.deleteFood(Food{ID: 100000})
 	assert.Error(t, err)
 }
 
@@ -49,7 +49,7 @@ func TestChangeFoodCondition(t *testing.T) {
 	service := initTest(t)
 
 	var err error
-	err = service.changeFoodCondition(Food{ID: 1}, Raw)
+	err = service.changeFoodCondition(*testFood, Raw)
 	assert.NoError(t, err)
 
 	err = service.changeFoodCondition(Food{ID: 100}, Raw)

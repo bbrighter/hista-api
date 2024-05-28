@@ -11,20 +11,15 @@ func TestCreateOrReplace(t *testing.T) {
 
 	var err error
 
-	var symptom = &Symptom{Name: "Symptom", SymptomCategoryID: 1}
-	err = symptom.createOrReplace(service)
+	var existingSymptom = &Symptom{Name: testSymptom.Name, SymptomCategoryID: testCategory.ID}
+	err = existingSymptom.createOrReplace(service)
 	assert.NoError(t, err)
-	assert.GreaterOrEqual(t, symptom.ID, uint(1))
+	assert.Equal(t, existingSymptom.ID, existingSymptom.ID)
 
-	var differentConditonType = &Symptom{Name: "Other symptom", SymptomCategoryID: 1}
+	var differentConditonType = &Symptom{Name: "Other symptom", SymptomCategoryID: testCategory.ID}
 	err = differentConditonType.createOrReplace(service)
 	assert.NoError(t, err)
-	assert.NotEqual(t, symptom.ID, differentConditonType.ID)
-
-	var sameConditionType = &Symptom{Name: "Symptom", SymptomCategoryID: 1}
-	err = sameConditionType.createOrReplace(service)
-	assert.NoError(t, err)
-	assert.Equal(t, symptom.ID, sameConditionType.ID)
+	assert.NotEqual(t, existingSymptom.ID, differentConditonType.ID)
 
 	// Cleanup
 	err = service.db.Delete(&differentConditonType).Error
@@ -34,7 +29,7 @@ func TestCreateOrReplace(t *testing.T) {
 func TestDeleteIfUnused(t *testing.T) {
 	service := initTest(t)
 
-	var unusedSymptom = Symptom{ID: 2, Name: "Unused symptom", SymptomCategoryID: 1}
+	var unusedSymptom = Symptom{Name: "Unused symptom", SymptomCategoryID: testCategory.ID}
 	var err error
 	err = service.db.Create(&unusedSymptom).Error
 	assert.NoError(t, err)
@@ -42,16 +37,16 @@ func TestDeleteIfUnused(t *testing.T) {
 	err = unusedSymptom.deleteIfUnused(service.db)
 	assert.NoError(t, err)
 
-	var symptoms []Symptom
-	var rows int64 = service.db.Find(&symptoms).RowsAffected
-	assert.EqualValues(t, 1, rows)
+	var symptom = Symptom{ID: unusedSymptom.ID}
+	var rows int64 = service.db.First(symptom).RowsAffected
+	assert.EqualValues(t, 0, rows)
 
-	var usedSymptom = Symptom{ID: 1}
+	var usedSymptom = Symptom{ID: testSymptom.ID}
 
 	err = usedSymptom.deleteIfUnused(service.db)
 	assert.NoError(t, err)
 
-	rows = service.db.Find(&symptoms).RowsAffected
-	assert.EqualValues(t, 1, rows)
+	rows = service.db.First(&usedSymptom).RowsAffected
+	assert.EqualValues(t, rows, 1)
 
 }

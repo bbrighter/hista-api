@@ -27,7 +27,7 @@ func TestGetConditionEventsAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
 
 	events, _ := service.GetConditionEvents(ctx)
-	assert.Len(t, events.ConditionEvents, 1)
+	assert.GreaterOrEqual(t, len(events.ConditionEvents), 1)
 }
 
 func TestGetConditionEventAPI(t *testing.T) {
@@ -35,9 +35,9 @@ func TestGetConditionEventAPI(t *testing.T) {
 
 	var event ConditionEventResponse
 	var err error
-	event, err = service.GetConditionEvent(ctx, 1)
+	event, err = service.GetConditionEvent(ctx, testEvent.ID)
 	assert.NoError(t, err)
-	assert.EqualValues(t, event.ID, 1)
+	assert.EqualValues(t, event.ID, testEvent.ID)
 
 	// Not found
 	_, err = service.GetConditionEvent(ctx, 1000)
@@ -50,15 +50,19 @@ func TestPatchDateAPI(t *testing.T) {
 
 	var err error
 	var params = ConditionEventRequestParams{Date: time.Now()}
-	err = service.PatchDate(ctx, 1, params)
+	err = service.PatchDate(ctx, testEvent.ID, params)
 	assert.NoError(t, err)
+
+	// Cleanup
+	params.Date = testEvent.Date
+	service.PatchDate(ctx, testEvent.ID, params)
 }
 
 func TestDeleteConditionEventAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
 
 	var err error
-	err = service.DeleteConditionEvent(ctx, 1)
+	err = service.DeleteConditionEvent(ctx, testEvent.ID)
 	assert.NoError(t, err)
 
 	// Not found

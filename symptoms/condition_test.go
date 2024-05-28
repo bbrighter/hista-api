@@ -9,10 +9,10 @@ import (
 func TestGetConditions(t *testing.T) {
 	service := initTest(t)
 
-	var conditions Conditions = getConditions(service, 1)
+	var conditions Conditions = getConditions(service, testEvent.ID)
 
-	assert.Len(t, conditions, 1)
-	assert.EqualValues(t, 1, conditions[0].Symptom.ID)
+	assert.GreaterOrEqual(t, len(conditions), 1)
+	assert.Equal(t, testCondition.ID, conditions[0].Symptom.ID)
 }
 
 func TestCreateConditionBySymptomName(t *testing.T) {
@@ -21,13 +21,13 @@ func TestCreateConditionBySymptomName(t *testing.T) {
 	var err error
 	var categories SymptomCategories
 
-	var condition = &Condition{Severity: High, ConditionEventID: 1}
+	var condition = &Condition{Severity: High, ConditionEventID: testEvent.ID}
 
 	categories, err = condition.createConditionBySymptomName(service, "Name", 1000)
 	assert.Error(t, err)
 
-	condition = &Condition{Severity: High, ConditionEventID: 1}
-	categories, err = condition.createConditionBySymptomName(service, "New Name", 1)
+	condition = &Condition{Severity: High, ConditionEventID: testEvent.ID}
+	categories, err = condition.createConditionBySymptomName(service, "New Name", testCategory.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, condition.Symptom.Name, "New Name")
 	assert.GreaterOrEqual(t, len(categories), 1)
@@ -42,11 +42,11 @@ func TestCreateConditionByID(t *testing.T) {
 
 	var err error
 
-	var condition = &Condition{SymptomID: 1, ConditionEventID: 100}
+	var condition = &Condition{SymptomID: 1, ConditionEventID: 10000}
 	err = condition.createConditionBySymptomID(service)
 	assert.Error(t, err)
 
-	condition = &Condition{SymptomID: 1, ConditionEventID: 1}
+	condition = &Condition{SymptomID: testSymptom.ID, ConditionEventID: testEvent.ID}
 
 	err = condition.createConditionBySymptomID(service)
 	assert.NoError(t, err)
@@ -64,15 +64,14 @@ func TestDeleteCondition(t *testing.T) {
 	err = condition.delete(service)
 	assert.Error(t, err)
 
-	condition = &Condition{ID: 1}
-	err = condition.delete(service)
+	err = testCondition.delete(service)
 	assert.NoError(t, err)
 }
 
 func TestChangeSeverity(t *testing.T) {
 	service := initTest(t)
 
-	var condition = &Condition{ID: 1}
+	var condition = &Condition{ID: testCondition.ID}
 	var err error = condition.changeSeverity(service, Low)
 	assert.NoError(t, err)
 	assert.Equal(t, Low, condition.Severity)
@@ -80,6 +79,10 @@ func TestChangeSeverity(t *testing.T) {
 	service.db.Find(condition)
 	assert.Equal(t, Low, condition.Severity)
 
+	// cleanup
+	condition.changeSeverity(service, High)
+
+	// Error
 	condition = &Condition{Severity: High, ConditionEventID: 1000}
 	err = condition.changeSeverity(service, VeryHigh)
 	assert.Error(t, err)

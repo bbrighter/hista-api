@@ -50,7 +50,10 @@ func (service Service) createFood(mealID uint, condition FoodCondition, ingredie
 }
 
 func (service Service) deleteFood(food Food) error {
-	service.db.Preload("Ingredient").Find(&food)
+	rows := service.db.Preload("Ingredient").Find(&food).RowsAffected
+	if rows == 0 {
+		return errors.ErrorNotFound
+	}
 	err := service.db.Transaction(func(tx *gorm.DB) error {
 		var foodIngredient = food.Ingredient
 		if err := tx.Delete(&food).Error; err != nil {
