@@ -55,9 +55,12 @@ func (service *Service) PostFood(ctx context.Context, mealId uint, params FoodPa
 }
 
 // encore:api auth method=DELETE path=/meal/:mealId/foods/:foodId
-func (service *Service) DeleteFood(ctx context.Context, mealId uint, foodId uint) error {
+func (service *Service) DeleteFood(ctx context.Context, mealId uint, foodId uint) (IngredientsResponse, error) {
 	var food = Food{ID: foodId, MealID: mealId}
-	return food.delete(service)
+	var err error
+	var ingredients Ingredients
+	ingredients, err = food.delete(service)
+	return ingredients.toIngredientsResponse(), err
 }
 
 type FoodConditionParams struct {

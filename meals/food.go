@@ -71,23 +71,25 @@ func (food *Food) createByID(service *Service) (Ingredients, error) {
 	return ingredients, nil
 }
 
-func (food *Food) delete(service *Service) error {
+func (food *Food) delete(service *Service) (Ingredients, error) {
+	var ingredients Ingredients
 	if food.ID == 0 {
-		return errors.ErrorIDMissing
+		return ingredients, errors.ErrorIDMissing
 	}
 	rows := service.db.Preload("Ingredient").Find(food).RowsAffected
 	if rows == 0 {
-		return errors.ErrorNotFound
+		return ingredients, errors.ErrorNotFound
 	}
-	err := service.db.Transaction(func(tx *gorm.DB) error {
+	var err error = service.db.Transaction(func(tx *gorm.DB) error {
 		var foodIngredient = food.Ingredient
 		if err := tx.Delete(food).Error; err != nil {
 			return err
 		}
 		return deleteIngredientIfUnused(tx, foodIngredient.ID)
 	})
+	service.db.Find(&ingredients)
 
-	return err
+	return ingredients, err
 }
 
 func (food *Food) changeCondition(service *Service, newCondition FoodCondition) error {

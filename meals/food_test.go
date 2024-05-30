@@ -26,7 +26,7 @@ func TestCreateFoodByName(t *testing.T) {
 	assert.GreaterOrEqual(t, len(ingredients), 1)
 
 	// Cleanup
-	err = food.delete(service)
+	_, err = food.delete(service)
 	assert.NoError(t, err)
 
 	// Food for non-existing meal
@@ -56,13 +56,15 @@ func TestDeleteFood(t *testing.T) {
 
 	var err error
 	var nonExistingFood, food Food
+	var ingredients Ingredients
 	food.ID = testFood.ID
-	err = food.delete(service)
+	ingredients, err = food.delete(service)
 	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, len(ingredients), 1)
 
 	// Test error
 	nonExistingFood.ID = 100000
-	err = nonExistingFood.delete(service)
+	_, err = nonExistingFood.delete(service)
 	assert.Error(t, err)
 }
 
