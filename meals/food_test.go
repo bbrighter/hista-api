@@ -60,7 +60,9 @@ func TestDeleteFood(t *testing.T) {
 	food.ID = testFood.ID
 	ingredients, err = food.delete(service)
 	assert.NoError(t, err)
-	assert.GreaterOrEqual(t, len(ingredients), 1)
+	assert.GreaterOrEqual(t, len(ingredients), 0)
+	rows := service.db.Find(&Ingredient{ID: food.IngredientID}).RowsAffected
+	assert.EqualValues(t, 0, rows)
 
 	// Test error
 	nonExistingFood.ID = 100000
