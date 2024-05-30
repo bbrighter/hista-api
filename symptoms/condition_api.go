@@ -7,8 +7,9 @@ import (
 )
 
 type ConditionRequestParams struct {
-	SymptomName string `json:"symptomName"`
-	CategoryID  uint   `json:"categoryId"`
+	SymptomName *string `json:"symptomName" encore:"optional"`
+	SymptomID   *uint   `json:"symptomId" encore:"optional"`
+	CategoryID  uint    `json:"categoryId"`
 }
 
 type PostConditionResponse struct {
@@ -19,8 +20,8 @@ type PostConditionResponse struct {
 // encore:api auth method=POST path=/condition-events/:eventId/conditions
 func (service *Service) PostCondition(ctx context.Context, eventId uint, params ConditionRequestParams) (PostConditionResponse, error) {
 	var resp PostConditionResponse
-	if params.SymptomName == "" {
-		return resp, errors.ErrorAttributeMustBeSet("symptomName")
+	if params.SymptomName == nil && params.SymptomID == nil {
+		return resp, errors.ErrorAttributeMustBeSet("symptomName or symptomId")
 	}
 	if params.CategoryID == 0 {
 		return resp, errors.ErrorAttributeMustBeSet("categoryId")
@@ -28,19 +29,20 @@ func (service *Service) PostCondition(ctx context.Context, eventId uint, params 
 	var err error
 	var symptoms SymptomCategories
 	var condition = Condition{ConditionEventID: eventId, Severity: Medium}
-	symptoms, err = condition.createConditionBySymptomName(service, params.SymptomName, params.CategoryID)
+	if params.SymptomName != nil {
+		symptoms, err = condition.createConditionBySymptomName(service, *params.SymptomName, params.CategoryID)
+		if err != nil {
+			return resp, err
+		}
+	} else if params.SymptomID != nil {
+		condition.SymptomID = *params.SymptomID
+		symptoms, err = condition.createConditionBySymptomID(service)
+		if err != nil {
+			return resp, err
+		}
+	}
 	resp.Condition = condition.toResponse()
 	resp.Symptoms = symptoms.toResponse()
-	return resp, err
-}
-
-// encore:api auth method=POST path=/condition-events/:eventId/conditions/symptoms/:symptomId
-func (service *Service) PostConditionBySymptomID(ctx context.Context, eventId uint, symptomId uint) (ConditionResponse, error) {
-	var condition = &Condition{SymptomID: symptomId, ConditionEventID: eventId}
-	if err := condition.createConditionBySymptomID(service); err != nil {
-		return ConditionResponse{}, err
-	}
-	var resp ConditionResponse = condition.toResponse()
 	return resp, nil
 }
 

@@ -58,20 +58,22 @@ func (condition *Condition) createConditionBySymptomName(service *Service, sympt
 
 // Create a new condition by SymptomID.
 // Requires a ConditionEventID and SymptomID
-func (condition *Condition) createConditionBySymptomID(service *Service) error {
+func (condition *Condition) createConditionBySymptomID(service *Service) (SymptomCategories, error) {
+	var symptoms SymptomCategories
 	if condition == nil {
-		return errors.ErrorNil
+		return symptoms, errors.ErrorNil
 	}
 	if condition.SymptomID == 0 {
-		return errors.ErrorAttributeMustBeSet("SymptomID")
+		return symptoms, errors.ErrorAttributeMustBeSet("SymptomID")
 	}
 	if condition.ConditionEventID == 0 {
-		return errors.ErrorAttributeMustBeSet("ConditionEventID")
+		return symptoms, errors.ErrorAttributeMustBeSet("ConditionEventID")
 	}
 	condition.Severity = Medium
 	var err error = service.db.Create(condition).Error
 	service.db.Preload(clause.Associations).Find(condition)
-	return err
+	symptoms = getSymptomCategories(service)
+	return symptoms, err
 }
 
 // Delete a condition. Must contain ID.

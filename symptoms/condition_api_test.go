@@ -6,20 +6,49 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// func TestPostCondition(t *testing.T) {
-// 	service, ctx, teardown := initAPITest(t)
-// 	service.testCreateConditionEvent(t)
-// 	defer teardown(t)
+func TestPostCondition(t *testing.T) {
+	service, ctx := initAPITest(t)
 
-// 	var params = ConditionRequestParams{
-// 		SymptomName: "new name",
-// 		CategoryID:  1,
-// 	}
-// 	var eventId uint = 1
-// 	_, err := service.PostCondition(ctx, eventId, params)
-// 	assert.NoError(t, err)
+	// by new name
+	name := "new name"
+	var paramsByName = ConditionRequestParams{
+		SymptomName: &name,
+		CategoryID:  testCategory.ID,
+	}
+	resp, err := service.PostCondition(ctx, testEvent.ID, paramsByName)
+	assert.NoError(t, err)
 
-// }
+	// cleanup
+	err = service.db.Delete(&Condition{ID: resp.Condition.ID}).Error
+	assert.NoError(t, err)
+	err = service.db.Delete(&Symptom{ID: resp.Condition.Symptom.ID}).Error
+	assert.NoError(t, err)
+
+	// by existing id
+	var paramsById = ConditionRequestParams{
+		SymptomID:  &testSymptom.ID,
+		CategoryID: testCategory.ID,
+	}
+	resp, err = service.PostCondition(ctx, testEvent.ID, paramsById)
+	assert.NoError(t, err)
+
+	// cleanup
+	err = service.db.Delete(&Condition{ID: resp.Condition.ID}).Error
+	assert.NoError(t, err)
+
+	// error checks
+	var paramsErrorNoCondition = ConditionRequestParams{
+		CategoryID: 1,
+	}
+	_, err = service.PostCondition(ctx, testEvent.ID, paramsErrorNoCondition)
+	assert.Error(t, err)
+
+	var paramsErrorNoCategory = ConditionRequestParams{
+		SymptomID: &testSymptom.ID,
+	}
+	_, err = service.PostCondition(ctx, testEvent.ID, paramsErrorNoCategory)
+	assert.Error(t, err)
+}
 
 // func TestPostConditionBySymptomID(t *testing.T) {
 // 	service, ctx, teardown := initAPITest(t)

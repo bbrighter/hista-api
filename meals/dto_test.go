@@ -29,6 +29,23 @@ func TestToIngredientsResponse(t *testing.T) {
 	assert.Equal(t, "Name", resp.Ingredients[0].Name)
 }
 
+func TestFoodToFoodResponse(t *testing.T) {
+	t.Parallel()
+	var food = Food{
+		ID:           1,
+		Ingredient:   Ingredient{ID: 10, Name: "Name"},
+		IngredientID: 10,
+		Condition:    Cooked,
+		MealID:       100,
+	}
+	var resp FoodResponse = food.toFoodResponse()
+
+	assert.Equal(t, uint(1), resp.ID)
+	assert.Equal(t, uint(10), resp.Ingredient.ID)
+	assert.Equal(t, "Name", resp.Ingredient.Name)
+	assert.Equal(t, Cooked, resp.Condition)
+}
+
 func TestFoodsToFoodsResponse(t *testing.T) {
 	t.Parallel()
 	var food1 = Food{
