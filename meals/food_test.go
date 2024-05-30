@@ -10,38 +10,61 @@ func TestGetFood(t *testing.T) {
 	service := initTest(t)
 
 	var foods []Food
-	foods = service.getFoods(testMeal.ID)
+	foods = getFoods(service, testMeal.ID)
 	assert.GreaterOrEqual(t, len(foods), 1)
 }
 
-func TestCreateFood(t *testing.T) {
+func TestCreateFoodByName(t *testing.T) {
 	service := initTest(t)
 
 	var err error
+	var food = &Food{MealID: testMeal.ID}
+	var ingredients Ingredients
 
-	// Food for non-existing meal
-	_, err = service.createFood(100, Cooked, "Meal doesn't exist")
-	assert.Error(t, err)
-
-	// Valid food
-	var food Food
-	food, err = service.createFood(testMeal.ID, Cooked, "New name")
+	ingredients, err = food.createByName(service, "New name")
 	assert.NoError(t, err)
-	assert.Equal(t, "New name", food.Ingredient.Name)
+	assert.GreaterOrEqual(t, len(ingredients), 1)
 
 	// Cleanup
-	service.deleteFood(food)
+	_, err = food.delete(service)
+	assert.NoError(t, err)
+
+	// Food for non-existing meal
+	var nonExistingFood = &Food{MealID: 10000}
+	_, err = nonExistingFood.createByName(service, "New name 2")
+
+	assert.Error(t, err)
+}
+
+func TestCreateFoodById(t *testing.T) {
+	service := initTest(t)
+
+	var food = &Food{MealID: testMeal.ID, IngredientID: testFood.IngredientID}
+	var ingredients Ingredients
+	var err error
+	ingredients, err = food.createByID(service)
+	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, len(ingredients), 1)
+
+	// Cleanup
+	err = service.db.Delete(&food).Error
+	assert.NoError(t, err)
 }
 
 func TestDeleteFood(t *testing.T) {
 	service := initTest(t)
-	service.initData()
 
 	var err error
-	err = service.deleteFood(Food{ID: testFood.ID})
+	var nonExistingFood, food Food
+	var ingredients Ingredients
+	food.ID = testFood.ID
+	ingredients, err = food.delete(service)
 	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, len(ingredients), 1)
 
-	err = service.deleteFood(Food{ID: 100000})
+	// Test error
+	nonExistingFood.ID = 100000
+	_, err = nonExistingFood.delete(service)
 	assert.Error(t, err)
 }
 
@@ -49,10 +72,11 @@ func TestChangeFoodCondition(t *testing.T) {
 	service := initTest(t)
 
 	var err error
-	err = service.changeFoodCondition(*testFood, Raw)
+	err = testFood.changeCondition(service, Raw)
 	assert.NoError(t, err)
 
-	err = service.changeFoodCondition(Food{ID: 100}, Raw)
+	var nonExistingFood = &Food{ID: 10000}
+	err = nonExistingFood.changeCondition(service, Raw)
 	assert.Error(t, err)
 }
 

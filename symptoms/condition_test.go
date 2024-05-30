@@ -43,13 +43,15 @@ func TestCreateConditionByID(t *testing.T) {
 	var err error
 
 	var condition = &Condition{SymptomID: 1, ConditionEventID: 10000}
-	err = condition.createConditionBySymptomID(service)
+	_, err = condition.createConditionBySymptomID(service)
 	assert.Error(t, err)
 
 	condition = &Condition{SymptomID: testSymptom.ID, ConditionEventID: testEvent.ID}
 
-	err = condition.createConditionBySymptomID(service)
+	var symptoms SymptomCategories
+	symptoms, err = condition.createConditionBySymptomID(service)
 	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, len(symptoms), 1)
 
 	// clean up
 	err = condition.delete(service)

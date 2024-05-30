@@ -22,50 +22,80 @@ const (
 	Cooked FoodCondition = "cooked"
 )
 
-func (service Service) getFoods(mealID uint) Foods {
+func getFoods(service *Service, mealID uint) Foods {
 	var foods []Food
 	service.db.Where(&Food{MealID: mealID}).Preload(clause.Associations).Find(&foods)
 	return foods
 }
 
-func (service Service) createFood(mealID uint, condition FoodCondition, ingredientName string) (Food, error) {
-	if rows := service.db.Find(&Meal{ID: mealID}).RowsAffected; rows == 0 {
-		return Food{}, errors.ErrorNotFound
+func (food *Food) createByName(service *Service, ingredientName string) (Ingredients, error) {
+	var ingredients Ingredients
+	if food.MealID == 0 {
+		return ingredients, errors.ErrorAttributeMustBeSet("MealID")
+	}
+	if rows := service.db.Find(&Meal{ID: food.MealID}).RowsAffected; rows == 0 {
+		return ingredients, errors.ErrorNotFound
 	}
 	var ingredient Ingredient
 	var err error
-	var food Food
 	ingredient, err = service.createOrReplaceIngredient(ingredientName)
 	if err != nil {
-		return food, err
+		return ingredients, err
 	}
-	food = Food{
-		Ingredient: ingredient,
-		Condition:  condition,
-		MealID:     mealID,
+	food.Ingredient = ingredient
+	if err := service.db.Create(food).Error; err != nil {
+		return ingredients, err
 	}
-	err = service.db.Create(&food).Error
-
-	return food, err
+	service.db.Find(&ingredients)
+	return ingredients, nil
 }
 
-func (service Service) deleteFood(food Food) error {
-	rows := service.db.Preload("Ingredient").Find(&food).RowsAffected
-	if rows == 0 {
-		return errors.ErrorNotFound
+// Create food.
+// MealID and IngredientID  must be set.
+func (food *Food) createByID(service *Service) (Ingredients, error) {
+	var ingredients Ingredients
+	if food.MealID == 0 {
+		return ingredients, errors.ErrorAttributeMustBeSet("MealID")
 	}
-	err := service.db.Transaction(func(tx *gorm.DB) error {
+	if rows := service.db.Find(&Meal{ID: food.MealID}).RowsAffected; rows == 0 {
+		return ingredients, errors.ErrorNotFound
+	}
+	if food.IngredientID == 0 {
+		return ingredients, errors.ErrorAttributeMustBeSet("IngredientID")
+	}
+	if err := service.db.Create(food).Error; err != nil {
+		return ingredients, err
+	}
+	service.db.Preload(clause.Associations).First(food)
+	service.db.Find(&ingredients)
+	return ingredients, nil
+}
+
+func (food *Food) delete(service *Service) (Ingredients, error) {
+	var ingredients Ingredients
+	if food.ID == 0 {
+		return ingredients, errors.ErrorIDMissing
+	}
+	rows := service.db.Preload("Ingredient").Find(food).RowsAffected
+	if rows == 0 {
+		return ingredients, errors.ErrorNotFound
+	}
+	var err error = service.db.Transaction(func(tx *gorm.DB) error {
 		var foodIngredient = food.Ingredient
-		if err := tx.Delete(&food).Error; err != nil {
+		if err := tx.Delete(food).Error; err != nil {
 			return err
 		}
 		return deleteIngredientIfUnused(tx, foodIngredient.ID)
 	})
+	service.db.Find(&ingredients)
 
-	return err
+	return ingredients, err
 }
 
-func (service Service) changeFoodCondition(food Food, newCondition FoodCondition) error {
+func (food *Food) changeCondition(service *Service, newCondition FoodCondition) error {
+	if food.ID == 0 {
+		return errors.ErrorIDMissing
+	}
 	food.Condition = newCondition
 	tx := service.db.Where(&Food{ID: food.ID}).Updates(Food{Condition: newCondition})
 	if tx.RowsAffected == 0 {

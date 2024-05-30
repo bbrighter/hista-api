@@ -17,15 +17,18 @@ func (ingredients Ingredients) toIngredientsResponse() IngredientsResponse {
 	return IngredientsResponse{resps}
 }
 
+func (food Food) toFoodResponse() FoodResponse {
+	return FoodResponse{
+		ID:         food.ID,
+		Ingredient: food.Ingredient.toIngredientResponse(),
+		Condition:  food.Condition,
+	}
+}
+
 func (foods Foods) toFoodsResponse() []FoodResponse {
 	var foodsResponse = []FoodResponse{}
 	for _, f := range foods {
-		foodsResponse = append(foodsResponse,
-			FoodResponse{
-				ID:         f.ID,
-				Ingredient: f.Ingredient.toIngredientResponse(),
-				Condition:  f.Condition,
-			})
+		foodsResponse = append(foodsResponse, f.toFoodResponse())
 	}
 	return foodsResponse
 }
