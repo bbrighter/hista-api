@@ -3,8 +3,6 @@ package meals
 import (
 	"context"
 	"time"
-
-	"encore.dev/beta/errs"
 )
 
 type MealMetaResponse struct {
@@ -13,9 +11,12 @@ type MealMetaResponse struct {
 }
 
 type MealResponse struct {
-	ID    uint           `json:"id"`
-	Date  time.Time      `json:"date"`
-	Foods []FoodResponse `json:"foods"`
+	ID          uint           `json:"id"`
+	Date        time.Time      `json:"date"`
+	Freshness   Freshness      `json:"freshness"`
+	StressLevel uint8          `json:"stressLevel"`
+	IsAlone     bool           `json:"isAlone"`
+	Foods       []FoodResponse `json:"foods"`
 }
 
 type MealsResponse struct {
@@ -23,36 +24,49 @@ type MealsResponse struct {
 }
 
 // encore:api auth method=GET path=/meals
-func (service Service) GetMeals(ctx context.Context) (MealsResponse, error) {
-	meals, err := service.getMeals()
+func (service *Service) GetMeals(ctx context.Context) (MealsResponse, error) {
+	var meals = new(Meals)
+	var err error = meals.get(service)
 	return meals.toMealsResponse(), err
 }
 
 type MealParams struct {
-	Date time.Time `json:"date"`
+	Date        *time.Time `json:"date" encore:"optional"`
+	Freshness   *Freshness `json:"freshness" encore:"optional"`
+	StressLevel *uint8     `json:"stressLevel" encore:"optional"`
+	IsAlone     *bool      `json:"isAlone" encore:"optional"`
 }
 
 // encore:api auth method=POST path=/meals
-func (service Service) PostMeal(ctx context.Context, params MealParams) (IDResponse, error) {
-	id, err := service.createMeal(params.Date)
-	if err != nil {
-		return IDResponse{ID: id}, &errs.Error{Code: errs.InvalidArgument, Message: "IngredientID provided but not in database", Details: errs.Details(err)}
-	}
-	return IDResponse{ID: id}, err
+func (service *Service) PostMeal(ctx context.Context, params MealParams) (IDResponse, error) {
+	var meal = Meal{Date: *params.Date}
+	var err error
+	err = meal.create(service)
+	return IDResponse{ID: meal.ID}, err
 }
 
 // encore:api auth method=GET path=/meals/:id
-func (service Service) GetMeal(ctx context.Context, id uint) (MealResponse, error) {
-	meal, err := service.getMeal(id)
+func (service *Service) GetMeal(ctx context.Context, id uint) (MealResponse, error) {
+	var meal = Meal{ID: id}
+	var err error = meal.get(service)
 	return meal.toMealResponse(), err
 }
 
 // encore:api auth method=DELETE path=/meals/:id
-func (service Service) DeleteMeal(ctx context.Context, id uint) error {
-	return service.deleteMeal(id)
+func (service *Service) DeleteMeal(ctx context.Context, id uint) error {
+	var meal = Meal{ID: id}
+	return meal.delete(service)
 }
 
 // encore:api auth method=PATCH path=/meals/:id
-func (service Service) PatchMealTime(ctx context.Context, id uint, params MealParams) error {
-	return service.db.Model(&Meal{ID: id}).Update("date", params.Date).Error
+func (service *Service) PatchMeal(ctx context.Context, id uint, params MealParams) error {
+	var meal = Meal{ID: id}
+
+	var patchParams = PatchParams{
+		Date:        params.Date,
+		StressLevel: params.StressLevel,
+		IsAlone:     params.IsAlone,
+		Freshness:   params.Freshness,
+	}
+	return meal.patch(service, patchParams)
 }

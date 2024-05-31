@@ -51,9 +51,12 @@ func (meal Meal) toMealResponse() MealResponse {
 			})
 	}
 	var resp = MealResponse{
-		ID:    meal.ID,
-		Date:  meal.Date,
-		Foods: Foods(meal.Foods).toFoodsResponse(),
+		ID:          meal.ID,
+		Date:        meal.Date,
+		Foods:       Foods(meal.Foods).toFoodsResponse(),
+		Freshness:   meal.Freshness,
+		StressLevel: meal.StressLevel,
+		IsAlone:     meal.IsAlone,
 	}
 	return resp
 }

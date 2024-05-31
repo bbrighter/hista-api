@@ -32,14 +32,14 @@ func initTest(t *testing.T) *Service {
 
 func (service *Service) initData() {
 	var meal = meals.Meal{Date: time.Date(2021, 1, 1, 1, 0, 0, 0, time.Local)}
-	service.db.Debug().FirstOrCreate(&meal, &meal)
+	service.db.FirstOrCreate(&meal, &meal)
 	var ingredient = meals.Ingredient{Name: "statistics_ingredient"}
 	service.db.FirstOrCreate(&ingredient, &ingredient)
 	var food = meals.Food{IngredientID: ingredient.ID, MealID: meal.ID, Condition: meals.Cooked}
 	service.db.FirstOrCreate(&food, &food)
 
 	var event = symptoms.ConditionEvent{Date: time.Date(2021, 1, 1, 3, 0, 0, 0, time.Local)}
-	service.db.Debug().FirstOrCreate(&event, &event)
+	service.db.FirstOrCreate(&event, &event)
 	var symptomCategory = symptoms.SymptomCategory{Name: "statistics_category"}
 	service.db.FirstOrCreate(&symptomCategory, &symptomCategory)
 	var symptom = symptoms.Symptom{Name: "statistics_symptom", SymptomCategoryID: symptomCategory.ID}
