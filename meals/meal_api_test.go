@@ -19,15 +19,13 @@ func TestGetMealsAPI(t *testing.T) {
 func TestPostMealAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	var params = MealParams{Date: time.Now()}
+	var now = time.Now()
+	var params = MealParams{Date: &now}
 	resp, err := service.PostMeal(ctx, params)
+	defer service.DeleteMeal(ctx, resp.ID)
 
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, resp.ID, uint(1))
-
-	// Cleanup
-	err = service.deleteMeal(resp.ID)
-	assert.NoError(t, err)
 }
 
 func TestGetMealAPI(t *testing.T) {
@@ -50,23 +48,28 @@ func TestDeleteMealAPI(t *testing.T) {
 	err = service.DeleteMeal(ctx, 10000)
 	assert.Error(t, err)
 
-	var id uint
-	id, err = service.createMeal(time.Now())
-	assert.NoError(t, err)
-	err = service.DeleteMeal(ctx, id)
+	err = service.DeleteMeal(ctx, testMeal.ID)
 	assert.NoError(t, err)
 }
 
-func TestPatchMealTimeAPI(t *testing.T) {
+func TestPatchMealAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
-	service.initData()
 
-	var id uint
+	var meal = Meal{ID: testMeal.ID}
+	defer service.DeleteMeal(ctx, testMeal.ID)
+
+	var params MealParams
+	var now time.Time = time.Now()
+	params.Date = &now
 	var err error
-	id, err = service.createMeal(time.Now())
-	var params = MealParams{Date: time.Now()}
-	service.PatchMealTime(ctx, id, params)
+	err = service.PatchMeal(ctx, meal.ID, params)
 	assert.NoError(t, err)
 
-	service.deleteMeal(id)
+	var stressLevel uint8 = 2
+	params.StressLevel = &stressLevel
+	err = service.PatchMeal(ctx, meal.ID, params)
+	assert.NoError(t, err)
+
+	err = service.PatchMeal(ctx, 10000, params)
+	assert.Error(t, err)
 }

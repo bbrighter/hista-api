@@ -14,7 +14,7 @@ type SymptomsResult struct {
 
 func countFoodBySymptoms(service *Service, fromDate time.Time, toDate time.Time, symptomIds []uint) ([]SymptomsResult, error) {
 	var result []SymptomsResult
-	subquery := service.db.Debug().Select(
+	subquery := service.db.Select(
 		"foods.ingredient_id as ingredient_id",
 		"foods.condition as food_condition",
 		"meals.id as meal_id",
@@ -89,7 +89,7 @@ type FoodResult struct {
 
 func countSymptomsByFood(service *Service, fromDate time.Time, toDate time.Time, ingredientIds []uint) ([]FoodResult, error) {
 	var result []FoodResult
-	subquery := service.db.Debug().Select(
+	subquery := service.db.Select(
 		"conditions.symptom_id as symptom_id",
 		"conditions.severity as severity",
 		"condition_events.id as condition_event_id",

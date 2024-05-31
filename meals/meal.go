@@ -8,49 +8,100 @@ import (
 	"gorm.io/gorm"
 )
 
+type Freshness uint8
+
+const (
+	Fresh   Freshness = 0
+	SameDay Freshness = 1
+	Older   Freshness = 2
+)
+
 type Meal struct {
-	ID    uint
-	Date  time.Time
-	Foods []Food `gorm:"constraint:OnDelete:CASCADE"`
+	ID          uint
+	Date        time.Time
+	Freshness   Freshness
+	StressLevel uint8
+	IsAlone     bool
+	Foods       []Food `gorm:"constraint:OnDelete:CASCADE"`
 }
 
 type Meals []Meal
 
-func (service Service) createMeal(date time.Time) (uint, error) {
-	var meal = Meal{Date: date}
-	service.db.Create(&meal)
-	return meal.ID, nil
+func (meals *Meals) get(service *Service) error {
+	return service.db.Find(meals).Error
 }
 
-func (service Service) getMeals() (Meals, error) {
-	var meals []Meal
-	var err error = service.db.Find(&meals).Error
-	return meals, err
-}
-
-func (service Service) getMeal(id uint) (Meal, error) {
-	var meal = Meal{ID: id}
-	if service.db.Preload("Foods.Ingredient").Preload("Foods").Find(&meal).RowsAffected == 0 {
-		return Meal{}, &errs.Error{Code: errs.NotFound}
+func (meal *Meal) create(service *Service) error {
+	if meal.Date.IsZero() {
+		meal.Date = time.Now()
 	}
-	return meal, nil
+	return service.db.Create(&meal).Error
 }
 
-func (service Service) deleteMeal(mealId uint) error {
-	if service.db.Find(&Meal{ID: mealId}).RowsAffected == 0 {
+func (meal *Meal) get(service *Service) error {
+	if meal.ID == 0 {
+		return errors.ErrorIDMissing
+	}
+	if service.db.Preload("Foods.Ingredient").Preload("Foods").Find(&meal).RowsAffected == 0 {
+		return &errs.Error{Code: errs.NotFound}
+	}
+	return nil
+}
+
+func (meal *Meal) delete(service *Service) error {
+	if meal.ID == 0 {
+		return errors.ErrorIDMissing
+	}
+	if service.db.Find(&Meal{ID: meal.ID}).RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}
 	return service.db.Transaction(func(tx *gorm.DB) error {
 		var foods []Food
-		tx.Where(&Food{MealID: mealId}).Find(&foods)
-		if err := tx.Delete(&Food{}, Food{MealID: mealId}).Error; err != nil {
+		tx.Where(&Food{MealID: meal.ID}).Find(&foods)
+		if err := tx.Delete(&Food{}, Food{MealID: meal.ID}).Error; err != nil {
 			return err
 		}
 		for _, food := range foods {
 			deleteIngredientIfUnused(tx, food.IngredientID)
 		}
-		return tx.Delete(&Meal{ID: mealId}).Error
+		return tx.Delete(&Meal{ID: meal.ID}).Error
 	})
+}
+
+type PatchParams struct {
+	Date        *time.Time
+	Freshness   *Freshness
+	StressLevel *uint8
+	IsAlone     *bool
+}
+
+// Patch a meal with parameters. Only given parameters are patched.
+func (meal *Meal) patch(service *Service, params PatchParams) error {
+	if meal.ID == 0 {
+		return errors.ErrorIDMissing
+	}
+	if rows := service.db.First(&meal, &Meal{ID: meal.ID}).RowsAffected; rows == 0 {
+		return errors.ErrorNotFound
+	}
+	tx := service.db.Model(&Meal{ID: meal.ID})
+	var updates = make(map[string]interface{})
+	if params.Date != nil {
+		meal.Date = *params.Date
+		updates["date"] = *params.Date
+	}
+	if params.Freshness != nil {
+		meal.Freshness = *params.Freshness
+		updates["freshness"] = *params.Freshness
+	}
+	if params.StressLevel != nil {
+		meal.StressLevel = *params.StressLevel
+		updates["stress_level"] = *params.StressLevel
+	}
+	if params.IsAlone != nil {
+		meal.IsAlone = *params.IsAlone
+		updates["is_alone"] = *params.IsAlone
+	}
+	return tx.Updates(updates).Error
 }
 
 func GetMealsAndDependencies(db *gorm.DB) (Meals, error) {

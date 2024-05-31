@@ -83,8 +83,11 @@ func TestToMealResponse(t *testing.T) {
 	t.Parallel()
 
 	var meal = Meal{
-		ID:   1,
-		Date: time.Date(2020, 1, 31, 12, 0, 0, 0, time.UTC),
+		ID:          1,
+		Date:        time.Date(2020, 1, 31, 12, 0, 0, 0, time.UTC),
+		Freshness:   Fresh,
+		StressLevel: 2,
+		IsAlone:     true,
 		Foods: []Food{{
 			ID:           1,
 			Ingredient:   Ingredient{ID: 10, Name: "Ingredient"},
@@ -99,6 +102,9 @@ func TestToMealResponse(t *testing.T) {
 	assert.EqualValues(t, 1, resp.ID)
 	assert.Equal(t, time.Date(2020, 1, 31, 12, 0, 0, 0, time.UTC), resp.Date)
 	assert.Len(t, resp.Foods, 1)
+	assert.Equal(t, Fresh, resp.Freshness)
+	assert.True(t, resp.IsAlone)
+	assert.Equal(t, uint8(2), resp.StressLevel)
 	food := resp.Foods[0]
 	assert.EqualValues(t, 1, food.ID)
 	assert.Equal(t, Cooked, food.Condition)

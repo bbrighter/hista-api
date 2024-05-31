@@ -26,7 +26,12 @@ func initTest(t *testing.T) *Service {
 }
 
 func (service *Service) initData() {
-	var meal = &Meal{Date: time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local)}
+	var meal = &Meal{
+		Date:        time.Date(2020, 1, 1, 0, 0, 0, 0, time.Local),
+		Freshness:   Fresh,
+		StressLevel: 3,
+		IsAlone:     true,
+	}
 	service.db.FirstOrCreate(&meal, &meal)
 	var ingredient = &Ingredient{Name: "Ingredient"}
 	service.db.FirstOrCreate(&ingredient, &ingredient)
