@@ -10,6 +10,7 @@ import (
 	"encore.app/internalAuth"
 	"encore.app/meals"
 	"encore.app/notes"
+	"encore.app/pollen"
 	"encore.app/symptoms"
 )
 
@@ -25,6 +26,7 @@ var models = []any{
 	&internalAuth.Token{},
 	&internalAuth.User{},
 	&notes.Note{},
+	&pollen.Pollen{},
 }
 
 func main() {
