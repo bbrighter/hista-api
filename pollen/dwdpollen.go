@@ -65,7 +65,6 @@ func getKarlsruheData(dwd DWD, partregion PartRegion) (DWDPollen, error) {
 		if con.PartregionID == int(partregion) {
 			index = i
 			found = true
-			println("ambrosio", i, found, con.Pollen.Graeser.Today)
 		}
 	}
 	if !found {

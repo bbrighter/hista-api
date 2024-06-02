@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"encore.app/errors"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -16,12 +17,12 @@ type Note struct {
 type Notes []Note
 
 // Create a new note with date = now
-func createNote(service *Service) Note {
-	var note = Note{
-		Date: time.Now(),
+func (note *Note) createNote(service *Service) error {
+	if note == nil {
+		note = new(Note)
 	}
-	service.db.Create(&note)
-	return note
+	note.Date = time.Now()
+	return service.db.Create(&note).Error
 }
 
 // Get all notes including text
@@ -63,4 +64,10 @@ func (note Note) delete(service *Service) error {
 		return errors.ErrorNotFound
 	}
 	return tx.Error
+}
+
+func FindAllNotes(db *gorm.DB) Notes {
+	var notes Notes
+	db.Find(&notes)
+	return notes
 }

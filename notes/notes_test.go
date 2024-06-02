@@ -11,7 +11,10 @@ func TestCreateNote(t *testing.T) {
 	service, teardown := initTest(t)
 	defer teardown(t)
 
-	var note Note = createNote(service)
+	var note Note
+	var err error
+	err = note.createNote(service)
+	assert.NoError(t, err)
 	assert.True(t, note.Date.Before(time.Now()))
 }
 
@@ -25,7 +28,8 @@ func TestGetNotes(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, notes, 0)
 
-	createNote(service)
+	var note Note
+	note.createNote(service)
 	notes, err = getNotes(service)
 	assert.NoError(t, err)
 	assert.Len(t, notes, 1)
@@ -37,7 +41,7 @@ func TestPatchNote(t *testing.T) {
 
 	var note, newNote, nonExistingNote, noIDNote Note
 	var err error
-	note = createNote(service)
+	note.createNote(service)
 	newNote, err = note.patch(service, nil, nil)
 	assert.NoError(t, err)
 	assert.True(t, note.Date.Truncate(time.Second).Equal(newNote.Date.Truncate(time.Second)))
@@ -78,7 +82,7 @@ func TestDeleteNote(t *testing.T) {
 	defer teardown(t)
 
 	var note, noIDNote Note
-	note = createNote(service)
+	note.createNote(service)
 
 	var err error
 	err = note.delete(service)

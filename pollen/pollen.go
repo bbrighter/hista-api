@@ -2,6 +2,8 @@ package pollen
 
 import (
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type PollenLoad uint
@@ -15,6 +17,27 @@ const (
 	MediumToHigh  PollenLoad = 6
 	High          PollenLoad = 7
 )
+
+func (load PollenLoad) String() string {
+	var loadString string
+	switch load {
+	case No:
+		loadString = "Keine"
+	case NoToSmall:
+		loadString = "Keine bis geringe"
+	case Small:
+		loadString = "Geringe"
+	case SmallToMedium:
+		loadString = "Geringe bis mittlere"
+	case Medium:
+		loadString = "Mittlere"
+	case MediumToHigh:
+		loadString = "Mittlere bis hohe"
+	case High:
+		loadString = "Hohe"
+	}
+	return loadString
+}
 
 func (intensity PollenIntensitiy) toPollenLoad() PollenLoad {
 	switch intensity.Today {
@@ -48,6 +71,8 @@ type Pollen struct {
 	Esche     PollenLoad
 }
 
+type Pollens []Pollen
+
 func (dwd DWD) toPollen() (Pollen, error) {
 	var err error
 	var karlsruhePollen DWDPollen
@@ -76,4 +101,14 @@ func (pollen *Pollen) writeToDatabase(service *Service, dwdLastUpdated time.Time
 		return service.db.Create(&pollen).Error
 	}
 	return nil
+}
+
+func FindPollenWithSeverity(db *gorm.DB) Pollens {
+	var pollens Pollens
+	db.Debug().Where("roggen > 1").Or("ambrosia > 1").
+		Or("erle > 1").Or("beifuss > 1").
+		Or("birke > 1").Or("graeser > 1").
+		Or("hasel > 1").Or("esche > 1").
+		Find(&pollens)
+	return pollens
 }
