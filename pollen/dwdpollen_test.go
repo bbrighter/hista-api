@@ -41,7 +41,6 @@ func TestParseRespToDWD(t *testing.T) {
 }
 
 func TestAPICall(t *testing.T) {
-	t.Skip()
 	_, err := callDWDAPI()
 	assert.NoError(t, err)
 }
