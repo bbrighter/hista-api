@@ -25,7 +25,13 @@ func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
 	}
 	notes := notes.FindAllNotes(service.db)
 	pollens := pollen.FindPollenWithSeverity(service.db)
-	var input = Input{Meals: meals, Events: events, Categories: cats, Notes: notes, Pollens: pollens}
+	var input = Input{
+		Meals:      meals,
+		Events:     events,
+		Categories: cats,
+		Notes:      notes,
+		Pollens:    pollens,
+	}
 	diaries := createRawDiary(input)
 	return DiaryResp{Diaries: diaries}, nil
 }

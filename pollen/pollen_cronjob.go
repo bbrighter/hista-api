@@ -31,10 +31,11 @@ func (service *Service) UpdatePollen(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	var pollen Pollen
-	pollen, err = dwd.toPollen()
+	var pollens Pollens
+	pollens, err = dwd.Pollens()
 	if err != nil {
 		return err
 	}
-	return pollen.writeToDatabase(service, lastUpdatedAt)
+	var event = PollenEvent{Pollens: pollens}
+	return event.create(service, lastUpdatedAt)
 }

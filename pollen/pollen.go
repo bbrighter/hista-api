@@ -4,21 +4,35 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-type PollenLoad uint
+type PollenIntensity uint
 
 const (
-	No            PollenLoad = 1
-	NoToSmall     PollenLoad = 2
-	Small         PollenLoad = 3
-	SmallToMedium PollenLoad = 4
-	Medium        PollenLoad = 5
-	MediumToHigh  PollenLoad = 6
-	High          PollenLoad = 7
+	No            PollenIntensity = 1
+	NoToSmall     PollenIntensity = 2
+	Small         PollenIntensity = 3
+	SmallToMedium PollenIntensity = 4
+	Medium        PollenIntensity = 5
+	MediumToHigh  PollenIntensity = 6
+	High          PollenIntensity = 7
 )
 
-func (load PollenLoad) String() string {
+type PollenType string
+
+const (
+	Roggen   PollenType = "Roggen"
+	Ambrosia PollenType = "Ambrosia"
+	Erle     PollenType = "Erle"
+	Beifuss  PollenType = "Beifuss"
+	Birke    PollenType = "Birke"
+	Graeser  PollenType = "Gräser"
+	Hasel    PollenType = "Hasel"
+	Esche    PollenType = "Esche"
+)
+
+func (load PollenIntensity) String() string {
 	var loadString string
 	switch load {
 	case No:
@@ -39,76 +53,57 @@ func (load PollenLoad) String() string {
 	return loadString
 }
 
-func (intensity PollenIntensitiy) toPollenLoad() PollenLoad {
-	switch intensity.Today {
-	case "0":
-		return No
-	case "0-1":
-		return NoToSmall
-	case "1":
-		return Small
-	case "1-2":
-		return SmallToMedium
-	case "2":
-		return Medium
-	case "2-3":
-		return MediumToHigh
-	default:
-		return High
-	}
+type PollenEvent struct {
+	ID        uint
+	CreatedAt time.Time
+	Pollens   Pollens
 }
 
 type Pollen struct {
-	ID        uint
-	CreatedAt time.Time
-	Roggen    PollenLoad
-	Ambrosia  PollenLoad
-	Erle      PollenLoad
-	Beifuss   PollenLoad
-	Birke     PollenLoad
-	Graeser   PollenLoad
-	Hasel     PollenLoad
-	Esche     PollenLoad
+	ID            uint
+	PollenEventID uint
+	Type          PollenType
+	Intensity     PollenIntensity
 }
 
 type Pollens []Pollen
 
-func (dwd DWD) toPollen() (Pollen, error) {
+func (dwd DWD) Pollens() (Pollens, error) {
 	var err error
 	var karlsruhePollen DWDPollen
-	karlsruhePollen, err = getKarlsruheData(dwd, Oberrhein)
+	karlsruhePollen, err = dwd.getKarlsruheData(Oberrhein)
 	if err != nil {
-		return Pollen{}, err
+		return Pollens{}, err
 	}
-	return Pollen{
-		Roggen:   karlsruhePollen.Roggen.toPollenLoad(),
-		Ambrosia: karlsruhePollen.Ambrosia.toPollenLoad(),
-		Erle:     karlsruhePollen.Erle.toPollenLoad(),
-		Beifuss:  karlsruhePollen.Beifuss.toPollenLoad(),
-		Birke:    karlsruhePollen.Birke.toPollenLoad(),
-		Graeser:  karlsruhePollen.Graeser.toPollenLoad(),
-		Hasel:    karlsruhePollen.Hasel.toPollenLoad(),
-		Esche:    karlsruhePollen.Esche.toPollenLoad(),
+	return Pollens{
+		Pollen{Type: Ambrosia, Intensity: karlsruhePollen.Ambrosia.PollenIntensity()},
+		Pollen{Type: Roggen, Intensity: karlsruhePollen.Roggen.PollenIntensity()},
+		Pollen{Type: Erle, Intensity: karlsruhePollen.Erle.PollenIntensity()},
+		Pollen{Type: Beifuss, Intensity: karlsruhePollen.Beifuss.PollenIntensity()},
+		Pollen{Type: Birke, Intensity: karlsruhePollen.Birke.PollenIntensity()},
+		Pollen{Type: Graeser, Intensity: karlsruhePollen.Graeser.PollenIntensity()},
+		Pollen{Type: Hasel, Intensity: karlsruhePollen.Hasel.PollenIntensity()},
+		Pollen{Type: Esche, Intensity: karlsruhePollen.Esche.PollenIntensity()},
 	}, nil
 }
 
-func (pollen *Pollen) writeToDatabase(service *Service, dwdLastUpdated time.Time) error {
+func (pollenEvent *PollenEvent) create(service *Service, dwdLastUpdated time.Time) error {
 	var mustBeUpdated bool = service.db.
 		Where("created_at > ?", dwdLastUpdated).
-		First(&Pollen{}).
+		First(&PollenEvent{}).
 		RowsAffected == 0
 	if mustBeUpdated {
-		return service.db.Create(&pollen).Error
+		return service.db.Create(&pollenEvent).Error
 	}
 	return nil
 }
 
-func FindPollenWithSeverity(db *gorm.DB) Pollens {
-	var pollens Pollens
-	db.Debug().Where("roggen > 1").Or("ambrosia > 1").
-		Or("erle > 1").Or("beifuss > 1").
-		Or("birke > 1").Or("graeser > 1").
-		Or("hasel > 1").Or("esche > 1").
-		Find(&pollens)
-	return pollens
+func FindPollenWithSeverity(db *gorm.DB) []PollenEvent {
+	var pollenEvent []PollenEvent
+	db.Preload(clause.Associations, "intensity > 1").Find(&pollenEvent)
+	return pollenEvent
+}
+
+func (pollenEvent *PollenEvent) BeforeDelete(tx *gorm.DB) error {
+	return tx.Delete(&Pollen{}, &Pollen{PollenEventID: pollenEvent.ID}).Error
 }

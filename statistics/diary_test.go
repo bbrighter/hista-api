@@ -26,5 +26,5 @@ func TestDiaryFrom(t *testing.T) {
 	var fourthDiary RawDiary = diaries[3]
 	assert.Equal(t, Pollen, fourthDiary.Type)
 	assert.Equal(t, "Ambrosia", fourthDiary.Category)
-	assert.Equal(t, "Keine bis geringe", fourthDiary.Severity)
+	assert.Equal(t, "Mittlere", fourthDiary.Severity)
 }

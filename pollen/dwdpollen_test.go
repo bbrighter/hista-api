@@ -51,7 +51,7 @@ func TestGetKarlsruheData(t *testing.T) {
 
 	var err error
 	var pollen DWDPollen
-	pollen, err = getKarlsruheData(dwd, Oberrhein)
+	pollen, err = dwd.getKarlsruheData(Oberrhein)
 	assert.NoError(t, err)
 	assert.Equal(t, "1", pollen.Graeser.Today)
 }

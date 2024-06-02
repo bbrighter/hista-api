@@ -27,6 +27,7 @@ var models = []any{
 	&internalAuth.User{},
 	&notes.Note{},
 	&pollen.Pollen{},
+	&pollen.PollenEvent{},
 }
 
 func main() {

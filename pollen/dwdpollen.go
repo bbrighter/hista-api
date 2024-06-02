@@ -22,18 +22,37 @@ type DWDPollenRegion struct {
 }
 
 type DWDPollen struct {
-	Roggen   PollenIntensitiy `json:"Roggen"`
-	Ambrosia PollenIntensitiy `json:"Ambrosia"`
-	Erle     PollenIntensitiy `json:"Erle"`
-	Beifuss  PollenIntensitiy `json:"Beifuss"`
-	Birke    PollenIntensitiy `json:"Birke"`
-	Graeser  PollenIntensitiy `json:"Graeser"`
-	Hasel    PollenIntensitiy `json:"Hasel"`
-	Esche    PollenIntensitiy `json:"Esche"`
+	Roggen   DWDPollenIntensity `json:"Roggen"`
+	Ambrosia DWDPollenIntensity `json:"Ambrosia"`
+	Erle     DWDPollenIntensity `json:"Erle"`
+	Beifuss  DWDPollenIntensity `json:"Beifuss"`
+	Birke    DWDPollenIntensity `json:"Birke"`
+	Graeser  DWDPollenIntensity `json:"Graeser"`
+	Hasel    DWDPollenIntensity `json:"Hasel"`
+	Esche    DWDPollenIntensity `json:"Esche"`
 }
 
-type PollenIntensitiy struct {
+type DWDPollenIntensity struct {
 	Today string `json:"today"`
+}
+
+func (intensity DWDPollenIntensity) PollenIntensity() PollenIntensity {
+	switch intensity.Today {
+	case "0":
+		return No
+	case "0-1":
+		return NoToSmall
+	case "1":
+		return Small
+	case "1-2":
+		return SmallToMedium
+	case "2":
+		return Medium
+	case "2-3":
+		return MediumToHigh
+	default:
+		return High
+	}
 }
 
 func callDWDAPI() ([]byte, error) {
@@ -58,7 +77,7 @@ const (
 	Oberrhein PartRegion = 111
 )
 
-func getKarlsruheData(dwd DWD, partregion PartRegion) (DWDPollen, error) {
+func (dwd DWD) getKarlsruheData(partregion PartRegion) (DWDPollen, error) {
 	var index int
 	var found bool = false
 	for i, con := range dwd.Content {
