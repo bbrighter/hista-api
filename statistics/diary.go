@@ -17,7 +17,7 @@ type Input struct {
 	Events     symptoms.ConditionEvents
 	Categories symptoms.SymptomCategories
 	Notes      notes.Notes
-	Pollens    pollen.Pollens
+	Pollens    []pollen.PollenEvent
 }
 
 type RawDiary struct {
@@ -46,7 +46,6 @@ func createRawDiary(input Input) []RawDiary {
 				Type:     Food,
 				Content:  food.Ingredient.Name,
 				Severity: string(food.Condition),
-				Category: "",
 			}
 			diaries = append(diaries, diary)
 		}
@@ -65,35 +64,21 @@ func createRawDiary(input Input) []RawDiary {
 	}
 	for _, note := range input.Notes {
 		var diary = RawDiary{
-			Date:     note.Date,
-			Type:     Note,
-			Content:  note.Text,
-			Severity: "",
-			Category: "",
+			Date:    note.Date,
+			Type:    Note,
+			Content: note.Text,
 		}
 		diaries = append(diaries, diary)
 	}
-	for _, pol := range input.Pollens {
-		var relevantPollen = make(map[string]pollen.PollenLoad)
-		relevantPollen["Ambrosia"] = pol.Ambrosia
-		relevantPollen["Beifuss"] = pol.Beifuss
-		relevantPollen["Birke"] = pol.Birke
-		relevantPollen["Erle"] = pol.Erle
-		relevantPollen["Esche"] = pol.Esche
-		relevantPollen["Graeser"] = pol.Graeser
-		relevantPollen["Hasel"] = pol.Hasel
-		relevantPollen["Roggen"] = pol.Roggen
-
-		for key, value := range relevantPollen {
-			if value > pollen.No {
-				var diary = RawDiary{
-					Date:     pol.CreatedAt,
-					Type:     Pollen,
-					Category: key,
-					Severity: value.String(),
-				}
-				diaries = append(diaries, diary)
+	for _, event := range input.Pollens {
+		for _, pol := range event.Pollens {
+			var diary = RawDiary{
+				Date:     event.CreatedAt,
+				Type:     Pollen,
+				Category: string(pol.Type),
+				Severity: pol.Intensity.String(),
 			}
+			diaries = append(diaries, diary)
 		}
 	}
 	sort.Slice(diaries, func(i, j int) bool {

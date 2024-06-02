@@ -41,7 +41,6 @@ func TestParseRespToDWD(t *testing.T) {
 }
 
 func TestAPICall(t *testing.T) {
-	t.Skip()
 	_, err := callDWDAPI()
 	assert.NoError(t, err)
 }
@@ -51,7 +50,7 @@ func TestGetKarlsruheData(t *testing.T) {
 
 	var err error
 	var pollen DWDPollen
-	pollen, err = getKarlsruheData(dwd, Oberrhein)
+	pollen, err = dwd.getKarlsruheData(Oberrhein)
 	assert.NoError(t, err)
 	assert.Equal(t, "1", pollen.Graeser.Today)
 }

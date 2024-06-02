@@ -100,15 +100,18 @@ func testInput() Input {
 			Date: time.Now().Add(-time.Hour),
 			Text: "Note",
 		}}
-	var pollens = pollen.Pollens{
-		pollen.Pollen{
-			CreatedAt: time.Now().Add(-time.Hour * 2),
-			Roggen:    1,
-			Ambrosia:  2,
-			Erle:      1,
-			Beifuss:   1,
-			Birke:     1,
-		}}
+	var pollens = []pollen.PollenEvent{{
+		ID:        7,
+		CreatedAt: time.Now().Add(-time.Hour * 2),
+		Pollens: pollen.Pollens{
+			pollen.Pollen{
+				ID:            70,
+				PollenEventID: 7,
+				Type:          pollen.Ambrosia,
+				Intensity:     pollen.Medium,
+			},
+		},
+	}}
 	return Input{
 		Meals:      meals,
 		Events:     events,
