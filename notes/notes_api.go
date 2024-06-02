@@ -23,8 +23,9 @@ func (service *Service) GetNotes(ctx context.Context) (NotesResp, error) {
 
 // encore:api auth method=POST path=/notes
 func (service *Service) PostNote(ctx context.Context) (NoteResp, error) {
-	note := createNote(service)
-	return note.toResp(), nil
+	var note Note
+	var err error = note.createNote(service)
+	return note.toResp(), err
 }
 
 // encore:api auth method=DELETE path=/notes/:noteId

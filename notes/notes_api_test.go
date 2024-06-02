@@ -17,7 +17,8 @@ func TestGetNotesAPI(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, resp.Notes, 0)
 
-	createNote(service)
+	var note Note
+	note.createNote(service)
 	resp, err = service.GetNotes(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, resp.Notes, 1)
@@ -28,7 +29,8 @@ func TestDeleteNoteAPI(t *testing.T) {
 	defer teardown(t)
 
 	var err error
-	var note = createNote(service)
+	var note Note
+	note.createNote(service)
 
 	err = service.DeleteNote(ctx, note.ID)
 	assert.NoError(t, err)
@@ -45,7 +47,7 @@ func TestPatchNoteAPI(t *testing.T) {
 	var err error
 	var resp NoteResp
 	var note Note
-	note = createNote(service)
+	note.createNote(service)
 
 	resp, err = service.PatchNote(ctx, note.ID, params)
 	assert.NoError(t, err)

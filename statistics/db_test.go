@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"encore.app/meals"
+	"encore.app/notes"
+	"encore.app/pollen"
 	"encore.app/symptoms"
 	"github.com/stretchr/testify/assert"
 )
@@ -92,9 +94,26 @@ func testInput() Input {
 			ID:   1000,
 			Name: "Category",
 		}}
+	var notes = notes.Notes{
+		notes.Note{
+			ID:   5,
+			Date: time.Now().Add(-time.Hour),
+			Text: "Note",
+		}}
+	var pollens = pollen.Pollens{
+		pollen.Pollen{
+			CreatedAt: time.Now().Add(-time.Hour * 2),
+			Roggen:    1,
+			Ambrosia:  2,
+			Erle:      1,
+			Beifuss:   1,
+			Birke:     1,
+		}}
 	return Input{
 		Meals:      meals,
 		Events:     events,
 		Categories: cats,
+		Notes:      notes,
+		Pollens:    pollens,
 	}
 }

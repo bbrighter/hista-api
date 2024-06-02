@@ -37,13 +37,27 @@ func TestWriteToDatabase(t *testing.T) {
 	assert.Len(t, pollens, 1)
 
 	err = pollen.writeToDatabase(service, time.Now().Add(-time.Hour))
+	defer service.db.Delete(&pollen)
 	assert.NoError(t, err)
 	service.db.Find(&pollens)
 	assert.Len(t, pollens, 1)
 
 	var newPollen = Pollen{Roggen: No}
 	err = newPollen.writeToDatabase(service, time.Now().Add(time.Hour))
+	defer service.db.Delete(&newPollen)
 	assert.NoError(t, err)
 	service.db.Find(&pollens)
 	assert.Len(t, pollens, 2)
+
+}
+
+func TestFindPollenWithSeverity(t *testing.T) {
+	service := initTest(t)
+	dwd := getTestData(t)
+	pollen, _ := dwd.toPollen()
+	pollen.writeToDatabase(service, time.Now())
+	defer service.db.Delete(&pollen)
+
+	pollens := FindPollenWithSeverity(service.db)
+	assert.Len(t, pollens, 1)
 }

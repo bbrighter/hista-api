@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"encore.app/meals"
+	"encore.app/notes"
+	"encore.app/pollen"
 	"encore.app/symptoms"
 )
 
@@ -21,7 +23,9 @@ func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
 	if err != nil {
 		return DiaryResp{}, err
 	}
-	var input = Input{Meals: meals, Events: events, Categories: cats}
-	diaries := diaryFrom(input)
+	notes := notes.FindAllNotes(service.db)
+	pollens := pollen.FindPollenWithSeverity(service.db)
+	var input = Input{Meals: meals, Events: events, Categories: cats, Notes: notes, Pollens: pollens}
+	diaries := createRawDiary(input)
 	return DiaryResp{Diaries: diaries}, nil
 }
