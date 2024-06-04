@@ -32,25 +32,25 @@ const (
 	Esche    PollenType = "Esche"
 )
 
-func (load PollenIntensity) String() string {
-	var loadString string
-	switch load {
+func (intensity PollenIntensity) String() string {
+	var intensityString string
+	switch intensity {
 	case No:
-		loadString = "Keine"
+		intensityString = "Keine"
 	case NoToSmall:
-		loadString = "Keine bis geringe"
+		intensityString = "Keine bis geringe"
 	case Small:
-		loadString = "Geringe"
+		intensityString = "Geringe"
 	case SmallToMedium:
-		loadString = "Geringe bis mittlere"
+		intensityString = "Geringe bis mittlere"
 	case Medium:
-		loadString = "Mittlere"
+		intensityString = "Mittlere"
 	case MediumToHigh:
-		loadString = "Mittlere bis hohe"
+		intensityString = "Mittlere bis hohe"
 	case High:
-		loadString = "Hohe"
+		intensityString = "Hohe"
 	}
-	return loadString
+	return intensityString
 }
 
 type PollenEvent struct {
@@ -58,6 +58,8 @@ type PollenEvent struct {
 	CreatedAt time.Time
 	Pollens   Pollens
 }
+
+type PollenEvents []PollenEvent
 
 type Pollen struct {
 	ID            uint
@@ -106,4 +108,10 @@ func FindPollenWithSeverity(db *gorm.DB) []PollenEvent {
 
 func (pollenEvent *PollenEvent) BeforeDelete(tx *gorm.DB) error {
 	return tx.Delete(&Pollen{}, &Pollen{PollenEventID: pollenEvent.ID}).Error
+}
+
+func findPollens(service *Service) PollenEvents {
+	var events PollenEvents
+	service.db.Preload(clause.Associations).Find(&events)
+	return events
 }
