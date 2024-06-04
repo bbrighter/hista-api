@@ -39,7 +39,7 @@ type MealParams struct {
 
 // encore:api auth method=POST path=/meals
 func (service *Service) PostMeal(ctx context.Context, params MealParams) (IDResponse, error) {
-	var meal = Meal{Date: *params.Date}
+	var meal = Meal{Date: *params.Date, IsAlone: true}
 	var err error
 	err = meal.create(service)
 	return IDResponse{ID: meal.ID}, err
