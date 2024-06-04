@@ -25,7 +25,7 @@ func (event PollenEvents) PollenEventsResponse() PollenEventsResponse {
 		resp = append(resp, e.PollenEventResponse())
 	}
 	slices.SortFunc(resp, func(a, b PollenEventResponse) int {
-		return a.Date.Compare(b.Date)
+		return b.Date.Compare(a.Date)
 	})
 	return PollenEventsResponse{Pollens: resp}
 }
