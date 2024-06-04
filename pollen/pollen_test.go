@@ -76,3 +76,16 @@ func TestFindPollenWithSeverity(t *testing.T) {
 	pollens := FindPollenWithSeverity(service.db)
 	assert.Len(t, pollens[0].Pollens, 6)
 }
+
+func TestFindPollens(t *testing.T) {
+	service := initTest(t)
+	dwd := getTestData(t)
+	pollen, _ := dwd.Pollens()
+	var pollenEvent = &PollenEvent{Pollens: pollen}
+	pollenEvent.create(service, time.Now())
+	defer service.db.Delete(&pollenEvent)
+
+	var events PollenEvents = findPollens(service)
+	assert.Len(t, events, 1)
+	assert.Len(t, events[0].Pollens, 8)
+}
