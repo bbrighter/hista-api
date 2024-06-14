@@ -79,3 +79,12 @@ func TestFindSymptomsForFoods(t *testing.T) {
 	assert.Equal(t, 1, stat.Hours24)
 	assert.Equal(t, 1, stat.Hours72)
 }
+
+func TestCountSymptoms(t *testing.T) {
+	service := initTest(t)
+
+	resp := countSymptoms(service, []uint{1})
+	assert.Len(t, resp, 1)
+	assert.EqualValues(t, resp[0].ID, 1)
+	assert.EqualValues(t, resp[0].Count, 1)
+}
