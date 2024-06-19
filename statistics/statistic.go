@@ -10,6 +10,23 @@ type SymptomsResult struct {
 	Hours72       int
 	Hours24       int
 	Hours1        int
+	Count         int64
+}
+
+type CountResult struct {
+	ID    uint
+	Count int64
+}
+
+func countFoods(service *Service, relevantSymptomIds []uint) []CountResult {
+	var countResults []CountResult
+	service.db.Debug().
+		Table("foods").
+		Select("count(*) as count", "foods.ingredient_id as id").
+		Where("ingredient_id in (?)", relevantSymptomIds).
+		Group("ingredient_id").
+		Scan(&countResults)
+	return countResults
 }
 
 func countFoodBySymptoms(service *Service, fromDate time.Time, toDate time.Time, symptomIds []uint) ([]SymptomsResult, error) {
@@ -51,7 +68,7 @@ type StatisticsByFood struct {
 	Hours72       int    `json:"hours72"`
 	Hours24       int    `json:"hours24"`
 	Hours1        int    `json:"hours1"`
-	Count         int    `json:"count"`
+	Count         int64  `json:"count"`
 }
 
 type FoodStatisticsResponse struct {
@@ -119,11 +136,6 @@ func countSymptomsByFood(service *Service, fromDate time.Time, toDate time.Time,
 		Group("symptom_id, severity").
 		Scan(&result).Error
 	return result, err
-}
-
-type CountResult struct {
-	ID    uint
-	Count int64
 }
 
 func countSymptoms(service *Service, relevantSymptomIds []uint) []CountResult {

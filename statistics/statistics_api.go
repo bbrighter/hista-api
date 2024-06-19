@@ -29,6 +29,20 @@ func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, params St
 	if err != nil {
 		return resp, err
 	}
+
+	var relevantIngredientIDs []uint
+	for _, result := range resp.Statistics {
+		relevantIngredientIDs = append(relevantIngredientIDs, result.IngredientID)
+	}
+	counts := countFoods(service, relevantIngredientIDs)
+	for i, result := range resp.Statistics {
+		for _, count := range counts {
+			if count.ID == result.IngredientID {
+				resp.Statistics[i].Count = count.Count
+			}
+		}
+	}
+
 	return resp, err
 }
 
@@ -56,7 +70,6 @@ func (service *Service) GetStatisticsByIngredientsIds(ctx context.Context, param
 	for i, result := range resp.Statistics {
 		for _, count := range counts {
 			if count.ID == result.SymptomID {
-				println("count", count.Count)
 				resp.Statistics[i].Count = count.Count
 			}
 		}
