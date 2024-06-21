@@ -1,6 +1,6 @@
 module encore.app
 
-go 1.22.0
+go 1.22.2
 
 require (
 	ariga.io/atlas-go-sdk v0.5.6
