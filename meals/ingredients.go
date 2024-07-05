@@ -14,8 +14,9 @@ type Ingredient struct {
 type Ingredients []Ingredient
 
 func (service Service) createOrReplaceIngredient(name string) (Ingredient, error) {
-	var ingredient = Ingredient{Name: strings.TrimSpace(name)}
-	err := service.db.FirstOrCreate(&ingredient, Ingredient{Name: name}).Error
+	trimmedName := strings.TrimSpace(name)
+	var ingredient = Ingredient{Name: trimmedName}
+	err := service.db.FirstOrCreate(&ingredient, Ingredient{Name: trimmedName}).Error
 	return ingredient, err
 }
 
