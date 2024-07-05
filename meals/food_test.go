@@ -9,8 +9,7 @@ import (
 func TestGetFood(t *testing.T) {
 	service := initTest(t)
 
-	var foods []Food
-	foods = getFoods(service, testMeal.ID)
+	var foods []Food = getFoods(service, testMeal.ID)
 	assert.GreaterOrEqual(t, len(foods), 1)
 }
 
@@ -91,6 +90,6 @@ func TestStringToFoodCondition(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, Raw, cond)
 
-	cond, err = stringToFoodCondition("bad input")
+	_, err = stringToFoodCondition("bad input")
 	assert.Error(t, err)
 }

@@ -27,8 +27,7 @@ func TestGetMeals(t *testing.T) {
 	service := initTest(t)
 
 	var meals Meals
-	var err error
-	err = meals.get(service)
+	var err error = meals.get(service)
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, len(meals), 1)
 }
