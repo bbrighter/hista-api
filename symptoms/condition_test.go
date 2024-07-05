@@ -23,7 +23,7 @@ func TestCreateConditionBySymptomName(t *testing.T) {
 
 	var condition = &Condition{Severity: High, ConditionEventID: testEvent.ID}
 
-	categories, err = condition.createConditionBySymptomName(service, "Name", 1000)
+	_, err = condition.createConditionBySymptomName(service, "Name", 1000)
 	assert.Error(t, err)
 
 	condition = &Condition{Severity: High, ConditionEventID: testEvent.ID}

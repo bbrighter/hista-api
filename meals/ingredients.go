@@ -1,6 +1,10 @@
 package meals
 
-import "gorm.io/gorm"
+import (
+	"strings"
+
+	"gorm.io/gorm"
+)
 
 type Ingredient struct {
 	ID   uint
@@ -10,7 +14,7 @@ type Ingredient struct {
 type Ingredients []Ingredient
 
 func (service Service) createOrReplaceIngredient(name string) (Ingredient, error) {
-	var ingredient = Ingredient{Name: name}
+	var ingredient = Ingredient{Name: strings.TrimSpace(name)}
 	err := service.db.FirstOrCreate(&ingredient, Ingredient{Name: name}).Error
 	return ingredient, err
 }

@@ -11,10 +11,17 @@ func TestCreateOrReplace(t *testing.T) {
 
 	var err error
 
+	// Verify idempotency
 	var existingSymptom = &Symptom{Name: testSymptom.Name, SymptomCategoryID: testCategory.ID}
 	err = existingSymptom.createOrReplace(service)
 	assert.NoError(t, err)
-	assert.Equal(t, existingSymptom.ID, existingSymptom.ID)
+	assert.Equal(t, existingSymptom.ID, testSymptom.ID)
+
+	// Verify idempotency up to trimming
+	var existingSymptomWithWhitespace = &Symptom{Name: " " + testSymptom.Name + " ", SymptomCategoryID: testCategory.ID}
+	err = existingSymptomWithWhitespace.createOrReplace(service)
+	assert.NoError(t, err)
+	assert.Equal(t, existingSymptomWithWhitespace.ID, testSymptom.ID)
 
 	var differentConditonType = &Symptom{Name: "Other symptom", SymptomCategoryID: testCategory.ID}
 	err = differentConditonType.createOrReplace(service)

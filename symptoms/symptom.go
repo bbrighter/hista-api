@@ -1,6 +1,8 @@
 package symptoms
 
 import (
+	"strings"
+
 	"encore.app/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -22,7 +24,7 @@ func (symptom *Symptom) createOrReplace(service *Service) error {
 	if symptom.SymptomCategoryID == 0 {
 		return errors.ErrorAttributeMustBeSet("symptomCategoryId")
 	}
-	return service.db.FirstOrCreate(&symptom, Symptom{Name: symptom.Name, SymptomCategoryID: symptom.SymptomCategoryID}).Error
+	return service.db.FirstOrCreate(&symptom, Symptom{Name: strings.TrimSpace(symptom.Name), SymptomCategoryID: symptom.SymptomCategoryID}).Error
 }
 
 func (symptom *Symptom) deleteIfUnused(tx *gorm.DB) error {

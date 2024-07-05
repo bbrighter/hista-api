@@ -22,10 +22,16 @@ func TestCreateOrReplaceIngredient(t *testing.T) {
 	assert.NoError(t, err)
 	assert.EqualValues(t, firstId, ing.ID)
 
+	// Verify idempotency even when trimming
+	ing, err = service.createOrReplaceIngredient(" Name ")
+	assert.NoError(t, err)
+	assert.EqualValues(t, firstId, ing.ID)
+
 	// Verify that new items get new names
 	ing, err = service.createOrReplaceIngredient("Name2")
 	assert.NoError(t, err)
 	assert.NotEqualValues(t, firstId, ing.ID)
+
 }
 
 func TestGetIngredients(t *testing.T) {
