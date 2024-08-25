@@ -7,8 +7,8 @@ import (
 
 	_ "ariga.io/atlas-go-sdk/recordriver"
 	"ariga.io/atlas-provider-gorm/gormschema"
+	"encore.app/entity"
 	"encore.app/internalAuth"
-	"encore.app/meals"
 	"encore.app/notes"
 	"encore.app/pollen"
 	"encore.app/symptoms"
@@ -16,9 +16,9 @@ import (
 
 // Define the models to generate migrations for.
 var models = []any{
-	&meals.Food{},
-	&meals.Ingredient{},
-	&meals.Meal{},
+	&entity.Food{},
+	&entity.Ingredient{},
+	&entity.Meal{},
 	&symptoms.Condition{},
 	&symptoms.SymptomCategory{},
 	&symptoms.Symptom{},

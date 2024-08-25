@@ -3,7 +3,7 @@ package statistics
 import (
 	"context"
 
-	"encore.app/meals"
+	"encore.app/api/meals"
 	"encore.app/notes"
 	"encore.app/pollen"
 	"encore.app/symptoms"

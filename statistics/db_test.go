@@ -6,15 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"encore.app/meals"
+	"encore.app/entity"
 	"encore.app/notes"
 	"encore.app/pollen"
 	"encore.app/symptoms"
 	"github.com/stretchr/testify/assert"
 )
 
-var testMeal *meals.Meal
-var testIngredient *meals.Ingredient
+var testMeal *entity.Meal
+var testIngredient *entity.Ingredient
 var testEvent *symptoms.ConditionEvent
 var testSymptom *symptoms.Symptom
 
@@ -33,11 +33,11 @@ func initTest(t *testing.T) *Service {
 }
 
 func (service *Service) initData() {
-	var meal = meals.Meal{Date: time.Date(2021, 1, 1, 1, 0, 0, 0, time.Local)}
+	var meal = entity.Meal{Date: time.Date(2021, 1, 1, 1, 0, 0, 0, time.Local)}
 	service.db.FirstOrCreate(&meal, &meal)
-	var ingredient = meals.Ingredient{Name: "statistics_ingredient"}
+	var ingredient = entity.Ingredient{Name: "statistics_ingredient"}
 	service.db.FirstOrCreate(&ingredient, &ingredient)
-	var food = meals.Food{IngredientID: ingredient.ID, MealID: meal.ID, Condition: meals.Cooked}
+	var food = entity.Food{IngredientID: ingredient.ID, MealID: meal.ID, Condition: entity.Cooked}
 	service.db.FirstOrCreate(&food, &food)
 
 	var event = symptoms.ConditionEvent{Date: time.Date(2021, 1, 1, 3, 0, 0, 0, time.Local)}
@@ -56,18 +56,18 @@ func (service *Service) initData() {
 }
 
 func testInput() Input {
-	var meals = meals.Meals{
-		meals.Meal{
+	var meals = entity.Meals{
+		entity.Meal{
 			ID:   1,
 			Date: time.Now().Add(2 * time.Hour),
-			Foods: []meals.Food{{
+			Foods: []entity.Food{{
 				ID: 10,
-				Ingredient: meals.Ingredient{
+				Ingredient: entity.Ingredient{
 					ID:   100,
 					Name: "Ingredient",
 				},
 				IngredientID: 100,
-				Condition:    meals.Cooked,
+				Condition:    entity.Cooked,
 				MealID:       1,
 			}},
 		},

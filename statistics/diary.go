@@ -6,14 +6,14 @@ import (
 	"strconv"
 	"time"
 
-	"encore.app/meals"
+	"encore.app/entity"
 	"encore.app/notes"
 	"encore.app/pollen"
 	"encore.app/symptoms"
 )
 
 type Input struct {
-	Meals      meals.Meals
+	Meals      entity.Meals
 	Events     symptoms.ConditionEvents
 	Categories symptoms.SymptomCategories
 	Notes      notes.Notes

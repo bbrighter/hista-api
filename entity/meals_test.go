@@ -1,4 +1,4 @@
-package meals
+package entity
 
 import (
 	"testing"
@@ -13,7 +13,7 @@ func TestToIngredientResponse(t *testing.T) {
 		ID:   1,
 		Name: "Name",
 	}
-	var resp IngredientResponse = ingredient.toIngredientResponse()
+	var resp IngredientResponse = ingredient.ToIngredientResponse()
 	assert.EqualValues(t, 1, resp.ID)
 	assert.Equal(t, "Name", resp.Name)
 }
@@ -23,7 +23,7 @@ func TestToIngredientsResponse(t *testing.T) {
 	var ingredient1 = Ingredient{ID: 1, Name: "Name"}
 	var ingredient2 = Ingredient{ID: 2, Name: "Name 2"}
 	var ingredients = Ingredients{ingredient1, ingredient2}
-	var resp IngredientsResponse = ingredients.toIngredientsResponse()
+	var resp IngredientsResponse = ingredients.ToIngredientsResponse()
 	assert.Len(t, resp.Ingredients, 2)
 	assert.EqualValues(t, 1, resp.Ingredients[0].ID)
 	assert.Equal(t, "Name", resp.Ingredients[0].Name)
@@ -38,7 +38,7 @@ func TestFoodToFoodResponse(t *testing.T) {
 		Condition:    Cooked,
 		MealID:       100,
 	}
-	var resp FoodResponse = food.toFoodResponse()
+	var resp FoodResponse = food.ToFoodResponse()
 
 	assert.Equal(t, uint(1), resp.ID)
 	assert.Equal(t, uint(10), resp.Ingredient.ID)
@@ -56,7 +56,7 @@ func TestFoodsToFoodsResponse(t *testing.T) {
 		MealID:       100}
 	var foods = Foods{food1}
 
-	var resps []FoodResponse = foods.toFoodsResponse()
+	var resps []FoodResponse = foods.ToFoodsResponse()
 
 	assert.Len(t, resps, 1)
 	var resp FoodResponse = resps[0]
@@ -74,7 +74,7 @@ func TestToMealMetaResponse(t *testing.T) {
 		Date:  time.Date(2020, 1, 31, 12, 0, 0, 0, time.UTC),
 		Foods: []Food{{ID: 1}},
 	}
-	var resp MealMetaResponse = meal.toMealMetaResponse()
+	var resp MealMetaResponse = meal.ToMealMetaResponse()
 	assert.EqualValues(t, 1, resp.ID)
 	assert.Equal(t, time.Date(2020, 1, 31, 12, 0, 0, 0, time.UTC), resp.Date)
 }
@@ -97,7 +97,7 @@ func TestToMealResponse(t *testing.T) {
 		}},
 	}
 
-	var resp MealResponse = meal.toMealResponse()
+	var resp MealResponse = meal.ToMealResponse()
 
 	assert.EqualValues(t, 1, resp.ID)
 	assert.Equal(t, time.Date(2020, 1, 31, 12, 0, 0, 0, time.UTC), resp.Date)
