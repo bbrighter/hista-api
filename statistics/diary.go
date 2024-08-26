@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"encore.app/entity"
-	"encore.app/notes"
 	"encore.app/pollen"
 	"encore.app/symptoms"
 )
@@ -16,7 +15,7 @@ type Input struct {
 	Meals      entity.Meals
 	Events     symptoms.ConditionEvents
 	Categories symptoms.SymptomCategories
-	Notes      notes.Notes
+	Notes      entity.Notes
 	Pollens    []pollen.PollenEvent
 }
 

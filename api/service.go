@@ -3,7 +3,8 @@ package api
 import (
 	"time"
 
-	"encore.app/api/meals"
+	"encore.app/api/repositories/meals"
+	"encore.app/api/repositories/notes"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -11,8 +12,9 @@ import (
 
 //encore:service
 type Service struct {
-	DB             *gorm.DB
-	mealRepository *meals.MealRepository
+	DB    *gorm.DB
+	meal  *meals.MealRepository
+	notes *notes.NotesRepository
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -40,7 +42,8 @@ func initService() (*Service, error) {
 		return nil, err
 	}
 	return &Service{
-		DB:             db,
-		mealRepository: meals.NewMealRepository(db),
+		DB:    db,
+		meal:  meals.NewMealRepository(db),
+		notes: notes.NewNotesRepository(db),
 	}, nil
 }

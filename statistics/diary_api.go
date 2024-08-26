@@ -3,8 +3,9 @@ package statistics
 import (
 	"context"
 
-	"encore.app/api/meals"
-	"encore.app/notes"
+	"encore.app/api/repositories/meals"
+	"encore.app/api/repositories/notes"
+
 	"encore.app/pollen"
 	"encore.app/symptoms"
 )
@@ -23,7 +24,9 @@ func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
 	if err != nil {
 		return DiaryResp{}, err
 	}
-	notes := notes.FindAllNotes(service.db)
+	repo := notes.NewNotesRepository(service.db)
+	notes := repo.List()
+	// notes := notes.FindAllNotes(service.db)
 	pollens := pollen.FindPollenWithSeverity(service.db)
 	var input = Input{
 		Meals:      meals,

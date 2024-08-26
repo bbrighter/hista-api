@@ -3,44 +3,44 @@ package api
 import (
 	"context"
 
-	"encore.app/api/meals"
+	"encore.app/api/repositories/meals"
 	"encore.app/entity"
 	"encore.app/errors"
 )
 
 // encore:api auth method=GET path=/meals
 func (service *Service) GetMeals(ctx context.Context) (entity.MealsResponse, error) {
-	meals := service.mealRepository.List()
+	meals := service.meal.List()
 	return meals.ToMealsResponse(), nil
 }
 
 // encore:api auth method=POST path=/meals
 func (service *Service) PostMeal(ctx context.Context, params entity.MealParams) (entity.IDResponse, error) {
-	id, err := service.mealRepository.Create(*params.Date)
+	id, err := service.meal.Create(*params.Date)
 	return entity.IDResponse{ID: id}, err
 }
 
 // encore:api auth method=GET path=/meals/:id
 func (service *Service) GetMeal(ctx context.Context, id uint) (entity.MealResponse, error) {
 	var meal = entity.Meal{ID: id}
-	meal, err := service.mealRepository.Get(id)
+	meal, err := service.meal.Get(id)
 	return meal.ToMealResponse(), err
 }
 
 // encore:api auth method=DELETE path=/meals/:id
 func (service *Service) DeleteMeal(ctx context.Context, id uint) error {
-	return service.mealRepository.Delete(id)
+	return service.meal.Delete(id)
 }
 
 // encore:api auth method=PATCH path=/meals/:id
 func (service *Service) PatchMeal(ctx context.Context, id uint, params entity.MealParams) error {
 	var patchParams = entity.PatchParams(params)
-	return service.mealRepository.Patch(id, patchParams)
+	return service.meal.Patch(id, patchParams)
 }
 
 // encore:api auth method=GET path=/meal/:mealId/foods
 func (service *Service) GetFoods(ctx context.Context, mealId uint) (entity.FoodsResponse, error) {
-	var foods entity.Foods = service.mealRepository.ListFoods(mealId)
+	var foods entity.Foods = service.meal.ListFoods(mealId)
 	var resp []entity.FoodResponse = foods.ToFoodsResponse()
 	return entity.FoodsResponse{Foods: resp}, nil
 }
@@ -68,19 +68,19 @@ func (service *Service) PostFood(ctx context.Context, mealId uint, params FoodPa
 	var err error
 	if params.IngredientID != 0 {
 		food.IngredientID = params.IngredientID
-		err = service.mealRepository.CreateFoodByID(mealId, params.IngredientID)
+		err = service.meal.CreateFoodByID(mealId, params.IngredientID)
 
 	} else if params.IngredientName != "" {
-		err = service.mealRepository.CreateFoodByName(mealId, params.IngredientName)
+		err = service.meal.CreateFoodByName(mealId, params.IngredientName)
 	}
-	var ingredients entity.Ingredients = service.mealRepository.ListIngredients()
+	var ingredients entity.Ingredients = service.meal.ListIngredients()
 	return PostFoodResponse{Food: food.ToFoodResponse(), Ingredients: ingredients.ToIngredientsResponse()}, err
 }
 
 // encore:api auth method=DELETE path=/meal/:mealId/foods/:foodId
 func (service *Service) DeleteFood(ctx context.Context, mealId uint, foodId uint) (entity.IngredientsResponse, error) {
-	var err error = service.mealRepository.DeleteFood(foodId)
-	var ingredients entity.Ingredients = service.mealRepository.ListIngredients()
+	var err error = service.meal.DeleteFood(foodId)
+	var ingredients entity.Ingredients = service.meal.ListIngredients()
 	return ingredients.ToIngredientsResponse(), err
 }
 
@@ -95,6 +95,6 @@ func (service *Service) PatchFoodCondition(ctx context.Context, mealId uint, foo
 	if err != nil {
 		return err
 	}
-	return service.mealRepository.ChangeCondition(foodId, condition)
+	return service.meal.ChangeCondition(foodId, condition)
 
 }

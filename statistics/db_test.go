@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"encore.app/entity"
-	"encore.app/notes"
 	"encore.app/pollen"
 	"encore.app/symptoms"
 	"github.com/stretchr/testify/assert"
@@ -94,8 +93,8 @@ func testInput() Input {
 			ID:   1000,
 			Name: "Category",
 		}}
-	var notes = notes.Notes{
-		notes.Note{
+	var notes = entity.Notes{
+		entity.Note{
 			ID:   5,
 			Date: time.Now().Add(-time.Hour),
 			Text: "Note",
