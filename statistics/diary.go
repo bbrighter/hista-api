@@ -8,13 +8,12 @@ import (
 
 	"encore.app/entity"
 	"encore.app/pollen"
-	"encore.app/symptoms"
 )
 
 type Input struct {
 	Meals      entity.Meals
-	Events     symptoms.ConditionEvents
-	Categories symptoms.SymptomCategories
+	Events     entity.ConditionEvents
+	Categories entity.SymptomCategories
 	Notes      entity.Notes
 	Pollens    []pollen.PollenEvent
 }
@@ -86,8 +85,8 @@ func createRawDiary(input Input) []RawDiary {
 	return diaries
 }
 
-func findSymptomCategoryById(id uint, categories symptoms.SymptomCategories) string {
-	categoryIndex := slices.IndexFunc(categories, func(cat symptoms.SymptomCategory) bool {
+func findSymptomCategoryById(id uint, categories entity.SymptomCategories) string {
+	categoryIndex := slices.IndexFunc(categories, func(cat entity.SymptomCategory) bool {
 		return cat.ID == id
 	})
 	return categories[categoryIndex].Name

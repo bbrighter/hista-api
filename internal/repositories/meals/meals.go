@@ -11,22 +11,22 @@ import (
 
 const mealIsAlone = true
 
-func (repo *MealRepository) List() entity.Meals {
+func (repo *MealRepository) ListMeals() entity.Meals {
 	var meals entity.Meals
 	repo.db.Find(&meals)
 	return meals
 }
 
-func (repo *MealRepository) Create(data time.Time) (uint, error) {
+func (repo *MealRepository) CreateMeal(data time.Time) (entity.Meal, error) {
 	var meal = entity.Meal{IsAlone: mealIsAlone}
 	if meal.Date.IsZero() {
 		meal.Date = time.Now()
 	}
 	err := repo.db.Create(&meal).Error
-	return meal.ID, err
+	return meal, err
 }
 
-func (repo *MealRepository) Get(id uint) (entity.Meal, error) {
+func (repo *MealRepository) GetMeal(id uint) (entity.Meal, error) {
 	var meal = entity.Meal{ID: id}
 	if repo.db.Debug().Preload("Foods.Ingredient").Preload("Foods").Find(&meal).RowsAffected == 0 {
 		return meal, &errs.Error{Code: errs.NotFound}
@@ -34,47 +34,52 @@ func (repo *MealRepository) Get(id uint) (entity.Meal, error) {
 	return meal, nil
 }
 
-func (repo *MealRepository) Delete(id uint) error {
-
-	if repo.db.Find(&entity.Meal{ID: id}).RowsAffected == 0 {
+func (repo *MealRepository) DeleteMeal(meal entity.Meal) error {
+	if repo.db.Find(&meal).RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}
 	return repo.db.Transaction(func(tx *gorm.DB) error {
 		var foods []entity.Food
-		tx.Where(&entity.Food{MealID: id}).Find(&foods)
-		if err := tx.Delete(&entity.Food{}, entity.Food{MealID: id}).Error; err != nil {
+		tx.Where(&entity.Food{MealID: meal.ID}).Find(&foods)
+		if err := tx.Delete(&entity.Food{}, entity.Food{MealID: meal.ID}).Error; err != nil {
 			return err
 		}
 		for _, food := range foods {
 			deleteIngredientIfUnused(tx, food.IngredientID)
 		}
-		return tx.Delete(&entity.Meal{ID: id}).Error
+		return tx.Delete(&entity.Meal{ID: meal.ID}).Error
 	})
 }
 
-// Patch a meal with parameters. Only given parameters are patched.
-func (repo *MealRepository) Patch(id uint, params entity.PatchParams) error {
+// PatchMeal a meal with parameters. Only given parameters are patched.
+func (repo *MealRepository) PatchMeal(
+	id uint,
+	date *time.Time,
+	freshness *entity.Freshness,
+	stressLevel *uint8,
+	isAlone *bool,
+) error {
 	var meal entity.Meal
 	if rows := repo.db.First(&meal, &entity.Meal{ID: id}).RowsAffected; rows == 0 {
 		return errors.ErrorNotFound
 	}
 	tx := repo.db.Model(&entity.Meal{ID: meal.ID})
 	var updates = make(map[string]interface{})
-	if params.Date != nil {
-		meal.Date = *params.Date
-		updates["date"] = *params.Date
+	if date != nil {
+		meal.Date = *date
+		updates["date"] = *date
 	}
-	if params.Freshness != nil {
-		meal.Freshness = *params.Freshness
-		updates["freshness"] = *params.Freshness
+	if freshness != nil {
+		meal.Freshness = *freshness
+		updates["freshness"] = *freshness
 	}
-	if params.StressLevel != nil {
-		meal.StressLevel = *params.StressLevel
-		updates["stress_level"] = *params.StressLevel
+	if stressLevel != nil {
+		meal.StressLevel = *stressLevel
+		updates["stress_level"] = *stressLevel
 	}
-	if params.IsAlone != nil {
-		meal.IsAlone = *params.IsAlone
-		updates["is_alone"] = *params.IsAlone
+	if isAlone != nil {
+		meal.IsAlone = *isAlone
+		updates["is_alone"] = *isAlone
 	}
 	return tx.Updates(updates).Error
 }

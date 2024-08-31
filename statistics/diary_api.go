@@ -3,11 +3,10 @@ package statistics
 import (
 	"context"
 
-	"encore.app/api/repositories/meals"
-	"encore.app/api/repositories/notes"
-
+	"encore.app/internal/repositories/meals"
+	"encore.app/internal/repositories/notes"
+	"encore.app/internal/repositories/symptoms"
 	"encore.app/pollen"
-	"encore.app/symptoms"
 )
 
 type DiaryResp struct {
@@ -20,7 +19,8 @@ func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
 	if err != nil {
 		return DiaryResp{}, err
 	}
-	events, cats, err := symptoms.GetConditionEventsAndDependencies(service.db)
+	symrepo := symptoms.NewSymtpomsRepo(service.db)
+	events, cats, err := symrepo.GetConditionEventsAndDependencies()
 	if err != nil {
 		return DiaryResp{}, err
 	}

@@ -10,7 +10,6 @@ import (
 	"encore.app/entity"
 	"encore.app/internalAuth"
 	"encore.app/pollen"
-	"encore.app/symptoms"
 )
 
 // Define the models to generate migrations for.
@@ -18,10 +17,10 @@ var models = []any{
 	&entity.Food{},
 	&entity.Ingredient{},
 	&entity.Meal{},
-	&symptoms.Condition{},
-	&symptoms.SymptomCategory{},
-	&symptoms.Symptom{},
-	&symptoms.ConditionEvent{},
+	&entity.Condition{},
+	&entity.SymptomCategory{},
+	&entity.Symptom{},
+	&entity.ConditionEvent{},
 	&internalAuth.Token{},
 	&internalAuth.User{},
 	&entity.Note{},

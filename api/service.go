@@ -3,8 +3,10 @@ package api
 import (
 	"time"
 
-	"encore.app/api/repositories/meals"
-	"encore.app/api/repositories/notes"
+	"encore.app/internal"
+	"encore.app/internal/repositories/meals"
+	"encore.app/internal/repositories/notes"
+	"encore.app/internal/repositories/symptoms"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,9 +14,13 @@ import (
 
 //encore:service
 type Service struct {
-	DB    *gorm.DB
-	meal  *meals.MealRepository
-	notes *notes.NotesRepository
+	DB              *gorm.DB
+	mealUC          internal.IMealUseCase
+	food            internal.IFoodUseCase
+	notes           *notes.NotesRepository
+	symtpoms        *symptoms.SymptomsRepo
+	conditionEvents internal.IConditionEventUseCase
+	conditions      internal.IConditionUseCase
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -41,9 +47,16 @@ func initService() (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+	mealRepo := meals.NewMealRepository(db)
+	symptomRepo := symptoms.NewSymtpomsRepo(db)
+
 	return &Service{
-		DB:    db,
-		meal:  meals.NewMealRepository(db),
-		notes: notes.NewNotesRepository(db),
+		DB:              db,
+		mealUC:          internal.NewMealUseCase(mealRepo),
+		food:            internal.NewFoodUseCase(mealRepo, mealRepo),
+		notes:           notes.NewNotesRepository(db),
+		symtpoms:        symptoms.NewSymtpomsRepo(db),
+		conditionEvents: internal.NewConditionEventUseCase(symptomRepo),
+		conditions:      internal.NewconditionsUseCase(symptomRepo, symptomRepo),
 	}, nil
 }

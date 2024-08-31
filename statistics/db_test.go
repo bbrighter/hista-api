@@ -8,14 +8,13 @@ import (
 
 	"encore.app/entity"
 	"encore.app/pollen"
-	"encore.app/symptoms"
 	"github.com/stretchr/testify/assert"
 )
 
 var testMeal *entity.Meal
 var testIngredient *entity.Ingredient
-var testEvent *symptoms.ConditionEvent
-var testSymptom *symptoms.Symptom
+var testEvent *entity.ConditionEvent
+var testSymptom *entity.Symptom
 
 func initAPITest(t *testing.T) (*Service, context.Context) {
 	var ctx context.Context = context.TODO()
@@ -39,13 +38,13 @@ func (service *Service) initData() {
 	var food = entity.Food{IngredientID: ingredient.ID, MealID: meal.ID, Condition: entity.Cooked}
 	service.db.FirstOrCreate(&food, &food)
 
-	var event = symptoms.ConditionEvent{Date: time.Date(2021, 1, 1, 3, 0, 0, 0, time.Local)}
+	var event = entity.ConditionEvent{Date: time.Date(2021, 1, 1, 3, 0, 0, 0, time.Local)}
 	service.db.FirstOrCreate(&event, &event)
-	var symptomCategory = symptoms.SymptomCategory{Name: "statistics_category"}
+	var symptomCategory = entity.SymptomCategory{Name: "statistics_category"}
 	service.db.FirstOrCreate(&symptomCategory, &symptomCategory)
-	var symptom = symptoms.Symptom{Name: "statistics_symptom", SymptomCategoryID: symptomCategory.ID}
+	var symptom = entity.Symptom{Name: "statistics_symptom", SymptomCategoryID: symptomCategory.ID}
 	service.db.FirstOrCreate(&symptom, &symptom)
-	var condition = symptoms.Condition{SymptomID: symptom.ID, ConditionEventID: event.ID, Severity: symptoms.High}
+	var condition = entity.Condition{SymptomID: symptom.ID, ConditionEventID: event.ID, Severity: entity.High}
 	service.db.FirstOrCreate(&condition, &condition)
 
 	testMeal = &meal
@@ -71,25 +70,25 @@ func testInput() Input {
 			}},
 		},
 	}
-	var events = symptoms.ConditionEvents{
-		symptoms.ConditionEvent{
+	var events = entity.ConditionEvents{
+		entity.ConditionEvent{
 			ID:   1,
 			Date: time.Now(),
-			Conditions: []symptoms.Condition{{
+			Conditions: []entity.Condition{{
 				ID: 10,
-				Symptom: symptoms.Symptom{
+				Symptom: entity.Symptom{
 					ID:                100,
 					Name:              "Symptom",
 					SymptomCategoryID: 1000,
 				},
 				SymptomID:        100,
-				Severity:         symptoms.High,
+				Severity:         entity.High,
 				ConditionEventID: 1,
 			}},
 		},
 	}
-	var cats = symptoms.SymptomCategories{
-		symptoms.SymptomCategory{
+	var cats = entity.SymptomCategories{
+		entity.SymptomCategory{
 			ID:   1000,
 			Name: "Category",
 		}}

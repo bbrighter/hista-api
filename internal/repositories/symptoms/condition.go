@@ -1,0 +1,103 @@
+package symptoms
+
+import (
+	"encore.app/entity"
+	"encore.app/errors"
+	"gorm.io/gorm/clause"
+)
+
+// Get all conditions including their conditionTypes
+func (repo *SymptomsRepo) ListConditions(eventId uint) entity.Conditions {
+	var conditions entity.Conditions
+	repo.db.Where(&entity.Condition{ConditionEventID: eventId}).Preload(clause.Associations).Find(&conditions)
+	return conditions
+}
+
+// Create a new condition based on the name. New symptoms are only created if the name in the corresponding category doesn't exist.
+// Requires a conditionEventID
+func (repo *SymptomsRepo) CreateConditionBySymptomName(eventId uint, symptomName string, categoryId uint) (uint, error) {
+	events := repo.db.Find(&entity.ConditionEvent{ID: eventId}).RowsAffected
+	if events == 0 {
+		return 0, errors.ErrorNotFound
+	}
+	var symptom = &entity.Symptom{Name: symptomName, SymptomCategoryID: categoryId}
+	var err error
+	var condition entity.Condition
+	symptomId, err := repo.CreateOrReplace(symptomName, categoryId)
+	if err != nil {
+		return 0, err
+	}
+	symptom.ID = symptomId
+	condition.Symptom = *symptom
+	condition.Severity = entity.Medium
+	condition.ConditionEventID = eventId
+	err = repo.db.Debug().Create(&condition).Error
+	return condition.ID, err
+}
+
+// Create a new condition by SymptomID.
+// Requires a ConditionEventID and SymptomID
+func (repo *SymptomsRepo) CreateConditionBySymptomID(eventId uint, symptomId uint) (uint, error) {
+	events := repo.db.Find(&entity.ConditionEvent{ID: eventId}).RowsAffected
+	if events == 0 {
+		return 0, errors.ErrorNotFound
+	}
+	symptoms := repo.db.Find(&entity.Symptom{ID: symptomId}).RowsAffected
+	if symptoms == 0 {
+		return 0, errors.ErrorNotFound
+	}
+	var condition = entity.Condition{
+		SymptomID:        symptomId,
+		ConditionEventID: eventId,
+		Severity:         entity.Medium,
+	}
+	var err error = repo.db.Create(&condition).Error
+	return condition.ID, err
+}
+
+// Delete a condition. Must contain ID.
+// If the condition was the last one using a symptom, the symptom is deleted as well.
+func (repo *SymptomsRepo) DeleteCondition(conditionId uint) error {
+	var condition = entity.Condition{ID: conditionId}
+	repo.db.Preload(clause.Associations).Find(&condition)
+	tx := repo.db.Delete(&condition)
+	if tx.RowsAffected == 0 {
+		return errors.ErrorNotFound
+	}
+	return tx.Error
+}
+
+func (repo *SymptomsRepo) ChangeSeverity(conditionId uint, newSeverity entity.ConditionSeverity) error {
+	var condition = entity.Condition{ID: conditionId}
+	tx := repo.db.Model(condition).Where(&condition).Updates(&entity.Condition{Severity: newSeverity})
+	if tx.RowsAffected == 0 {
+		return errors.ErrorNotFound
+	}
+	return tx.Error
+}
+
+func (repo *SymptomsRepo) GetCondition(id uint) (entity.Condition, error) {
+	var condition = entity.Condition{ID: id}
+	err := repo.db.First(&condition).Error
+	return condition, err
+}
+
+// func numberToSeverity(no uint8) (entity.ConditionSeverity, error) {
+// 	var err error
+// 	var severity entity.ConditionSeverity
+// 	switch no {
+// 	case 1:
+// 		severity = entity.VeryLow
+// 	case 2:
+// 		severity = entity.Low
+// 	case 3:
+// 		severity = entity.Medium
+// 	case 4:
+// 		severity = entity.High
+// 	case 5:
+// 		severity = entity.VeryHigh
+// 	default:
+// 		err = errors.NewError("invalid severity: "+string(no), 400)
+// 	}
+// 	return severity, err
+// }

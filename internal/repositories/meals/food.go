@@ -7,38 +7,40 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (repo *MealRepository) ListFoods(mealID uint) entity.Foods {
+func (repo *MealRepository) ListFoods(mealId uint) entity.Foods {
 	var foods entity.Foods
-	repo.db.Where(&entity.Food{MealID: mealID}).Preload(clause.Associations).Find(&foods)
+	repo.db.Where(&entity.Food{MealID: mealId}).Preload(clause.Associations).Find(&foods)
 	return foods
 }
 
-func (repo *MealRepository) CreateFoodByName(mealId uint, ingredientName string) error {
+func (repo *MealRepository) CreateFoodByName(mealId uint, ingredientName string) (uint, error) {
+	var food entity.Food
 	if rows := repo.db.Find(&entity.Meal{ID: mealId}).RowsAffected; rows == 0 {
-		return errors.ErrorNotFound
+		return 0, errors.ErrorNotFound
 	}
 	var ingredient entity.Ingredient
 	var err error
 	ingredient, err = repo.CreateOrReplaceIngredient(ingredientName)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	if err := repo.db.Create(&entity.Food{MealID: mealId, Ingredient: ingredient}).Error; err != nil {
-		return err
-	}
-	return nil
+	food.MealID = mealId
+	food.Ingredient = ingredient
+	err = repo.db.Create(&food).Error
+	return food.ID, err
 }
 
-func (repo *MealRepository) CreateFoodByID(mealId uint, ingredientId uint) error {
+func (repo *MealRepository) CreateFoodByID(mealId uint, ingredientId uint) (uint, error) {
+	var food entity.Food
 	if rows := repo.db.Find(&entity.Meal{ID: mealId}).RowsAffected; rows == 0 {
-		return errors.ErrorNotFound
+		return 0, errors.ErrorNotFound
 	}
-	var food = entity.Food{MealID: mealId, IngredientID: ingredientId}
+	food.MealID = mealId
+	food.IngredientID = ingredientId
 	if err := repo.db.Create(&food).Error; err != nil {
-		return err
+		return 0, err
 	}
-	repo.db.Preload(clause.Associations).First(&food) // Why is this needed?
-	return nil
+	return food.ID, nil
 }
 
 func (repo *MealRepository) DeleteFood(foodId uint) error {
@@ -57,12 +59,18 @@ func (repo *MealRepository) DeleteFood(foodId uint) error {
 	return err
 }
 
-func (repo *MealRepository) ChangeCondition(foodId uint, newCondition entity.FoodCondition) error {
-	tx := repo.db.Where(&entity.Food{ID: foodId}).Updates(entity.Food{Condition: newCondition})
+func (repo *MealRepository) ChangeCondition(foodId uint, condition entity.FoodCondition) error {
+	tx := repo.db.Where(&entity.Food{ID: foodId}).Updates(entity.Food{Condition: condition})
 	if tx.RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}
 	return tx.Error
+}
+
+func (repo *MealRepository) GetFood(foodId uint) entity.Food {
+	var food = entity.Food{ID: foodId}
+	repo.db.Preload("ingredients").First(&food)
+	return food
 }
 
 func StringToFoodCondition(str string) (entity.FoodCondition, error) {
@@ -74,7 +82,7 @@ func StringToFoodCondition(str string) (entity.FoodCondition, error) {
 	case "cooked":
 		condition = entity.Cooked
 	default:
-		err = errors.NewError("Invalid condition: "+str, 400)
+		err = errors.BadRequest("invalid condition")
 	}
 	return condition, err
 }

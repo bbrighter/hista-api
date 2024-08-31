@@ -23,19 +23,19 @@ func TestCreateMeal(t *testing.T) {
 	var err error
 
 	time := time.Date(1999, 0, 0, 0, 0, 0, 0, time.Local)
-	id, err := repo.Create(time)
+	meal, err := repo.CreateMeal(time)
 
-	assert.GreaterOrEqual(t, id, uint(1))
+	assert.GreaterOrEqual(t, meal.ID, uint(1))
 	assert.NoError(t, err)
 	var mealInDB entity.Meal
-	repo.db.First(&mealInDB, entity.Meal{ID: id})
+	repo.db.First(&mealInDB, entity.Meal{ID: meal.ID})
 	assert.True(t, mealInDB.Date.Equal(mealInDB.Date))
 }
 
 func TestGetMeals(t *testing.T) {
 	repo := initTest(t)
 
-	meals := repo.List()
+	meals := repo.ListMeals()
 	assert.Equal(t, len(meals), 0)
 }
 
@@ -45,7 +45,7 @@ func TestGetMeal(t *testing.T) {
 	var err error
 	var meal entity.Meal
 
-	meal, err = repo.Get(1000)
+	meal, err = repo.GetMeal(1000)
 	assert.Error(t, err)
 
 	repo.db.Create(&entity.Meal{
@@ -56,7 +56,7 @@ func TestGetMeal(t *testing.T) {
 		},
 	})
 
-	meal, err = repo.Get(100)
+	meal, err = repo.GetMeal(100)
 	assert.NoError(t, err)
 	assert.Equal(t, entity.Fresh, meal.Freshness)
 	assert.Equal(t, len(meal.Foods), 1)
@@ -66,7 +66,8 @@ func TestDeleteMeal(t *testing.T) {
 	repo := initTest(t)
 
 	var err error
-	err = repo.Delete(100)
+	var meal = entity.Meal{ID: 100}
+	err = repo.DeleteMeal(meal)
 	assert.Error(t, err)
 
 	repo.db.Create(&entity.Meal{
@@ -77,7 +78,7 @@ func TestDeleteMeal(t *testing.T) {
 		},
 	})
 
-	err = repo.Delete(100)
+	err = repo.DeleteMeal(meal)
 	assert.NoError(t, err)
 }
 
@@ -93,14 +94,11 @@ func TestPatchMeal(t *testing.T) {
 		},
 	})
 
-	var params entity.PatchParams
 	var patchDate time.Time = time.Date(1700, 0, 0, 0, 0, 0, 0, time.Local)
 	var patchFreshness entity.Freshness = entity.Older
-	params.Date = &patchDate
-	params.Freshness = &patchFreshness
 
 	var err error
-	err = repo.Patch(100, params)
+	err = repo.PatchMeal(100, &patchDate, &patchFreshness, nil, nil)
 	assert.NoError(t, err)
 
 	var mealInDb entity.Meal
@@ -109,7 +107,7 @@ func TestPatchMeal(t *testing.T) {
 	assert.Equal(t, mealInDb.Freshness, patchFreshness)
 	assert.EqualValues(t, mealInDb.StressLevel, 1)
 
-	err = repo.Patch(1000, params)
+	err = repo.PatchMeal(1000, nil, nil, nil, nil)
 	assert.Error(t, err)
 
 	// var meal Meal
