@@ -23,7 +23,7 @@ func (uc StatisticsUseCase) FindSymptomsForFoods(fromDate time.Time, toDate time
 	for _, r := range results {
 		ids = append(ids, r.SymptomID)
 	}
-	counts := uc.repo.CountFoods(ids)
+	counts := uc.repo.CountSymptoms(ids)
 	for i, r := range results {
 		for _, count := range counts {
 			if count.ID == r.SymptomID {
@@ -42,7 +42,7 @@ func (uc StatisticsUseCase) FindFoodForSymptoms(fromDate time.Time, toDate time.
 	for _, r := range results {
 		ids = append(ids, r.IngredientID)
 	}
-	counts := uc.repo.CountSymptoms(ids)
+	counts := uc.repo.CountFoods(ids)
 	for i, r := range results {
 		for _, count := range counts {
 			if count.ID == r.IngredientID {

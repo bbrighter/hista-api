@@ -4,22 +4,29 @@ import (
 	"context"
 	"testing"
 
+	entity "encore.app/entity"
 	"github.com/stretchr/testify/assert"
 )
 
+var testSymptom = new(entity.Symptom)
+var testCondition = new(entity.Condition)
+
 func (service *Service) createTestSymptom(t *testing.T) func(t *testing.T) {
-	id, cleanupEvent := service.createTestEvent(t)
+	cleanupEvent := service.createTestEvent(t)
 	ctx := context.TODO()
 	resp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "cat"})
 	assert.NoError(t, err)
 	var name string = "name"
-	conditon, _, err := service.conditions.Create(id, &name, nil, &resp.ID)
+	conditon, cats, err := service.conditions.Create(testEvent.ID, &name, nil, &resp.ID)
+	testCondition = &conditon
+	testSymptom.ID = cats[0].Symptoms[0].ID
 	assert.NoError(t, err)
 
 	cleanup := func(t *testing.T) {
 		_, err := service.DeleteCondition(ctx, conditon.ID)
 		assert.NoError(t, err)
 		cleanupEvent(t)
+		testCondition = new(entity.Condition)
 	}
 
 	return cleanup

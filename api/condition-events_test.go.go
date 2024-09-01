@@ -9,16 +9,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func (service *Service) createTestEvent(t *testing.T) (uint, func(t *testing.T)) {
+var testEvent = new(entity.ConditionEvent)
+
+func (service *Service) createTestEvent(t *testing.T) func(t *testing.T) {
 	ctx := context.TODO()
 	var params = ConditionEventRequestParams{Date: time.Now()}
 	resp, err := service.CreateConditionEvent(ctx, params)
+	testEvent.ID = resp.ID
 	assert.NoError(t, err)
 	cleanup := func(t *testing.T) {
 		err = service.DeleteConditionEvent(ctx, resp.ID)
 		assert.NoError(t, err)
+		testEvent = new(entity.ConditionEvent)
 	}
-	return resp.ID, cleanup
+	return cleanup
 }
 
 func TestCreateConditionEvent(t *testing.T) {
@@ -38,7 +42,7 @@ func TestGetConditionEvents(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, resp.ConditionEvents, 0)
 
-	_, cleanup := service.createTestEvent(t)
+	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
 
 	resp, err = service.GetConditionEvents(ctx)
@@ -52,12 +56,12 @@ func TestGetConditionEvent(t *testing.T) {
 	_, err := service.GetConditionEvent(ctx, 100)
 	assert.EqualError(t, err, "not_found: not found")
 
-	id, cleanup := service.createTestEvent(t)
+	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
 
-	resp, err := service.GetConditionEvent(ctx, id)
+	resp, err := service.GetConditionEvent(ctx, testEvent.ID)
 	assert.NoError(t, err)
-	assert.EqualValues(t, id, resp.ID)
+	assert.EqualValues(t, testEvent.ID, resp.ID)
 	assert.True(t, time.Now().After(resp.Date))
 }
 
@@ -68,13 +72,13 @@ func TestPatchConditionEvent(t *testing.T) {
 	err := service.PatchDate(ctx, 10, params)
 	assert.EqualError(t, err, "not_found: not found")
 
-	id, cleanup := service.createTestEvent(t)
+	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
-	err = service.PatchDate(ctx, id, params)
+	err = service.PatchDate(ctx, testEvent.ID, params)
 	assert.Error(t, err)
 
 	params.Date = time.Now()
-	err = service.PatchDate(ctx, id, params)
+	err = service.PatchDate(ctx, testEvent.ID, params)
 	assert.NoError(t, err)
 }
 
@@ -84,9 +88,9 @@ func TestDeleteConditionEvent(t *testing.T) {
 	err := service.DeleteConditionEvent(ctx, 10)
 	assert.EqualError(t, err, "not_found: not found")
 
-	id, cleanup := service.createTestEvent(t)
+	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
-	err = service.DeleteConditionEvent(ctx, id)
+	err = service.DeleteConditionEvent(ctx, testEvent.ID)
 	assert.NoError(t, err)
 }
 
@@ -100,9 +104,9 @@ func TestPostCondition(t *testing.T) {
 	_, err = service.PostCondition(ctx, 10, params)
 	assert.EqualError(t, err, "not_found: not found")
 
-	eventId, cleanup := service.createTestEvent(t)
+	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
-	_, err = service.PostCondition(ctx, eventId, params)
+	_, err = service.PostCondition(ctx, testEvent.ID, params)
 	assert.Error(t, err)
 
 	// Name + CategoryId
@@ -112,7 +116,7 @@ func TestPostCondition(t *testing.T) {
 	params.SymptomName = &name
 	params.CategoryID = &catResp.ID
 
-	resp, err = service.PostCondition(ctx, eventId, params)
+	resp, err = service.PostCondition(ctx, testEvent.ID, params)
 	defer service.DeleteCondition(ctx, resp.Condition.ID)
 	assert.NoError(t, err)
 
@@ -121,7 +125,7 @@ func TestPostCondition(t *testing.T) {
 	params.CategoryID = nil
 	params.SymptomID = &resp.Symptoms.Categories[0].Symptoms[0].ID
 
-	resp, err = service.PostCondition(ctx, eventId, params)
+	resp, err = service.PostCondition(ctx, testEvent.ID, params)
 	defer service.DeleteCondition(ctx, resp.Condition.ID)
 	assert.NoError(t, err)
 }

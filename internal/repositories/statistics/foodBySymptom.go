@@ -7,25 +7,7 @@ import (
 )
 
 func (repo *StatisticsRepo) FindFoodForSymptoms(fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error) {
-	var err error
 	var results []entity.SymptomsResult
-	results, err = repo.countFoodBySymptoms(fromDate, toDate, symptomIds)
-	return results, err
-}
-
-func (repo *StatisticsRepo) CountFoods(relevantSymptomIds []uint) []entity.CountResult {
-	var countResults []entity.CountResult
-	repo.db.
-		Table("foods").
-		Select("count(*) as count", "foods.ingredient_id as id").
-		Where("ingredient_id in (?)", relevantSymptomIds).
-		Group("ingredient_id").
-		Scan(&countResults)
-	return countResults
-}
-
-func (repo *StatisticsRepo) countFoodBySymptoms(fromDate time.Time, toDate time.Time, symptomIds []uint) ([]entity.SymptomsResult, error) {
-	var result []entity.SymptomsResult
 	subquery := repo.db.Select(
 		"foods.ingredient_id as ingredient_id",
 		"foods.condition as food_condition",
@@ -52,7 +34,18 @@ func (repo *StatisticsRepo) countFoodBySymptoms(fromDate time.Time, toDate time.
 			"SUM(u.hours1) as hours1",
 		).
 		Group("ingredient_id, food_condition").
-		Scan(&result).Error
+		Scan(&results).Error
 
-	return result, err
+	return results, err
+}
+
+func (repo *StatisticsRepo) CountFoods(relevantSymptomIds []uint) []entity.CountResult {
+	var countResults []entity.CountResult
+	repo.db.
+		Table("foods").
+		Select("count(*) as count", "foods.ingredient_id as id").
+		Where("ingredient_id in (?)", relevantSymptomIds).
+		Group("ingredient_id").
+		Scan(&countResults)
+	return countResults
 }

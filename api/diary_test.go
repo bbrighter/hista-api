@@ -16,11 +16,11 @@ func TestGetDiary(t *testing.T) {
 	symptomCleanup := service.createTestSymptom(t)
 	defer symptomCleanup(t)
 
-	_, cleanupFood := service.createTestFood(t)
+	cleanupFood := service.createTestFood(t)
 	defer cleanupFood(t)
 
-	_, cleanupNote := service.createTestNote(t)
-	defer cleanupNote()
+	cleanupNote := service.createTestNote(t)
+	defer cleanupNote(t)
 
 	resp, err = service.GetDiary(ctx)
 	assert.NoError(t, err)

@@ -4,20 +4,31 @@ import (
 	"context"
 	"testing"
 
+	"encore.app/entity"
 	"github.com/stretchr/testify/assert"
 )
 
-func (service *Service) createTestFood(t *testing.T) (uint, func(t *testing.T)) {
+var testFood *entity.Food = new(entity.Food)
+var testIngredient *entity.Ingredient = new(entity.Ingredient)
+var testMeal *entity.Meal = new(entity.Meal)
+
+func (service *Service) createTestFood(t *testing.T) func(t *testing.T) {
 	id, err := service.mealUC.CreateMeal(nil)
+	testMeal.ID = id
 	assert.NoError(t, err)
-	food, _, err := service.food.CreateFood(id, "ingredient", 0)
+	food, ings, err := service.food.CreateFood(id, "ingredient", 0)
+	testFood = &food
+	testIngredient = &ings[0]
 	assert.NoError(t, err)
 	cleanup := func(t *testing.T) {
 		ctx := context.TODO()
 		err := service.DeleteMeal(ctx, id)
 		assert.NoError(t, err)
+		testFood = new(entity.Food)
+		testIngredient = new(entity.Ingredient)
+		testMeal = new(entity.Meal)
 	}
-	return food.ID, cleanup
+	return cleanup
 }
 
 func TestDeleteFood(t *testing.T) {
@@ -26,10 +37,10 @@ func TestDeleteFood(t *testing.T) {
 	_, err := service.DeleteFood(ctx, 1)
 	assert.EqualError(t, err, "not_found: not found")
 
-	id, cleanup := service.createTestFood(t)
+	cleanup := service.createTestFood(t)
 	defer cleanup(t)
 
-	ing, err := service.DeleteFood(ctx, id)
+	ing, err := service.DeleteFood(ctx, testFood.ID)
 	assert.NoError(t, err)
 	assert.Len(t, ing.Ingredients, 0)
 }
@@ -42,13 +53,13 @@ func TestPatchFoodCondition(t *testing.T) {
 	err := service.PatchFoodCondition(ctx, 100, params)
 	assert.EqualError(t, err, "not_found: not found")
 
-	id, cleanup := service.createTestFood(t)
+	cleanup := service.createTestFood(t)
 	defer cleanup(t)
 
-	err = service.PatchFoodCondition(ctx, id, params)
+	err = service.PatchFoodCondition(ctx, testFood.ID, params)
 	assert.NoError(t, err)
 
 	params.Condition = "invalid"
-	err = service.PatchFoodCondition(ctx, id, params)
+	err = service.PatchFoodCondition(ctx, testFood.ID, params)
 	assert.EqualError(t, err, "invalid_argument: invalid condition")
 }

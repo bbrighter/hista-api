@@ -11,7 +11,7 @@ func TestPatchCondition(t *testing.T) {
 	t.Skip()
 	service, ctx := initAPITest(t)
 
-	eventId, cleanup := service.createTestEvent(t)
+	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
 
 	var err error
@@ -21,7 +21,7 @@ func TestPatchCondition(t *testing.T) {
 	catId, err := service.symtpoms.CreateCategory("cat")
 	assert.NoError(t, err)
 	symtpomName := "name"
-	resp, err := service.PostCondition(ctx, eventId, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
+	resp, err := service.PostCondition(ctx, testEvent.ID, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
 	defer service.DeleteCondition(ctx, resp.Condition.ID)
 	assert.NoError(t, err)
 	conditionId := resp.Condition.ID
@@ -33,12 +33,12 @@ func TestPatchCondition(t *testing.T) {
 func TestDeleteCondition(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	eventId, cleanup := service.createTestEvent(t)
+	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
 	catId, err := service.symtpoms.CreateCategory("cat2")
 	assert.NoError(t, err)
 	symtpomName := "name"
-	resp, err := service.PostCondition(ctx, eventId, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
+	resp, err := service.PostCondition(ctx, testEvent.ID, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
 	assert.NoError(t, err)
 	conditionId := resp.Condition.ID
 

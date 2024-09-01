@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"log"
 	"time"
 
 	entity "encore.app/entity"
@@ -26,27 +27,10 @@ func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, params St
 		return resp, errors.ErrorAttributeMustBeSet("ids")
 	}
 	stats, err := service.statistics.FindFoodForSymptoms(params.FromDate, params.ToDate, params.IDs)
+	if len(stats) > 0 {
+		log.Printf("Stats %v", stats[0].Count)
+	}
 	return stats.ToResponse(), err
-
-	// resp, err := findFoodForSymptoms(service, params.FromDate, params.ToDate, params.IDs)
-	// if err != nil {
-	// 	return resp, err
-	// }
-
-	// var relevantIngredientIDs []uint
-	// for _, result := range resp.Statistics {
-	// 	relevantIngredientIDs = append(relevantIngredientIDs, result.IngredientID)
-	// }
-	// counts := countFoods(service, relevantIngredientIDs)
-	// for i, result := range resp.Statistics {
-	// 	for _, count := range counts {
-	// 		if count.ID == result.IngredientID {
-	// 			resp.Statistics[i].Count = count.Count
-	// 		}
-	// 	}
-	// }
-
-	// return resp, err
 }
 
 // encore:api auth method=GET path=/statistics/ingredients
@@ -62,21 +46,4 @@ func (service *Service) GetStatisticsByIngredientsIds(ctx context.Context, param
 	}
 	stats, err := service.statistics.FindSymptomsForFoods(params.FromDate, params.ToDate, params.IDs)
 	return stats.ToResponse(), err
-	// resp, err := findSymptomsForFoods(service, params.FromDate, params.ToDate, params.IDs)
-	// if err != nil {
-	// 	return resp, err
-	// }
-	// var relevantSymptomIds []uint
-	// for _, result := range resp.Statistics {
-	// 	relevantSymptomIds = append(relevantSymptomIds, result.SymptomID)
-	// }
-	// counts := countSymptoms(service, relevantSymptomIds)
-	// for i, result := range resp.Statistics {
-	// 	for _, count := range counts {
-	// 		if count.ID == result.SymptomID {
-	// 			resp.Statistics[i].Count = count.Count
-	// 		}
-	// 	}
-	// }
-	// return resp, err
 }

@@ -27,13 +27,7 @@ type SymptomStatisticsResponse struct {
 func (res FoodResults) ToResponse() SymptomStatisticsResponse {
 	var stats = []StatisticBySymptom{}
 	for _, res := range res {
-		var stat = StatisticBySymptom{
-			SymptomID: res.SymptomID,
-			Severity:  res.Severity,
-			Hours72:   res.Hours72,
-			Hours24:   res.Hours24,
-			Hours1:    res.Hours1,
-		}
+		stat := StatisticBySymptom(res)
 		stats = append(stats, stat)
 	}
 	return SymptomStatisticsResponse{Statistics: stats}
@@ -66,13 +60,7 @@ type FoodStatisticsResponse struct {
 func (res SymptomResults) ToResponse() FoodStatisticsResponse {
 	var stats = []StatisticsByFood{}
 	for _, res := range res {
-		var stat = StatisticsByFood{
-			IngredientID:  res.IngredientID,
-			FoodCondition: res.FoodCondition,
-			Hours72:       res.Hours72,
-			Hours24:       res.Hours24,
-			Hours1:        res.Hours1,
-		}
+		stat := StatisticsByFood(res)
 		stats = append(stats, stat)
 	}
 	return FoodStatisticsResponse{Statistics: stats}
