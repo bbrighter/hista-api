@@ -56,3 +56,16 @@ func deleteSymptomIfUnused(tx *gorm.DB, symptomId uint, catId uint) error {
 	}
 	return err
 }
+
+func (m *Meal) BeforeDelete(tx *gorm.DB) error {
+	return tx.Delete(&Food{}, Food{MealID: m.ID}).Error
+}
+
+func (f *Food) BeforeDelete(tx *gorm.DB) error {
+	tx.First(f)
+	ingredientUsedInFood := tx.Where(Food{IngredientID: f.IngredientID}).Not(Food{ID: f.ID}).Find(&Food{}).RowsAffected
+	if ingredientUsedInFood == 0 {
+		return tx.Delete(&Ingredient{}, Ingredient{ID: f.IngredientID}).Error
+	}
+	return nil
+}

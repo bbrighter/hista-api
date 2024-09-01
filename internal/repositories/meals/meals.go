@@ -36,20 +36,11 @@ func (repo *MealRepository) GetMeal(id uint) (entity.Meal, error) {
 
 func (repo *MealRepository) DeleteMeal(id uint) error {
 	var meal = entity.Meal{ID: id}
-	if repo.db.Find(&meal).RowsAffected == 0 {
+	tx := repo.db.Delete(&meal)
+	if tx.RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}
-	return repo.db.Transaction(func(tx *gorm.DB) error {
-		var foods []entity.Food
-		tx.Where(&entity.Food{MealID: meal.ID}).Find(&foods)
-		if err := tx.Delete(&entity.Food{}, entity.Food{MealID: meal.ID}).Error; err != nil {
-			return err
-		}
-		for _, food := range foods {
-			deleteIngredientIfUnused(tx, food.IngredientID)
-		}
-		return tx.Delete(&entity.Meal{ID: meal.ID}).Error
-	})
+	return tx.Error
 }
 
 // PatchMeal a meal with parameters. Only given parameters are patched.
@@ -91,13 +82,4 @@ func GetMealsAndDependencies(db *gorm.DB) (entity.Meals, error) {
 		Preload("Foods").
 		Find(&meals).Error
 	return meals, err
-}
-
-func deleteIngredientIfUnused(tx *gorm.DB, ingredientId uint) error {
-	var foods []entity.Food
-	var err error
-	if usedIngredients := tx.Where(entity.Food{IngredientID: ingredientId}).Find(&foods).RowsAffected; usedIngredients == 0 {
-		err = tx.Where(&entity.Ingredient{ID: ingredientId}).Delete(&entity.Ingredient{}).Error
-	}
-	return err
 }

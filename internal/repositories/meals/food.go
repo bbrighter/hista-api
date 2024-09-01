@@ -3,7 +3,6 @@ package meals
 import (
 	"encore.app/entity"
 	"encore.app/errors"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -45,18 +44,11 @@ func (repo *MealRepository) CreateFoodByID(mealId uint, ingredientId uint) (uint
 
 func (repo *MealRepository) DeleteFood(foodId uint) error {
 	var food = entity.Food{ID: foodId}
-	rows := repo.db.Preload("Ingredient").Find(&food).RowsAffected
-	if rows == 0 {
+	tx := repo.db.Preload("Ingredient").Find(&food)
+	if tx.RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}
-	var err error = repo.db.Transaction(func(tx *gorm.DB) error {
-		var foodIngredient = food.Ingredient
-		if err := tx.Delete(&food).Error; err != nil {
-			return err
-		}
-		return deleteIngredientIfUnused(tx, foodIngredient.ID)
-	})
-	return err
+	return tx.Error
 }
 
 func (repo *MealRepository) ChangeCondition(foodId uint, condition entity.FoodCondition) error {

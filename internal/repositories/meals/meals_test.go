@@ -74,12 +74,18 @@ func TestDeleteMeal(t *testing.T) {
 		ID:        mealId,
 		Freshness: entity.Fresh,
 		Foods: []entity.Food{
-			{ID: 1},
+			{ID: 1,
+				Ingredient: entity.Ingredient{ID: 1}},
 		},
 	})
 
 	err = repo.DeleteMeal(mealId)
 	assert.NoError(t, err)
+
+	foods := repo.db.Find(&entity.Food{}).RowsAffected
+	assert.EqualValues(t, 0, foods)
+	ingredients := repo.db.Find(&entity.Ingredient{}).RowsAffected
+	assert.EqualValues(t, 0, ingredients)
 }
 
 func TestPatchMeal(t *testing.T) {
