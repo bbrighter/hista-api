@@ -17,13 +17,13 @@ func (repo *MealRepository) ListMeals() entity.Meals {
 	return meals
 }
 
-func (repo *MealRepository) CreateMeal(data time.Time) (entity.Meal, error) {
+func (repo *MealRepository) CreateMeal(data time.Time) (uint, error) {
 	var meal = entity.Meal{IsAlone: mealIsAlone}
 	if meal.Date.IsZero() {
 		meal.Date = time.Now()
 	}
 	err := repo.db.Create(&meal).Error
-	return meal, err
+	return meal.ID, err
 }
 
 func (repo *MealRepository) GetMeal(id uint) (entity.Meal, error) {
@@ -34,7 +34,8 @@ func (repo *MealRepository) GetMeal(id uint) (entity.Meal, error) {
 	return meal, nil
 }
 
-func (repo *MealRepository) DeleteMeal(meal entity.Meal) error {
+func (repo *MealRepository) DeleteMeal(id uint) error {
+	var meal = entity.Meal{ID: id}
 	if repo.db.Find(&meal).RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}

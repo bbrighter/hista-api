@@ -14,12 +14,12 @@ func (service *Service) GetNotes(ctx context.Context) (entity.NotesResp, error) 
 }
 
 // encore:api auth method=POST path=/notes
-func (service *Service) PostNote(ctx context.Context) (entity.NoteResp, error) {
-	note, err := service.notes.Create()
+func (service *Service) PostNote(ctx context.Context) (entity.IDResponse, error) {
+	id, err := service.notes.Create()
 	if err != nil {
-		return entity.NoteResp{}, err
+		return entity.IDResponse{}, err
 	}
-	return note.ToResp(), nil
+	return entity.IDResponse{ID: id}, nil
 }
 
 // encore:api auth method=DELETE path=/notes/:noteId

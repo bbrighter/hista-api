@@ -27,13 +27,12 @@ func (uc MealUseCase) CreateMeal(date *time.Time) (uint, error) {
 		now := time.Now()
 		date = &now
 	}
-	meal, err := uc.Repo.CreateMeal(*date)
-	return meal.ID, err
+	id, err := uc.Repo.CreateMeal(*date)
+	return id, err
 }
 
 func (uc MealUseCase) DeleteMeal(id uint) error {
-	var meal = entity.Meal{ID: id}
-	return uc.Repo.DeleteMeal(meal)
+	return uc.Repo.DeleteMeal(id)
 }
 
 func (uc MealUseCase) PatchMeal(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error {

@@ -12,11 +12,12 @@ func (service *Service) createTestSymptom(t *testing.T) func(t *testing.T) {
 	ctx := context.TODO()
 	resp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "cat"})
 	assert.NoError(t, err)
-	conditionId, err := service.symtpoms.CreateConditionBySymptomName(id, "name", resp.ID)
+	var name string = "name"
+	conditon, _, err := service.conditions.Create(id, &name, nil, &resp.ID)
 	assert.NoError(t, err)
 
 	cleanup := func(t *testing.T) {
-		_, err := service.DeleteCondition(ctx, conditionId)
+		_, err := service.DeleteCondition(ctx, conditon.ID)
 		assert.NoError(t, err)
 		cleanupEvent(t)
 	}

@@ -8,7 +8,7 @@ import (
 
 // encore:api auth method=GET path=/symptoms
 func (service Service) GetSymptoms(ctx context.Context) (entity.SymptomCategoriesResponse, error) {
-	var categories entity.SymptomCategories = service.symtpoms.ListCategories()
+	var categories entity.SymptomCategories = service.symtpoms.List()
 	return categories.ToResponse(), nil
 }
 

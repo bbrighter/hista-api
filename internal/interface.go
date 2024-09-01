@@ -9,9 +9,9 @@ import (
 type (
 	IMealsRepository interface {
 		ListMeals() entity.Meals
-		CreateMeal(date time.Time) (entity.Meal, error)
+		CreateMeal(date time.Time) (uint, error)
 		GetMeal(id uint) (entity.Meal, error)
-		DeleteMeal(entity.Meal) error
+		DeleteMeal(id uint) error
 		PatchMeal(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error
 	}
 
@@ -45,9 +45,9 @@ type (
 
 	INotesRepository interface {
 		List() entity.Notes
-		Create() (entity.Note, error)
-		Patch(note entity.Note, date *time.Time, text *string) error
-		Delete(note entity.Note) error
+		Create() (uint, error)
+		Patch(id uint, date *time.Time, text *string) error
+		Delete(id uint) error
 	}
 
 	INotesUseCase interface {
@@ -90,11 +90,17 @@ type (
 	}
 
 	ISymtpomsRepo interface {
-		// ListSymptoms() entity.Symptoms
 		CreateOrReplace(symptomName string, symtpomCategoryId uint) (uint, error)
 	}
 
 	ISymptomCategoriesRepo interface {
 		ListCategories() entity.SymptomCategories
+		CreateCategory(name string) (uint, error)
+	}
+
+	ISymptomsUseCase interface {
+		PutSymptom(symptomName string, symtpomCategoryId uint) (uint, error)
+		List() entity.SymptomCategories
+		CreateCategory(name string) (uint, error)
 	}
 )

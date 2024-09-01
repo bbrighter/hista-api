@@ -23,12 +23,12 @@ func TestCreateMeal(t *testing.T) {
 	var err error
 
 	time := time.Date(1999, 0, 0, 0, 0, 0, 0, time.Local)
-	meal, err := repo.CreateMeal(time)
+	id, err := repo.CreateMeal(time)
 
-	assert.GreaterOrEqual(t, meal.ID, uint(1))
+	assert.GreaterOrEqual(t, id, uint(1))
 	assert.NoError(t, err)
 	var mealInDB entity.Meal
-	repo.db.First(&mealInDB, entity.Meal{ID: meal.ID})
+	repo.db.First(&mealInDB, entity.Meal{ID: id})
 	assert.True(t, mealInDB.Date.Equal(mealInDB.Date))
 }
 
@@ -66,19 +66,19 @@ func TestDeleteMeal(t *testing.T) {
 	repo := initTest(t)
 
 	var err error
-	var meal = entity.Meal{ID: 100}
-	err = repo.DeleteMeal(meal)
+	var mealId uint = 100
+	err = repo.DeleteMeal(mealId)
 	assert.Error(t, err)
 
 	repo.db.Create(&entity.Meal{
-		ID:        100,
+		ID:        mealId,
 		Freshness: entity.Fresh,
 		Foods: []entity.Food{
 			{ID: 1},
 		},
 	})
 
-	err = repo.DeleteMeal(meal)
+	err = repo.DeleteMeal(mealId)
 	assert.NoError(t, err)
 }
 

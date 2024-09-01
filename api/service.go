@@ -17,8 +17,8 @@ type Service struct {
 	DB              *gorm.DB
 	mealUC          internal.IMealUseCase
 	food            internal.IFoodUseCase
-	notes           *notes.NotesRepository
-	symtpoms        *symptoms.SymptomsRepo
+	notes           internal.INotesUseCase
+	symtpoms        internal.ISymptomsUseCase
 	conditionEvents internal.IConditionEventUseCase
 	conditions      internal.IConditionUseCase
 }
@@ -49,13 +49,14 @@ func initService() (*Service, error) {
 	}
 	mealRepo := meals.NewMealRepository(db)
 	symptomRepo := symptoms.NewSymtpomsRepo(db)
+	noteRepo := notes.NewNotesRepository(db)
 
 	return &Service{
 		DB:              db,
 		mealUC:          internal.NewMealUseCase(mealRepo),
 		food:            internal.NewFoodUseCase(mealRepo, mealRepo),
-		notes:           notes.NewNotesRepository(db),
-		symtpoms:        symptoms.NewSymtpomsRepo(db),
+		notes:           internal.NewNoteUseCase(noteRepo),
+		symtpoms:        internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
 		conditionEvents: internal.NewConditionEventUseCase(symptomRepo),
 		conditions:      internal.NewconditionsUseCase(symptomRepo, symptomRepo),
 	}, nil
