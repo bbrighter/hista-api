@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"encore.app/entity"
+	"encore.app/pollen"
 )
 
 type (
@@ -13,6 +14,7 @@ type (
 		GetMeal(id uint) (entity.Meal, error)
 		DeleteMeal(id uint) error
 		PatchMeal(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error
+		ListMealsWithDependencies() entity.Meals
 	}
 
 	IMealUseCase interface {
@@ -63,6 +65,7 @@ type (
 		GetConditionEvent(uint) (entity.ConditionEvent, error)
 		PatchConditionEvent(uint, time.Time) error
 		DeleteConditionEvent(uint) error
+		ListConditionEventsAndDependencies() entity.ConditionEvents
 	}
 
 	IConditionEventUseCase interface {
@@ -102,5 +105,21 @@ type (
 		PutSymptom(symptomName string, symtpomCategoryId uint) (uint, error)
 		List() entity.SymptomCategories
 		CreateCategory(name string) (uint, error)
+	}
+
+	IDiaryUseCase interface {
+		Get() (entity.Meals, entity.ConditionEvents, entity.SymptomCategories, entity.Notes, pollen.PollenEvents)
+	}
+
+	IStatisticsRepo interface {
+		FindSymptomsForFoods(fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error)
+		FindFoodForSymptoms(fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error)
+		CountFoods(symptomIds []uint) []entity.CountResult
+		CountSymptoms(ingredientIds []uint) []entity.CountResult
+	}
+
+	IStatisticsUseCase interface {
+		FindSymptomsForFoods(fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error)
+		FindFoodForSymptoms(fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error)
 	}
 )

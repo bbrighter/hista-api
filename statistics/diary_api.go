@@ -5,7 +5,6 @@ import (
 
 	"encore.app/internal/repositories/meals"
 	"encore.app/internal/repositories/notes"
-	"encore.app/internal/repositories/symptoms"
 	"encore.app/pollen"
 )
 
@@ -13,14 +12,14 @@ type DiaryResp struct {
 	Diaries []RawDiary `json:"diaries"`
 }
 
-// encore:api auth method=GET path=/diary
+// // encore:api auth method=GET path=/diary
 func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
 	meals, err := meals.GetMealsAndDependencies(service.db)
 	if err != nil {
 		return DiaryResp{}, err
 	}
-	symrepo := symptoms.NewSymtpomsRepo(service.db)
-	events, cats, err := symrepo.GetConditionEventsAndDependencies()
+	// symrepo := symptoms.NewSymtpomsRepo(service.db)
+	// events, cats, err := symrepo.GetConditionEventsAndDependencies()
 	if err != nil {
 		return DiaryResp{}, err
 	}
@@ -29,11 +28,11 @@ func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
 	// notes := notes.FindAllNotes(service.db)
 	pollens := pollen.FindPollenWithSeverity(service.db)
 	var input = Input{
-		Meals:      meals,
-		Events:     events,
-		Categories: cats,
-		Notes:      notes,
-		Pollens:    pollens,
+		Meals: meals,
+		// Events:     events,
+		// Categories: cats,
+		Notes:   notes,
+		Pollens: pollens,
 	}
 	diaries := createRawDiary(input)
 	return DiaryResp{Diaries: diaries}, nil

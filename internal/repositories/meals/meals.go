@@ -83,3 +83,11 @@ func GetMealsAndDependencies(db *gorm.DB) (entity.Meals, error) {
 		Find(&meals).Error
 	return meals, err
 }
+
+func (repo *MealRepository) ListMealsWithDependencies() entity.Meals {
+	var meals entity.Meals
+	repo.db.Preload("Foods.Ingredient").
+		Preload("Foods").
+		Find(&meals)
+	return meals
+}

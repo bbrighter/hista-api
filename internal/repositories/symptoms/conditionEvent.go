@@ -45,17 +45,10 @@ func (repo *SymptomsRepo) PatchConditionEvent(eventId uint, date time.Time) erro
 	return repo.db.Model(event).Update("date", date).Error
 }
 
-func (repo *SymptomsRepo) GetConditionEventsAndDependencies() (entity.ConditionEvents, entity.SymptomCategories, error) {
+func (repo *SymptomsRepo) ListConditionEventsAndDependencies() entity.ConditionEvents {
 	var events entity.ConditionEvents
-	var cats entity.SymptomCategories
-	if err := repo.db.Preload("Conditions.Symptom").
+	repo.db.Preload("Conditions.Symptom").
 		Preload("Conditions").
-		Find(&events).
-		Error; err != nil {
-		return events, cats, err
-	}
-	if err := repo.db.Find(&cats).Error; err != nil {
-		return events, cats, err
-	}
-	return events, cats, nil
+		Find(&events)
+	return events
 }

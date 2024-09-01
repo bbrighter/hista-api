@@ -13,7 +13,7 @@ type StatisticParams struct {
 	ToDate   time.Time `json:"toDate"`
 }
 
-// encore:api auth method=GET path=/statistics/symptoms
+// // encore:api auth method=GET path=/statistics/symptoms
 func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, params StatisticParams) (FoodStatisticsResponse, error) {
 	var resp = FoodStatisticsResponse{}
 	if params.FromDate.IsZero() {
@@ -46,7 +46,7 @@ func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, params St
 	return resp, err
 }
 
-// encore:api auth method=GET path=/statistics/ingredients
+// // encore:api auth method=GET path=/statistics/ingredients
 func (service *Service) GetStatisticsByIngredientsIds(ctx context.Context, params StatisticParams) (SymptomStatisticsResponse, error) {
 	var resp = SymptomStatisticsResponse{}
 	if params.FromDate.IsZero() {
