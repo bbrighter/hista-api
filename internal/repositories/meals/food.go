@@ -44,7 +44,7 @@ func (repo *MealRepository) CreateFoodByID(mealId uint, ingredientId uint) (uint
 
 func (repo *MealRepository) DeleteFood(foodId uint) error {
 	var food = entity.Food{ID: foodId}
-	tx := repo.db.Preload("Ingredient").Find(&food)
+	tx := repo.db.Delete(&food)
 	if tx.RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}
@@ -61,7 +61,7 @@ func (repo *MealRepository) ChangeCondition(foodId uint, condition entity.FoodCo
 
 func (repo *MealRepository) GetFood(foodId uint) entity.Food {
 	var food = entity.Food{ID: foodId}
-	repo.db.Preload("ingredients").First(&food)
+	repo.db.Preload(clause.Associations).First(&food)
 	return food
 }
 

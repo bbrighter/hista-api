@@ -1,30 +1,20 @@
 package entity
 
 import (
-	"log"
-
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
 func (e *ConditionEvent) AfterDelete(tx *gorm.DB) (err error) {
 	var conditions Conditions
-	cons := tx.Debug().Preload(clause.Associations).Find(&conditions, Condition{ConditionEventID: e.ID})
+	cons := tx.Preload(clause.Associations).Find(&conditions, Condition{ConditionEventID: e.ID})
 	if cons.RowsAffected == 0 {
 		return nil
 	}
-	return tx.Debug().Delete(&conditions).Error
+	return tx.Delete(&conditions).Error
 }
 
 func (c *Condition) AfterDelete(tx *gorm.DB) (err error) {
-	log.Printf("Condition: ID: %v, Severity: %v, SymptomId: %v, ConditionEventId: %v, Symptom.ID: %v, Symptom.Name: %v, Symtpom.CategoryId: %v",
-		c.ID,
-		c.Severity,
-		c.SymptomID,
-		c.ConditionEventID,
-		c.Symptom.ID,
-		c.Symptom.Name,
-		c.Symptom.SymptomCategoryID)
 	return deleteSymptomIfUnused(tx, c.SymptomID, c.Symptom.SymptomCategoryID)
 }
 
@@ -58,14 +48,22 @@ func deleteSymptomIfUnused(tx *gorm.DB, symptomId uint, catId uint) error {
 }
 
 func (m *Meal) BeforeDelete(tx *gorm.DB) error {
-	return tx.Delete(&Food{}, Food{MealID: m.ID}).Error
-}
-
-func (f *Food) BeforeDelete(tx *gorm.DB) error {
-	tx.First(f)
-	ingredientUsedInFood := tx.Where(Food{IngredientID: f.IngredientID}).Not(Food{ID: f.ID}).Find(&Food{}).RowsAffected
-	if ingredientUsedInFood == 0 {
-		return tx.Delete(&Ingredient{}, Ingredient{ID: f.IngredientID}).Error
+	var foods Foods
+	tx.Find(&foods, Food{MealID: m.ID})
+	for _, food := range foods {
+		err := tx.Delete(&food).Error
+		if err != nil {
+			return err
+		}
 	}
 	return nil
+}
+
+func (f *Food) AfterDelete(tx *gorm.DB) error {
+	var unusedIngredients Ingredients
+	tx.Table("ingredients").
+		Joins("LEFT JOIN foods ON foods.ingredient_id = ingredients.id").
+		Where("foods.id IS NULL").
+		Find(&unusedIngredients)
+	return tx.Delete(&unusedIngredients).Error
 }

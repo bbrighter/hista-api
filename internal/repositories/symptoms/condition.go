@@ -31,7 +31,7 @@ func (repo *SymptomsRepo) CreateConditionBySymptomName(eventId uint, symptomName
 	condition.Symptom = *symptom
 	condition.Severity = entity.Medium
 	condition.ConditionEventID = eventId
-	err = repo.db.Debug().Create(&condition).Error
+	err = repo.db.Create(&condition).Error
 	return condition.ID, err
 }
 

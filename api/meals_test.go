@@ -126,13 +126,12 @@ func TestDeleteFoodAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
 
 	_, err := service.DeleteFood(ctx, 100)
-	assert.Error(t, err)
+	assert.EqualError(t, err, "not_found: not found")
 
 	mealId, cleanup := service.createTestMeal(t)
 	defer cleanup()
 	var params = FoodParams{IngredientName: "New", Condition: entity.Cooked}
 	food, _ := service.PostFood(ctx, mealId, params)
-	defer service.DeleteFood(ctx, food.Food.ID)
 
 	ing, err := service.DeleteFood(ctx, food.Food.ID)
 	assert.NoError(t, err)

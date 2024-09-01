@@ -20,7 +20,7 @@ type CountResult struct {
 
 func countFoods(service *Service, relevantSymptomIds []uint) []CountResult {
 	var countResults []CountResult
-	service.db.Debug().
+	service.db.
 		Table("foods").
 		Select("count(*) as count", "foods.ingredient_id as id").
 		Where("ingredient_id in (?)", relevantSymptomIds).
@@ -140,7 +140,7 @@ func countSymptomsByFood(service *Service, fromDate time.Time, toDate time.Time,
 
 func countSymptoms(service *Service, relevantSymptomIds []uint) []CountResult {
 	var countResults []CountResult
-	service.db.Debug().
+	service.db.
 		Table("conditions").
 		Select("count(*) as count", "conditions.symptom_id as id").
 		Where("symptom_id in (?)", relevantSymptomIds).

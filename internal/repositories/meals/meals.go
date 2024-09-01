@@ -28,7 +28,7 @@ func (repo *MealRepository) CreateMeal(data time.Time) (uint, error) {
 
 func (repo *MealRepository) GetMeal(id uint) (entity.Meal, error) {
 	var meal = entity.Meal{ID: id}
-	if repo.db.Debug().Preload("Foods.Ingredient").Preload("Foods").Find(&meal).RowsAffected == 0 {
+	if repo.db.Preload("Foods.Ingredient").Preload("Foods").Find(&meal).RowsAffected == 0 {
 		return meal, &errs.Error{Code: errs.NotFound}
 	}
 	return meal, nil
