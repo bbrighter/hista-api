@@ -38,11 +38,11 @@ type Conditions []Condition
 type ConditionSeverity uint8
 
 const (
-	VeryLow  ConditionSeverity = 1
-	Low      ConditionSeverity = 2
-	Medium   ConditionSeverity = 3
-	High     ConditionSeverity = 4
-	VeryHigh ConditionSeverity = 5
+	VeryLowSeverity  ConditionSeverity = 1
+	LowSeverity      ConditionSeverity = 2
+	MediumSeverity   ConditionSeverity = 3
+	HighSeverity     ConditionSeverity = 4
+	VeryHighSeverity ConditionSeverity = 5
 )
 
 type Symptoms []Symptom

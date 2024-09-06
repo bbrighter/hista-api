@@ -5,8 +5,6 @@ import (
 	"sort"
 	"strconv"
 	"time"
-
-	"encore.app/pollen"
 )
 
 type RawDiary struct {
@@ -20,19 +18,19 @@ type RawDiary struct {
 type DiaryType string
 
 const (
-	FoodType    DiaryType = "Food"
-	SymptomType DiaryType = "Symptom"
-	NoteType    DiaryType = "Note"
-	PollenType  DiaryType = "Pollen"
+	DiaryFood    DiaryType = "Food"
+	DiarySymptom DiaryType = "Symptom"
+	DiaryNote    DiaryType = "Note"
+	DiaryPollen  DiaryType = "Pollen"
 )
 
-func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories, notes Notes, pollens pollen.PollenEvents) []RawDiary {
+func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories, notes Notes, pollens PollenEvents) []RawDiary {
 	var diaries = []RawDiary{}
 	for _, meal := range meals {
 		for _, food := range meal.Foods {
 			var diary = RawDiary{
 				Date:     meal.Date,
-				Type:     FoodType,
+				Type:     DiaryFood,
 				Content:  food.Ingredient.Name,
 				Severity: string(food.Condition),
 			}
@@ -43,7 +41,7 @@ func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories,
 		for _, cond := range event.Conditions {
 			var diary = RawDiary{
 				Date:     event.Date,
-				Type:     SymptomType,
+				Type:     DiarySymptom,
 				Content:  cond.Symptom.Name,
 				Severity: strconv.Itoa(int(cond.Severity)),
 				Category: findSymptomCategoryById(cond.Symptom.SymptomCategoryID, cats),
@@ -54,7 +52,7 @@ func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories,
 	for _, note := range notes {
 		var diary = RawDiary{
 			Date:    note.Date,
-			Type:    NoteType,
+			Type:    DiaryNote,
 			Content: note.Text,
 		}
 		diaries = append(diaries, diary)
@@ -63,7 +61,7 @@ func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories,
 		for _, pol := range event.Pollens {
 			var diary = RawDiary{
 				Date:     event.CreatedAt,
-				Type:     PollenType,
+				Type:     DiaryPollen,
 				Category: string(pol.Type),
 				Severity: pol.Intensity.String(),
 			}

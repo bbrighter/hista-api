@@ -6,6 +6,7 @@ import (
 	"encore.app/internal"
 	"encore.app/internal/repositories/meals"
 	"encore.app/internal/repositories/notes"
+	"encore.app/internal/repositories/pollen"
 	"encore.app/internal/repositories/statistics"
 	"encore.app/internal/repositories/symptoms"
 	"encore.dev/storage/sqldb"
@@ -24,6 +25,7 @@ type Service struct {
 	conditions      internal.IConditionUseCase
 	diary           internal.IDiaryUseCase
 	statistics      internal.IStatisticsUseCase
+	pollens         internal.IPollenUseCase
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -54,6 +56,8 @@ func initService() (*Service, error) {
 	symptomRepo := symptoms.NewSymtpomsRepo(db)
 	noteRepo := notes.NewNotesRepository(db)
 	statsRepo := statistics.NewStatisticsRepo(db)
+	pollenRepo := pollen.NewPollenRepo(db)
+	dwdRepo := pollen.NewDWDRepo()
 
 	return &Service{
 		DB:              db,
@@ -63,7 +67,8 @@ func initService() (*Service, error) {
 		symtpoms:        internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
 		conditionEvents: internal.NewConditionEventUseCase(symptomRepo),
 		conditions:      internal.NewconditionsUseCase(symptomRepo, symptomRepo),
-		diary:           internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo),
+		diary:           internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo, pollenRepo),
 		statistics:      internal.NewStatisticsUseCase(statsRepo),
+		pollens:         internal.NewPollenUseCase(pollenRepo, dwdRepo),
 	}, nil
 }

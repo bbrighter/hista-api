@@ -1,10 +1,10 @@
 package internal
 
 import (
+	"testing"
 	"time"
 
 	"encore.app/entity"
-	"encore.app/pollen"
 )
 
 type (
@@ -108,7 +108,7 @@ type (
 	}
 
 	IDiaryUseCase interface {
-		Get() (entity.Meals, entity.ConditionEvents, entity.SymptomCategories, entity.Notes, pollen.PollenEvents)
+		Get() (entity.Meals, entity.ConditionEvents, entity.SymptomCategories, entity.Notes, entity.PollenEvents)
 	}
 
 	IStatisticsRepo interface {
@@ -121,5 +121,22 @@ type (
 	IStatisticsUseCase interface {
 		FindSymptomsForFoods(fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error)
 		FindFoodForSymptoms(fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error)
+	}
+
+	IPollenRepo interface {
+		FindPollenWithSeverity(severity int) entity.PollenEvents
+		Create(pollen entity.Pollens, lastUpdated time.Time) error
+	}
+
+	IDWDRepo interface {
+		GetKarlsruheData() (entity.DWDPollen, error)
+		DwdStringToDate() (time.Time, error)
+		UseTestQuery(*testing.T)
+	}
+
+	IPollenUseCase interface {
+		List() entity.PollenEvents
+		Create() error
+		UseTestQuery(*testing.T)
 	}
 )

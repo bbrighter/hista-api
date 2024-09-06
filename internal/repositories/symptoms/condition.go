@@ -29,7 +29,7 @@ func (repo *SymptomsRepo) CreateConditionBySymptomName(eventId uint, symptomName
 	}
 	symptom.ID = symptomId
 	condition.Symptom = *symptom
-	condition.Severity = entity.Medium
+	condition.Severity = entity.MediumSeverity
 	condition.ConditionEventID = eventId
 	err = repo.db.Create(&condition).Error
 	return condition.ID, err
@@ -49,7 +49,7 @@ func (repo *SymptomsRepo) CreateConditionBySymptomID(eventId uint, symptomId uin
 	var condition = entity.Condition{
 		SymptomID:        symptomId,
 		ConditionEventID: eventId,
-		Severity:         entity.Medium,
+		Severity:         entity.MediumSeverity,
 	}
 	var err error = repo.db.Create(&condition).Error
 	return condition.ID, err

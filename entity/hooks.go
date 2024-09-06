@@ -67,3 +67,7 @@ func (f *Food) AfterDelete(tx *gorm.DB) error {
 		Find(&unusedIngredients)
 	return tx.Delete(&unusedIngredients).Error
 }
+
+func (pollenEvent *PollenEvent) BeforeDelete(tx *gorm.DB) error {
+	return tx.Delete(&Pollen{}, &Pollen{PollenEventID: pollenEvent.ID}).Error
+}

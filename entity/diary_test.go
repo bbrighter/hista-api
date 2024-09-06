@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"encore.app/pollen"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -24,7 +23,7 @@ func TestCreateRawDiary(t *testing.T) {
 		ID:   1,
 		Date: now.Add(-time.Second),
 		Conditions: []Condition{{
-			Severity: High,
+			Severity: HighSeverity,
 			Symptom: Symptom{
 				Name:              "Symptom",
 				SymptomCategoryID: 1,
@@ -36,11 +35,11 @@ func TestCreateRawDiary(t *testing.T) {
 	notes := Notes{Note{
 		Text: "Note",
 		Date: now.Add(-2 * time.Second)}}
-	pollens := pollen.PollenEvents{pollen.PollenEvent{
+	pollens := PollenEvents{PollenEvent{
 		CreatedAt: now.Add(-3 * time.Second),
-		Pollens: pollen.Pollens{pollen.Pollen{
-			Type:      pollen.Ambrosia,
-			Intensity: pollen.Medium,
+		Pollens: Pollens{Pollen{
+			Type:      Ambrosia,
+			Intensity: MediumPollen,
 		}}}}
 	var diaries []RawDiary = CreateRawDiary(meals, events, cats, notes, pollens)
 	assert.Len(t, diaries, 4)
@@ -54,7 +53,7 @@ func TestCreateRawDiary(t *testing.T) {
 	var thirdDiary RawDiary = diaries[2]
 	assert.Equal(t, "Note", thirdDiary.Content)
 	var fourthDiary RawDiary = diaries[3]
-	assert.Equal(t, PollenType, fourthDiary.Type)
+	assert.Equal(t, DiaryPollen, fourthDiary.Type)
 	assert.Equal(t, "Ambrosia", fourthDiary.Category)
 	assert.Equal(t, "Mittlere", fourthDiary.Severity)
 }

@@ -9,7 +9,6 @@ import (
 	"ariga.io/atlas-provider-gorm/gormschema"
 	"encore.app/entity"
 	"encore.app/internalAuth"
-	"encore.app/pollen"
 )
 
 // Define the models to generate migrations for.
@@ -24,8 +23,8 @@ var models = []any{
 	&internalAuth.Token{},
 	&internalAuth.User{},
 	&entity.Note{},
-	&pollen.Pollen{},
-	&pollen.PollenEvent{},
+	&entity.Pollen{},
+	&entity.PollenEvent{},
 }
 
 func main() {

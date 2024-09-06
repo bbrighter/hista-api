@@ -15,7 +15,7 @@ func TestPatchCondition(t *testing.T) {
 	defer cleanup(t)
 
 	var err error
-	err = service.PatchCondition(ctx, 100, PatchSeverityRequestParams{Severity: entity.High})
+	err = service.PatchCondition(ctx, 100, PatchSeverityRequestParams{Severity: entity.HighSeverity})
 	assert.EqualError(t, err, "not_found: not found")
 
 	catId, err := service.symtpoms.CreateCategory("cat")
@@ -26,7 +26,7 @@ func TestPatchCondition(t *testing.T) {
 	assert.NoError(t, err)
 	conditionId := resp.Condition.ID
 
-	err = service.PatchCondition(ctx, conditionId, PatchSeverityRequestParams{Severity: entity.High})
+	err = service.PatchCondition(ctx, conditionId, PatchSeverityRequestParams{Severity: entity.HighSeverity})
 	assert.NoError(t, err)
 }
 

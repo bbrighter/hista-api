@@ -112,11 +112,11 @@ func TestChangeSeverity(t *testing.T) {
 	repo := initTest(t)
 
 	var err error
-	err = repo.ChangeSeverity(1, entity.High)
+	err = repo.ChangeSeverity(1, entity.HighSeverity)
 	assert.EqualError(t, err, "not_found: not found")
 
 	_, _, conditionId, _ := repo.createTestCondition(t)
-	err = repo.ChangeSeverity(conditionId, entity.High)
+	err = repo.ChangeSeverity(conditionId, entity.HighSeverity)
 	assert.NoError(t, err)
 
 }
