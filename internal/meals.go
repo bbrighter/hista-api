@@ -7,19 +7,20 @@ import (
 )
 
 type MealUseCase struct {
-	Repo IMealsRepository
+	meals IMealsRepository
+	ings  IIngredientRepository
 }
 
 func NewMealUseCase(repo IMealsRepository) MealUseCase {
-	return MealUseCase{Repo: repo}
+	return MealUseCase{meals: repo}
 }
 
 func (uc MealUseCase) ListMeals() entity.Meals {
-	return uc.Repo.ListMeals()
+	return uc.meals.ListMeals()
 }
 
 func (uc MealUseCase) GetMeal(id uint) (entity.Meal, error) {
-	return uc.Repo.GetMeal(id)
+	return uc.meals.GetMeal(id)
 }
 
 func (uc MealUseCase) CreateMeal(date *time.Time) (uint, error) {
@@ -27,14 +28,14 @@ func (uc MealUseCase) CreateMeal(date *time.Time) (uint, error) {
 		now := time.Now()
 		date = &now
 	}
-	id, err := uc.Repo.CreateMeal(*date)
+	id, err := uc.meals.CreateMeal(*date)
 	return id, err
 }
 
 func (uc MealUseCase) DeleteMeal(id uint) error {
-	return uc.Repo.DeleteMeal(id)
+	return uc.meals.DeleteMeal(id)
 }
 
 func (uc MealUseCase) PatchMeal(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error {
-	return uc.Repo.PatchMeal(id, date, freshness, stressLevel, isAlone)
+	return uc.meals.PatchMeal(id, date, freshness, stressLevel, isAlone)
 }

@@ -45,6 +45,10 @@ type (
 		ListIngredients() entity.Ingredients
 	}
 
+	IIngredientUseCase interface {
+		List() entity.Ingredients
+	}
+
 	INotesRepository interface {
 		List() entity.Notes
 		Create() (uint, error)
