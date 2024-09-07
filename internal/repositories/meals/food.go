@@ -12,7 +12,7 @@ func (repo *MealRepository) ListFoods(mealId uint) entity.Foods {
 	return foods
 }
 
-func (repo *MealRepository) CreateFoodByName(mealId uint, ingredientName string) (uint, error) {
+func (repo *MealRepository) CreateFoodByName(mealId uint, ingredientName string, condition entity.FoodCondition) (uint, error) {
 	var food entity.Food
 	if rows := repo.db.Find(&entity.Meal{ID: mealId}).RowsAffected; rows == 0 {
 		return 0, errors.ErrorNotFound
@@ -25,17 +25,19 @@ func (repo *MealRepository) CreateFoodByName(mealId uint, ingredientName string)
 	}
 	food.MealID = mealId
 	food.Ingredient = ingredient
+	food.Condition = condition
 	err = repo.db.Create(&food).Error
 	return food.ID, err
 }
 
-func (repo *MealRepository) CreateFoodByID(mealId uint, ingredientId uint) (uint, error) {
+func (repo *MealRepository) CreateFoodByID(mealId uint, ingredientId uint, condition entity.FoodCondition) (uint, error) {
 	var food entity.Food
 	if rows := repo.db.Find(&entity.Meal{ID: mealId}).RowsAffected; rows == 0 {
 		return 0, errors.ErrorNotFound
 	}
 	food.MealID = mealId
 	food.IngredientID = ingredientId
+	food.Condition = condition
 	if err := repo.db.Create(&food).Error; err != nil {
 		return 0, err
 	}

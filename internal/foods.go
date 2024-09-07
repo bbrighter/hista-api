@@ -20,10 +20,11 @@ func (uc FoodUseCase) List(mealId uint) entity.Foods {
 
 func (uc FoodUseCase) Create(mealId uint, ingredientName string, ingredientId uint) (food entity.Food, ingredients entity.Ingredients, err error) {
 	var foodId uint
+	var condition entity.FoodCondition = entity.Cooked
 	if ingredientId != 0 {
-		foodId, err = uc.food.CreateFoodByID(mealId, ingredientId)
+		foodId, err = uc.food.CreateFoodByID(mealId, ingredientId, condition)
 	} else if ingredientName != "" {
-		foodId, err = uc.food.CreateFoodByName(mealId, ingredientName)
+		foodId, err = uc.food.CreateFoodByName(mealId, ingredientName, condition)
 	} else {
 		err = errors.ErrorAttributeMustBeSet("ingredientName or ingredientId")
 	}

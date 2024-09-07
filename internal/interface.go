@@ -27,8 +27,8 @@ type (
 
 	IFoodRepository interface {
 		ListFoods(mealId uint) entity.Foods
-		CreateFoodByName(mealId uint, ingredientName string) (uint, error)
-		CreateFoodByID(mealId uint, ingredientId uint) (uint, error)
+		CreateFoodByName(mealId uint, ingredientName string, condition entity.FoodCondition) (uint, error)
+		CreateFoodByID(mealId uint, ingredientId uint, condition entity.FoodCondition) (uint, error)
 		DeleteFood(foodId uint) error
 		ChangeCondition(foodId uint, condition entity.FoodCondition) error
 		GetFood(foodId uint) entity.Food

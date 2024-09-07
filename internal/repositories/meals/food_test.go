@@ -26,7 +26,7 @@ func TestCreateFoodByName(t *testing.T) {
 	var err error
 	var meal = entity.Meal{ID: 1}
 	repo.db.Create(&meal)
-	id, err := repo.CreateFoodByName(1, "New name")
+	id, err := repo.CreateFoodByName(1, "New name", entity.Cooked)
 	assert.NoError(t, err)
 	assert.EqualValues(t, 1, id)
 }
@@ -36,12 +36,12 @@ func TestCreateFoodById(t *testing.T) {
 
 	var err error
 	var meal = entity.Meal{ID: 1}
-	_, err = repo.CreateFoodByID(1, 10)
+	_, err = repo.CreateFoodByID(1, 10, entity.Cooked)
 	assert.Error(t, err)
 
 	repo.db.Create(&meal)
 	repo.db.Create(&entity.Ingredient{ID: 2})
-	id, err := repo.CreateFoodByID(1, 2)
+	id, err := repo.CreateFoodByID(1, 2, entity.Cooked)
 	assert.NoError(t, err)
 	assert.EqualValues(t, 1, id)
 }
