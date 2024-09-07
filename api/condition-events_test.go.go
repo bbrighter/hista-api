@@ -18,7 +18,7 @@ func (service *Service) createTestEvent(t *testing.T) func(t *testing.T) {
 	testEvent.ID = resp.ID
 	assert.NoError(t, err)
 	cleanup := func(t *testing.T) {
-		err = service.DeleteConditionEvent(ctx, resp.ID)
+		_, err = service.DeleteConditionEvent(ctx, resp.ID)
 		assert.NoError(t, err)
 		testEvent = new(entity.ConditionEvent)
 	}
@@ -85,13 +85,14 @@ func TestPatchConditionEvent(t *testing.T) {
 func TestDeleteConditionEvent(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	err := service.DeleteConditionEvent(ctx, 10)
+	_, err := service.DeleteConditionEvent(ctx, 10)
 	assert.EqualError(t, err, "not_found: not found")
 
 	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
-	err = service.DeleteConditionEvent(ctx, testEvent.ID)
+	cats, err := service.DeleteConditionEvent(ctx, testEvent.ID)
 	assert.NoError(t, err)
+	assert.Len(t, cats.Categories, 0)
 }
 
 func TestPostCondition(t *testing.T) {

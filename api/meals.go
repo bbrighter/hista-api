@@ -8,37 +8,38 @@ import (
 
 // encore:api auth method=GET path=/meals
 func (service *Service) GetMeals(ctx context.Context) (entity.MealsResponse, error) {
-	meals := service.mealUC.ListMeals()
+	meals := service.meals.List()
 	return meals.ToMealsResponse(), nil
 }
 
 // encore:api auth method=POST path=/meals
-func (service *Service) PostMeal(ctx context.Context, params entity.MealParams) (entity.IDResponse, error) {
-	id, err := service.mealUC.CreateMeal(params.Date)
-	return entity.IDResponse{ID: id}, err
+func (service *Service) PostMeal(ctx context.Context, params entity.MealParams) (entity.MealResponse, error) {
+	meal, err := service.meals.Create(params.Date)
+	return meal.ToMealResponse(), err
 }
 
 // encore:api auth method=GET path=/meals/:id
 func (service *Service) GetMeal(ctx context.Context, id uint) (entity.MealResponse, error) {
 	var meal = entity.Meal{ID: id}
-	meal, err := service.mealUC.GetMeal(id)
+	meal, err := service.meals.Get(id)
 	return meal.ToMealResponse(), err
 }
 
 // encore:api auth method=DELETE path=/meals/:id
-func (service *Service) DeleteMeal(ctx context.Context, id uint) error {
-	return service.mealUC.DeleteMeal(id)
+func (service *Service) DeleteMeal(ctx context.Context, id uint) (entity.IngredientsResponse, error) {
+	ings, err := service.meals.Delete(id)
+	return ings.ToIngredientsResponse(), err
 }
 
 // encore:api auth method=PATCH path=/meals/:id
 func (service *Service) PatchMeal(ctx context.Context, id uint, params entity.MealParams) error {
 	var patchParams = entity.PatchParams(params)
-	return service.mealUC.PatchMeal(id, patchParams.Date, params.Freshness, params.StressLevel, params.IsAlone)
+	return service.meals.Patch(id, patchParams.Date, params.Freshness, params.StressLevel, params.IsAlone)
 }
 
 // encore:api auth method=GET path=/meal/:mealId/foods
 func (service *Service) GetFoods(ctx context.Context, mealId uint) (entity.FoodsResponse, error) {
-	var foods entity.Foods = service.food.ListFoods(mealId)
+	var foods entity.Foods = service.foods.List(mealId)
 	var resp []entity.FoodResponse = foods.ToFoodsResponse()
 	return entity.FoodsResponse{Foods: resp}, nil
 }
@@ -56,6 +57,6 @@ type PostFoodResponse struct {
 
 // encore:api auth method=POST path=/meal/:mealId/foods
 func (service *Service) PostFood(ctx context.Context, mealId uint, params FoodParams) (PostFoodResponse, error) {
-	food, ingredients, err := service.food.CreateFood(mealId, params.IngredientName, params.IngredientID)
+	food, ingredients, err := service.foods.Create(mealId, params.IngredientName, params.IngredientID)
 	return PostFoodResponse{Food: food.ToFoodResponse(), Ingredients: ingredients.ToIngredientsResponse()}, err
 }

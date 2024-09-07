@@ -7,35 +7,39 @@ import (
 )
 
 type MealUseCase struct {
-	meals IMealsRepository
-	ings  IIngredientRepository
+	meals       IMealsRepository
+	ingredients IIngredientRepository
 }
 
-func NewMealUseCase(repo IMealsRepository) MealUseCase {
-	return MealUseCase{meals: repo}
+func NewMealUseCase(repo IMealsRepository, ings IIngredientRepository) MealUseCase {
+	return MealUseCase{meals: repo, ingredients: ings}
 }
 
-func (uc MealUseCase) ListMeals() entity.Meals {
+func (uc MealUseCase) List() entity.Meals {
 	return uc.meals.ListMeals()
 }
 
-func (uc MealUseCase) GetMeal(id uint) (entity.Meal, error) {
+func (uc MealUseCase) Get(id uint) (entity.Meal, error) {
 	return uc.meals.GetMeal(id)
 }
 
-func (uc MealUseCase) CreateMeal(date *time.Time) (uint, error) {
+func (uc MealUseCase) Create(date *time.Time) (entity.Meal, error) {
 	if date == nil {
 		now := time.Now()
 		date = &now
 	}
-	id, err := uc.meals.CreateMeal(*date)
-	return id, err
+	meal, err := uc.meals.CreateMeal(*date)
+	return meal, err
 }
 
-func (uc MealUseCase) DeleteMeal(id uint) error {
-	return uc.meals.DeleteMeal(id)
+func (uc MealUseCase) Delete(id uint) (ings entity.Ingredients, err error) {
+	err = uc.meals.DeleteMeal(id)
+	if err == nil {
+		ings = uc.ingredients.ListIngredients()
+	}
+	return ings, err
 }
 
-func (uc MealUseCase) PatchMeal(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error {
+func (uc MealUseCase) Patch(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error {
 	return uc.meals.PatchMeal(id, date, freshness, stressLevel, isAlone)
 }

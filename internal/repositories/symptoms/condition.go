@@ -78,7 +78,7 @@ func (repo *SymptomsRepo) ChangeSeverity(conditionId uint, newSeverity entity.Co
 
 func (repo *SymptomsRepo) GetCondition(id uint) (entity.Condition, error) {
 	var condition = entity.Condition{ID: id}
-	err := repo.db.First(&condition).Error
+	err := repo.db.Preload(clause.Associations).First(&condition).Error
 	return condition, err
 }
 

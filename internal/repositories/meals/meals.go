@@ -17,13 +17,18 @@ func (repo *MealRepository) ListMeals() entity.Meals {
 	return meals
 }
 
-func (repo *MealRepository) CreateMeal(data time.Time) (uint, error) {
-	var meal = entity.Meal{IsAlone: mealIsAlone}
+func (repo *MealRepository) CreateMeal(date time.Time) (entity.Meal, error) {
+	var meal = entity.Meal{
+		IsAlone:     mealIsAlone,
+		Freshness:   entity.Fresh,
+		StressLevel: 0,
+		Date:        date,
+	}
 	if meal.Date.IsZero() {
 		meal.Date = time.Now()
 	}
 	err := repo.db.Create(&meal).Error
-	return meal.ID, err
+	return meal, err
 }
 
 func (repo *MealRepository) GetMeal(id uint) (entity.Meal, error) {

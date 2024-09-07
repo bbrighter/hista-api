@@ -23,12 +23,12 @@ func TestCreateMeal(t *testing.T) {
 	var err error
 
 	time := time.Date(1999, 0, 0, 0, 0, 0, 0, time.Local)
-	id, err := repo.CreateMeal(time)
+	meal, err := repo.CreateMeal(time)
 
-	assert.GreaterOrEqual(t, id, uint(1))
+	assert.GreaterOrEqual(t, meal.ID, uint(1))
 	assert.NoError(t, err)
 	var mealInDB entity.Meal
-	repo.db.First(&mealInDB, entity.Meal{ID: id})
+	repo.db.First(&mealInDB, entity.Meal{ID: meal.ID})
 	assert.True(t, mealInDB.Date.Equal(mealInDB.Date))
 }
 

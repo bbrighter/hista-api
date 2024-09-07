@@ -17,8 +17,8 @@ import (
 //encore:service
 type Service struct {
 	DB              *gorm.DB
-	mealUC          internal.IMealUseCase
-	food            internal.IFoodUseCase
+	meals           internal.IMealUseCase
+	foods           internal.IFoodUseCase
 	ingredients     internal.IIngredientUseCase
 	notes           internal.INotesUseCase
 	symtpoms        internal.ISymptomsUseCase
@@ -62,12 +62,12 @@ func initService() (*Service, error) {
 
 	return &Service{
 		DB:              db,
-		mealUC:          internal.NewMealUseCase(mealRepo),
+		meals:           internal.NewMealUseCase(mealRepo, mealRepo),
 		ingredients:     internal.NewIngredientUseCase(mealRepo),
-		food:            internal.NewFoodUseCase(mealRepo, mealRepo),
+		foods:           internal.NewFoodUseCase(mealRepo, mealRepo),
 		notes:           internal.NewNoteUseCase(noteRepo),
 		symtpoms:        internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
-		conditionEvents: internal.NewConditionEventUseCase(symptomRepo),
+		conditionEvents: internal.NewConditionEventUseCase(symptomRepo, symptomRepo),
 		conditions:      internal.NewconditionsUseCase(symptomRepo, symptomRepo),
 		diary:           internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo, pollenRepo),
 		statistics:      internal.NewStatisticsUseCase(statsRepo),

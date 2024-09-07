@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (e *ConditionEvent) AfterDelete(tx *gorm.DB) (err error) {
+func (e *ConditionEvent) BeforeDelete(tx *gorm.DB) (err error) {
 	var conditions Conditions
 	cons := tx.Preload(clause.Associations).Find(&conditions, Condition{ConditionEventID: e.ID})
 	if cons.RowsAffected == 0 {
@@ -59,13 +59,16 @@ func (m *Meal) BeforeDelete(tx *gorm.DB) error {
 	return nil
 }
 
-func (f *Food) AfterDelete(tx *gorm.DB) error {
+func (f *Food) AfterDelete(tx *gorm.DB) (err error) {
 	var unusedIngredients Ingredients
-	tx.Table("ingredients").
+	resp := tx.Table("ingredients").
 		Joins("LEFT JOIN foods ON foods.ingredient_id = ingredients.id").
 		Where("foods.id IS NULL").
 		Find(&unusedIngredients)
-	return tx.Delete(&unusedIngredients).Error
+	if resp.RowsAffected > 0 {
+		err = tx.Delete(&unusedIngredients).Error
+	}
+	return err
 }
 
 func (pollenEvent *PollenEvent) BeforeDelete(tx *gorm.DB) error {

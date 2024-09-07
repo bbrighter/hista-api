@@ -10,7 +10,7 @@ import (
 type (
 	IMealsRepository interface {
 		ListMeals() entity.Meals
-		CreateMeal(date time.Time) (uint, error)
+		CreateMeal(date time.Time) (entity.Meal, error)
 		GetMeal(id uint) (entity.Meal, error)
 		DeleteMeal(id uint) error
 		PatchMeal(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error
@@ -18,11 +18,11 @@ type (
 	}
 
 	IMealUseCase interface {
-		ListMeals() entity.Meals
-		CreateMeal(date *time.Time) (uint, error)
-		GetMeal(id uint) (entity.Meal, error)
-		DeleteMeal(id uint) error
-		PatchMeal(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error
+		List() entity.Meals
+		Create(date *time.Time) (entity.Meal, error)
+		Get(id uint) (entity.Meal, error)
+		Delete(id uint) (entity.Ingredients, error)
+		Patch(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error
 	}
 
 	IFoodRepository interface {
@@ -35,9 +35,9 @@ type (
 	}
 
 	IFoodUseCase interface {
-		ListFoods(mealId uint) entity.Foods
-		CreateFood(mealId uint, ingredientName string, ingredientId uint) (entity.Food, entity.Ingredients, error)
-		DeleteFood(foodId uint) (entity.Ingredients, error)
+		List(mealId uint) entity.Foods
+		Create(mealId uint, ingredientName string, ingredientId uint) (entity.Food, entity.Ingredients, error)
+		Delete(foodId uint) (entity.Ingredients, error)
 		ChangeCondition(foodId uint, newCond entity.FoodCondition) error
 	}
 
@@ -51,21 +51,21 @@ type (
 
 	INotesRepository interface {
 		List() entity.Notes
-		Create() (uint, error)
+		Create() (entity.Note, error)
 		Patch(id uint, date *time.Time, text *string) error
 		Delete(id uint) error
 	}
 
 	INotesUseCase interface {
 		List() entity.Notes
-		Create() (uint, error)
+		Create() (entity.Note, error)
 		Patch(id uint, date *time.Time, text *string) error
 		Delete(id uint) error
 	}
 
 	IConditionEventRepo interface {
 		ListConditionEvents() entity.ConditionEvents
-		CreateConditionEvent(date time.Time) (uint, error)
+		CreateConditionEvent(date time.Time) (entity.ConditionEvent, error)
 		GetConditionEvent(uint) (entity.ConditionEvent, error)
 		PatchConditionEvent(uint, time.Time) error
 		DeleteConditionEvent(uint) error
@@ -74,10 +74,10 @@ type (
 
 	IConditionEventUseCase interface {
 		List() entity.ConditionEvents
-		Create(time.Time) (uint, error)
+		Create(time.Time) (entity.ConditionEvent, error)
 		Get(uint) (entity.ConditionEvent, error)
 		Patch(uint, time.Time) error
-		Delete(uint) error
+		Delete(uint) (entity.SymptomCategories, error)
 	}
 
 	IConditionRepo interface {

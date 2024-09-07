@@ -18,7 +18,7 @@ func (uc NoteUseCase) List() entity.Notes {
 	return uc.repo.List()
 }
 
-func (uc NoteUseCase) Create() (uint, error) {
+func (uc NoteUseCase) Create() (entity.Note, error) {
 	return uc.repo.Create()
 }
 

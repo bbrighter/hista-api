@@ -13,16 +13,17 @@ var testIngredient *entity.Ingredient = new(entity.Ingredient)
 var testMeal *entity.Meal = new(entity.Meal)
 
 func (service *Service) createTestFood(t *testing.T) func(t *testing.T) {
-	id, err := service.mealUC.CreateMeal(nil)
+	meal, err := service.meals.Create(nil)
+	id := meal.ID
 	testMeal.ID = id
 	assert.NoError(t, err)
-	food, ings, err := service.food.CreateFood(id, "ingredient", 0)
+	food, ings, err := service.foods.Create(id, "ingredient", 0)
 	testFood = &food
 	testIngredient = &ings[0]
 	assert.NoError(t, err)
 	cleanup := func(t *testing.T) {
 		ctx := context.TODO()
-		err := service.DeleteMeal(ctx, id)
+		_, err := service.DeleteMeal(ctx, id)
 		assert.NoError(t, err)
 		testFood = new(entity.Food)
 		testIngredient = new(entity.Ingredient)

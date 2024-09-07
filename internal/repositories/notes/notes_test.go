@@ -19,9 +19,9 @@ func initTest(t *testing.T) *NotesRepository {
 func TestCreateNote(t *testing.T) {
 	repo := initTest(t)
 
-	id, err := repo.Create()
+	note, err := repo.Create()
 	assert.NoError(t, err)
-	assert.Greater(t, id, uint(0))
+	assert.Greater(t, note.ID, uint(0))
 }
 
 func TestGetNotes(t *testing.T) {

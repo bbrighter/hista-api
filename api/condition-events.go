@@ -12,9 +12,9 @@ type ConditionEventRequestParams struct {
 }
 
 // encore:api auth method=POST path=/condition-events
-func (service *Service) CreateConditionEvent(ctx context.Context, params ConditionEventRequestParams) (entity.IDResponse, error) {
-	id, err := service.conditionEvents.Create(params.Date)
-	return entity.IDResponse{ID: id}, err
+func (service *Service) CreateConditionEvent(ctx context.Context, params ConditionEventRequestParams) (entity.ConditionEventResponse, error) {
+	event, err := service.conditionEvents.Create(params.Date)
+	return event.ToResponse(), err
 }
 
 // encore:api auth method=GET path=/condition-events
@@ -35,8 +35,9 @@ func (service *Service) PatchDate(ctx context.Context, eventId uint, params Cond
 }
 
 // encore:api auth method=DELETE path=/condition-events/:eventId
-func (service *Service) DeleteConditionEvent(ctx context.Context, eventId uint) error {
-	return service.conditionEvents.Delete(eventId)
+func (service *Service) DeleteConditionEvent(ctx context.Context, eventId uint) (entity.SymptomCategoriesResponse, error) {
+	cats, err := service.conditionEvents.Delete(eventId)
+	return cats.ToResponse(), err
 }
 
 type ConditionRequestParams struct {
@@ -46,8 +47,7 @@ type ConditionRequestParams struct {
 }
 
 // encore:api auth method=POST path=/condition-events/:eventId/conditions
-func (service *Service) PostCondition(ctx context.Context, eventId uint, params ConditionRequestParams) (entity.PostConditionResponse, error) {
-	var resp entity.PostConditionResponse
+func (service *Service) PostCondition(ctx context.Context, eventId uint, params ConditionRequestParams) (resp entity.PostConditionResponse, err error) {
 	condition, symptoms, err := service.conditions.Create(eventId, params.SymptomName, params.SymptomID, params.CategoryID)
 	if err != nil {
 		return resp, err

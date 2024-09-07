@@ -8,10 +8,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (repo *SymptomsRepo) CreateConditionEvent(date time.Time) (uint, error) {
+func (repo *SymptomsRepo) CreateConditionEvent(date time.Time) (entity.ConditionEvent, error) {
 	var event = entity.ConditionEvent{Date: date}
 	err := repo.db.Create(&event).Error
-	return event.ID, err
+	return event, err
 }
 
 func (repo *SymptomsRepo) ListConditionEvents() entity.ConditionEvents {
@@ -31,10 +31,13 @@ func (repo *SymptomsRepo) GetConditionEvent(id uint) (entity.ConditionEvent, err
 func (repo *SymptomsRepo) DeleteConditionEvent(id uint) error {
 	var event = entity.ConditionEvent{ID: id}
 	tx := repo.db.Delete(&event)
+	if tx.Error != nil {
+		return tx.Error
+	}
 	if tx.RowsAffected == 0 {
 		return errors.ErrorNotFound
 	}
-	return tx.Error
+	return nil
 }
 
 func (repo *SymptomsRepo) PatchConditionEvent(eventId uint, date time.Time) error {

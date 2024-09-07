@@ -14,11 +14,11 @@ func NewFoodUseCase(foodRepo IFoodRepository, ingRepo IIngredientRepository) Foo
 	return FoodUseCase{food: foodRepo, ingredients: ingRepo}
 }
 
-func (uc FoodUseCase) ListFoods(mealId uint) entity.Foods {
+func (uc FoodUseCase) List(mealId uint) entity.Foods {
 	return uc.food.ListFoods(mealId)
 }
 
-func (uc FoodUseCase) CreateFood(mealId uint, ingredientName string, ingredientId uint) (food entity.Food, ingredients entity.Ingredients, err error) {
+func (uc FoodUseCase) Create(mealId uint, ingredientName string, ingredientId uint) (food entity.Food, ingredients entity.Ingredients, err error) {
 	var foodId uint
 	if ingredientId != 0 {
 		foodId, err = uc.food.CreateFoodByID(mealId, ingredientId)
@@ -34,7 +34,7 @@ func (uc FoodUseCase) CreateFood(mealId uint, ingredientName string, ingredientI
 	return food, ingredients, err
 }
 
-func (uc FoodUseCase) DeleteFood(foodId uint) (ingredients entity.Ingredients, err error) {
+func (uc FoodUseCase) Delete(foodId uint) (ingredients entity.Ingredients, err error) {
 	err = uc.food.DeleteFood(foodId)
 	if err == nil {
 		ingredients = uc.ingredients.ListIngredients()

@@ -65,13 +65,14 @@ func TestDeleteMealAPI(t *testing.T) {
 	service, ctx := initAPITest(t)
 
 	var err error
-	err = service.DeleteMeal(ctx, 10000)
+	_, err = service.DeleteMeal(ctx, 10000)
 	assert.Error(t, err)
 
 	id, cleanup := service.createTestMeal(t)
 	defer cleanup()
-	err = service.DeleteMeal(ctx, id)
+	ings, err := service.DeleteMeal(ctx, id)
 	assert.NoError(t, err)
+	assert.Len(t, ings.Ingredients, 0)
 }
 
 func TestPatchMealAPI(t *testing.T) {
