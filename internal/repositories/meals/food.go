@@ -12,36 +12,33 @@ func (repo *MealRepository) ListFoods(mealId uint) entity.Foods {
 	return foods
 }
 
-func (repo *MealRepository) CreateFoodByName(mealId uint, ingredientName string, condition entity.FoodCondition) (uint, error) {
-	var food entity.Food
-	if rows := repo.db.Find(&entity.Meal{ID: mealId}).RowsAffected; rows == 0 {
-		return 0, errors.ErrorNotFound
+func (repo *MealRepository) CreateFoodByName(food *entity.Food, ingredientName string) error {
+	if food.MealID == 0 {
+		return errors.ErrorAttributeMustBeSet("MealID")
+	}
+
+	if rows := repo.db.Find(&entity.Meal{ID: food.MealID}).RowsAffected; rows == 0 {
+		return errors.ErrorNotFound
 	}
 	var ingredient entity.Ingredient
 	var err error
 	ingredient, err = repo.CreateOrReplaceIngredient(ingredientName)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	food.MealID = mealId
 	food.Ingredient = ingredient
-	food.Condition = condition
 	err = repo.db.Create(&food).Error
-	return food.ID, err
+	return err
 }
 
-func (repo *MealRepository) CreateFoodByID(mealId uint, ingredientId uint, condition entity.FoodCondition) (uint, error) {
-	var food entity.Food
-	if rows := repo.db.Find(&entity.Meal{ID: mealId}).RowsAffected; rows == 0 {
-		return 0, errors.ErrorNotFound
+func (repo *MealRepository) CreateFoodByID(food *entity.Food) error {
+	if food.MealID == 0 || food.IngredientID == 0 || food.Condition == "" {
+		return errors.ErrorAttributeMustBeSet("MealID or IngredientID or Condition")
 	}
-	food.MealID = mealId
-	food.IngredientID = ingredientId
-	food.Condition = condition
-	if err := repo.db.Create(&food).Error; err != nil {
-		return 0, err
+	if rows := repo.db.Find(&entity.Meal{ID: food.MealID}).RowsAffected; rows == 0 {
+		return errors.ErrorNotFound
 	}
-	return food.ID, nil
+	return repo.db.Create(&food).Error
 }
 
 func (repo *MealRepository) DeleteFood(foodId uint) error {

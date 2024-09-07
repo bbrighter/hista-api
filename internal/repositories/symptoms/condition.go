@@ -15,44 +15,43 @@ func (repo *SymptomsRepo) ListConditions(eventId uint) entity.Conditions {
 
 // Create a new condition based on the name. New symptoms are only created if the name in the corresponding category doesn't exist.
 // Requires a conditionEventID
-func (repo *SymptomsRepo) CreateConditionBySymptomName(eventId uint, symptomName string, categoryId uint) (uint, error) {
-	events := repo.db.Find(&entity.ConditionEvent{ID: eventId}).RowsAffected
+func (repo *SymptomsRepo) CreateConditionBySymptomName(condition *entity.Condition, symptomName string, categoryId uint) error {
+	if condition.ConditionEventID == 0 {
+		return errors.ErrorAttributeMustBeSet("ConditionEventID")
+	}
+	events := repo.db.Find(&entity.ConditionEvent{ID: condition.ConditionEventID}).RowsAffected
 	if events == 0 {
-		return 0, errors.ErrorNotFound
+		return errors.ErrorNotFound
 	}
 	var symptom = &entity.Symptom{Name: symptomName, SymptomCategoryID: categoryId}
 	var err error
-	var condition entity.Condition
+
 	symptomId, err := repo.CreateOrReplace(symptomName, categoryId)
 	if err != nil {
-		return 0, err
+		return err
 	}
 	symptom.ID = symptomId
 	condition.Symptom = *symptom
-	condition.Severity = entity.MediumSeverity
-	condition.ConditionEventID = eventId
 	err = repo.db.Create(&condition).Error
-	return condition.ID, err
+	return err
 }
 
 // Create a new condition by SymptomID.
 // Requires a ConditionEventID and SymptomID
-func (repo *SymptomsRepo) CreateConditionBySymptomID(eventId uint, symptomId uint) (uint, error) {
-	events := repo.db.Find(&entity.ConditionEvent{ID: eventId}).RowsAffected
+func (repo *SymptomsRepo) CreateConditionBySymptomID(condition *entity.Condition) error {
+	if condition.ConditionEventID == 0 || condition.SymptomID == 0 {
+		return errors.ErrorAttributeMustBeSet("ConditionEventID and SymptomID")
+	}
+	events := repo.db.Find(&entity.ConditionEvent{ID: condition.ConditionEventID}).RowsAffected
 	if events == 0 {
-		return 0, errors.ErrorNotFound
+		return errors.ErrorNotFound
 	}
-	symptoms := repo.db.Find(&entity.Symptom{ID: symptomId}).RowsAffected
+	symptoms := repo.db.Find(&entity.Symptom{ID: condition.SymptomID}).RowsAffected
 	if symptoms == 0 {
-		return 0, errors.ErrorNotFound
+		return errors.ErrorNotFound
 	}
-	var condition = entity.Condition{
-		SymptomID:        symptomId,
-		ConditionEventID: eventId,
-		Severity:         entity.MediumSeverity,
-	}
-	var err error = repo.db.Create(&condition).Error
-	return condition.ID, err
+	var err error = repo.db.Create(condition).Error
+	return err
 }
 
 // Delete a condition. Must contain ID.

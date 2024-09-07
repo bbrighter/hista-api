@@ -19,9 +19,13 @@ func initTest(t *testing.T) *NotesRepository {
 func TestCreateNote(t *testing.T) {
 	repo := initTest(t)
 
-	note, err := repo.Create()
+	now := time.Now()
+	var note = &entity.Note{Date: now, Text: "Text"}
+	err := repo.Create(note)
 	assert.NoError(t, err)
-	assert.Greater(t, note.ID, uint(0))
+	assert.Equal(t, uint(1), note.ID)
+	assert.Equal(t, "Text", note.Text)
+	assert.True(t, now.Equal(note.Date))
 }
 
 func TestGetNotes(t *testing.T) {

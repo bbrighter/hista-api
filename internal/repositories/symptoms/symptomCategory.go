@@ -2,6 +2,7 @@ package symptoms
 
 import (
 	"encore.app/entity"
+	"encore.app/errors"
 	"gorm.io/gorm/clause"
 )
 
@@ -14,8 +15,9 @@ func (repo *SymptomsRepo) ListCategories() entity.SymptomCategories {
 
 // Create a new symptom category
 // Name is required
-func (repo *SymptomsRepo) CreateCategory(name string) (uint, error) {
-	var cat = entity.SymptomCategory{Name: name}
-	err := repo.db.FirstOrCreate(&cat, &cat).Error
-	return cat.ID, err
+func (repo *SymptomsRepo) CreateCategory(cat *entity.SymptomCategory) error {
+	if cat.Name == "" {
+		return errors.ErrorAttributeMustBeSet("Name")
+	}
+	return repo.db.FirstOrCreate(&cat, &cat).Error
 }

@@ -22,22 +22,25 @@ func (uc ConditionUseCase) List(eventId uint) entity.Conditions {
 }
 
 func (uc ConditionUseCase) Create(eventId uint, symptomName *string, symptomId *uint, symptomCategoryId *uint) (entity.Condition, entity.SymptomCategories, error) {
-	var condition entity.Condition
-	var conditionId uint
+	var condition = &entity.Condition{
+		ConditionEventID: eventId,
+		Severity:         entity.MediumSeverity,
+	}
 	var err error
 	var symptoms = entity.SymptomCategories{}
 	if symptomId != nil {
-		conditionId, err = uc.Conditions.CreateConditionBySymptomID(eventId, *symptomId)
+		condition.SymptomID = *symptomId
+		err = uc.Conditions.CreateConditionBySymptomID(condition)
 	} else if symptomName != nil && symptomCategoryId != nil {
-		conditionId, err = uc.Conditions.CreateConditionBySymptomName(eventId, *symptomName, *symptomCategoryId)
+		err = uc.Conditions.CreateConditionBySymptomName(condition, *symptomName, *symptomCategoryId)
 		symptoms = uc.Symptoms.ListCategories()
 	} else {
 		err = errors.ErrorAttributeMustBeSet("symptomId or symptomName and symptomCategoryId")
 	}
-	if err == nil {
-		condition, _ = uc.Conditions.GetCondition(conditionId)
-	}
-	return condition, symptoms, err
+	// if err == nil {
+	// 	condition, _ = uc.Conditions.GetCondition(conditionId)
+	// }
+	return *condition, symptoms, err
 }
 
 func (uc ConditionUseCase) Delete(id uint) (entity.SymptomCategories, error) {

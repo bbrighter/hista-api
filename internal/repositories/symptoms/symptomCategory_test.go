@@ -29,7 +29,8 @@ func TestListCategories(t *testing.T) {
 func TestCreateCategory(t *testing.T) {
 	repo := initTest(t)
 
-	id, err := repo.CreateCategory("cat")
+	var cat = &entity.SymptomCategory{Name: "cat"}
+	err := repo.CreateCategory(cat)
 	assert.NoError(t, err)
-	assert.EqualValues(t, 1, id)
+	assert.EqualValues(t, 1, cat.ID)
 }

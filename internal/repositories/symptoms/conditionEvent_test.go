@@ -18,7 +18,8 @@ func (repo *SymptomsRepo) createTestConditionEvent(t *testing.T) uint {
 func TestCreateConditionEvent(t *testing.T) {
 	repo := initTest(t)
 
-	_, err := repo.CreateConditionEvent(time.Now())
+	var event = &entity.ConditionEvent{Date: time.Now()}
+	err := repo.CreateConditionEvent(event)
 	assert.NoError(t, err)
 }
 

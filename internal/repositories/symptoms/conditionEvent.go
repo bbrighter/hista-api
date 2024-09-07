@@ -8,10 +8,8 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func (repo *SymptomsRepo) CreateConditionEvent(date time.Time) (entity.ConditionEvent, error) {
-	var event = entity.ConditionEvent{Date: date}
-	err := repo.db.Create(&event).Error
-	return event, err
+func (repo *SymptomsRepo) CreateConditionEvent(event *entity.ConditionEvent) error {
+	return repo.db.Create(&event).Error
 }
 
 func (repo *SymptomsRepo) ListConditionEvents() entity.ConditionEvents {

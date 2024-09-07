@@ -16,7 +16,9 @@ func (uc SymptomsUseCase) List() entity.SymptomCategories {
 }
 
 func (uc SymptomsUseCase) CreateCategory(name string) (uint, error) {
-	return uc.cat.CreateCategory(name)
+	var cat = &entity.SymptomCategory{Name: name}
+	err := uc.cat.CreateCategory(cat)
+	return cat.ID, err
 }
 
 func (uc SymptomsUseCase) PutSymptom(symptomName string, symtpomCategoryId uint) (uint, error) {

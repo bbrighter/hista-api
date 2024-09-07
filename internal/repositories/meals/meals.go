@@ -9,26 +9,15 @@ import (
 	"gorm.io/gorm"
 )
 
-const mealIsAlone = true
-
 func (repo *MealRepository) ListMeals() entity.Meals {
 	var meals entity.Meals
 	repo.db.Find(&meals)
 	return meals
 }
 
-func (repo *MealRepository) CreateMeal(date time.Time) (entity.Meal, error) {
-	var meal = entity.Meal{
-		IsAlone:     mealIsAlone,
-		Freshness:   entity.Fresh,
-		StressLevel: 0,
-		Date:        date,
-	}
-	if meal.Date.IsZero() {
-		meal.Date = time.Now()
-	}
-	err := repo.db.Create(&meal).Error
-	return meal, err
+func (repo *MealRepository) CreateMeal(meal *entity.Meal) error {
+	err := repo.db.Create(meal).Error
+	return err
 }
 
 func (repo *MealRepository) GetMeal(id uint) (entity.Meal, error) {

@@ -9,12 +9,8 @@ import (
 )
 
 // Create a new note with date = now
-func (repo *NotesRepository) Create() (entity.Note, error) {
-	var date time.Time = time.Now()
-	var text string = ""
-	var note = entity.Note{Date: date, Text: text}
-	err := repo.db.Create(&note).Error
-	return note, err
+func (repo *NotesRepository) Create(note *entity.Note) error {
+	return repo.db.Create(note).Error
 }
 
 // Get all notes including text

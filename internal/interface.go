@@ -10,7 +10,7 @@ import (
 type (
 	IMealsRepository interface {
 		ListMeals() entity.Meals
-		CreateMeal(date time.Time) (entity.Meal, error)
+		CreateMeal(*entity.Meal) error
 		GetMeal(id uint) (entity.Meal, error)
 		DeleteMeal(id uint) error
 		PatchMeal(id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error
@@ -27,8 +27,8 @@ type (
 
 	IFoodRepository interface {
 		ListFoods(mealId uint) entity.Foods
-		CreateFoodByName(mealId uint, ingredientName string, condition entity.FoodCondition) (uint, error)
-		CreateFoodByID(mealId uint, ingredientId uint, condition entity.FoodCondition) (uint, error)
+		CreateFoodByName(food *entity.Food, ingredientName string) error
+		CreateFoodByID(food *entity.Food) error
 		DeleteFood(foodId uint) error
 		ChangeCondition(foodId uint, condition entity.FoodCondition) error
 		GetFood(foodId uint) entity.Food
@@ -51,7 +51,7 @@ type (
 
 	INotesRepository interface {
 		List() entity.Notes
-		Create() (entity.Note, error)
+		Create(note *entity.Note) error
 		Patch(id uint, date *time.Time, text *string) error
 		Delete(id uint) error
 	}
@@ -65,7 +65,7 @@ type (
 
 	IConditionEventRepo interface {
 		ListConditionEvents() entity.ConditionEvents
-		CreateConditionEvent(date time.Time) (entity.ConditionEvent, error)
+		CreateConditionEvent(event *entity.ConditionEvent) error
 		GetConditionEvent(uint) (entity.ConditionEvent, error)
 		PatchConditionEvent(uint, time.Time) error
 		DeleteConditionEvent(uint) error
@@ -74,7 +74,7 @@ type (
 
 	IConditionEventUseCase interface {
 		List() entity.ConditionEvents
-		Create(time.Time) (entity.ConditionEvent, error)
+		Create() (entity.ConditionEvent, error)
 		Get(uint) (entity.ConditionEvent, error)
 		Patch(uint, time.Time) error
 		Delete(uint) (entity.SymptomCategories, error)
@@ -82,8 +82,8 @@ type (
 
 	IConditionRepo interface {
 		ListConditions(eventId uint) entity.Conditions
-		CreateConditionBySymptomName(eventId uint, symptomName string, symptomCategoryId uint) (uint, error)
-		CreateConditionBySymptomID(eventId uint, symptomId uint) (uint, error)
+		CreateConditionBySymptomName(condition *entity.Condition, symptomName string, symptomCategoryId uint) error
+		CreateConditionBySymptomID(condition *entity.Condition) error
 		DeleteCondition(conditionId uint) error
 		ChangeSeverity(conditionId uint, newSeverity entity.ConditionSeverity) error
 		GetCondition(id uint) (entity.Condition, error)
@@ -102,7 +102,7 @@ type (
 
 	ISymptomCategoriesRepo interface {
 		ListCategories() entity.SymptomCategories
-		CreateCategory(name string) (uint, error)
+		CreateCategory(*entity.SymptomCategory) error
 	}
 
 	ISymptomsUseCase interface {

@@ -24,12 +24,19 @@ func (uc MealUseCase) Get(id uint) (entity.Meal, error) {
 }
 
 func (uc MealUseCase) Create(date *time.Time) (entity.Meal, error) {
-	if date == nil {
-		now := time.Now()
-		date = &now
+	var meal = &entity.Meal{
+		IsAlone:     true,
+		Freshness:   entity.Fresh,
+		StressLevel: 0,
 	}
-	meal, err := uc.meals.CreateMeal(*date)
-	return meal, err
+	if date == nil || date.IsZero() {
+		meal.Date = time.Now()
+	} else {
+		meal.Date = *date
+	}
+
+	err := uc.meals.CreateMeal(meal)
+	return *meal, err
 }
 
 func (uc MealUseCase) Delete(id uint) (ings entity.Ingredients, err error) {

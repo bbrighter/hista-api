@@ -18,21 +18,22 @@ func (uc FoodUseCase) List(mealId uint) entity.Foods {
 	return uc.food.ListFoods(mealId)
 }
 
-func (uc FoodUseCase) Create(mealId uint, ingredientName string, ingredientId uint) (food entity.Food, ingredients entity.Ingredients, err error) {
-	var foodId uint
-	var condition entity.FoodCondition = entity.Cooked
+func (uc FoodUseCase) Create(mealId uint, ingredientName string, ingredientId uint) (entity.Food, entity.Ingredients, error) {
+	var food = &entity.Food{MealID: mealId, Condition: entity.Cooked}
+	var err error
+	var ingredients entity.Ingredients
 	if ingredientId != 0 {
-		foodId, err = uc.food.CreateFoodByID(mealId, ingredientId, condition)
+		food.IngredientID = ingredientId
+		err = uc.food.CreateFoodByID(food)
 	} else if ingredientName != "" {
-		foodId, err = uc.food.CreateFoodByName(mealId, ingredientName, condition)
+		err = uc.food.CreateFoodByName(food, ingredientName)
 	} else {
 		err = errors.ErrorAttributeMustBeSet("ingredientName or ingredientId")
 	}
 	if err == nil {
 		ingredients = uc.ingredients.ListIngredients()
-		food = uc.food.GetFood(foodId)
 	}
-	return food, ingredients, err
+	return *food, ingredients, err
 }
 
 func (uc FoodUseCase) Delete(foodId uint) (ingredients entity.Ingredients, err error) {

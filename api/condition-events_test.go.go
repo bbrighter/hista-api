@@ -13,8 +13,7 @@ var testEvent = new(entity.ConditionEvent)
 
 func (service *Service) createTestEvent(t *testing.T) func(t *testing.T) {
 	ctx := context.TODO()
-	var params = ConditionEventRequestParams{Date: time.Now()}
-	resp, err := service.CreateConditionEvent(ctx, params)
+	resp, err := service.CreateConditionEvent(ctx)
 	testEvent.ID = resp.ID
 	assert.NoError(t, err)
 	cleanup := func(t *testing.T) {
@@ -28,8 +27,7 @@ func (service *Service) createTestEvent(t *testing.T) func(t *testing.T) {
 func TestCreateConditionEvent(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	var params = ConditionEventRequestParams{Date: time.Now()}
-	resp, err := service.CreateConditionEvent(ctx, params)
+	resp, err := service.CreateConditionEvent(ctx)
 	defer service.DeleteConditionEvent(ctx, resp.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, resp.ID)

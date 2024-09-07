@@ -55,30 +55,36 @@ func TestCreateConditionBySymptomName(t *testing.T) {
 	repo := initTest(t)
 
 	eventId, _, oldConditionId, catId := repo.createTestCondition(t)
-	conditionId, err := repo.CreateConditionBySymptomName(eventId, "name", catId)
+	conditition := &entity.Condition{ConditionEventID: eventId}
+	err := repo.CreateConditionBySymptomName(conditition, "name", catId)
 	assert.NoError(t, err)
-	assert.Equal(t, oldConditionId+1, conditionId)
+	assert.Equal(t, oldConditionId+1, conditition.ID)
 
-	_, err = repo.CreateConditionBySymptomName(99, "name", catId)
+	conditition2 := &entity.Condition{ConditionEventID: 1000}
+	err = repo.CreateConditionBySymptomName(conditition2, "name", catId)
 	assert.EqualError(t, err, "not_found: not found")
 
-	conditionId, err = repo.CreateConditionBySymptomName(eventId, "name", 99)
+	condition3 := &entity.Condition{ConditionEventID: eventId}
+	err = repo.CreateConditionBySymptomName(condition3, "name", 99)
 	assert.NoError(t, err)
-	assert.Equal(t, oldConditionId+2, conditionId)
+	assert.Equal(t, oldConditionId+2, condition3.ID)
 }
 
 func TestCreateConditionBySymptomID(t *testing.T) {
 	repo := initTest(t)
 
 	eventId, symptomId, conditionId, _ := repo.createTestCondition(t)
-	id, err := repo.CreateConditionBySymptomID(eventId, symptomId)
+	condition := &entity.Condition{ConditionEventID: eventId, SymptomID: symptomId}
+	err := repo.CreateConditionBySymptomID(condition)
 	assert.NoError(t, err)
-	assert.Equal(t, conditionId+1, id)
+	assert.Equal(t, conditionId+1, condition.ID)
 
-	_, err = repo.CreateConditionBySymptomID(99, symptomId)
+	conditionNoEvent := &entity.Condition{ConditionEventID: 99, SymptomID: symptomId}
+	err = repo.CreateConditionBySymptomID(conditionNoEvent)
 	assert.EqualError(t, err, "not_found: not found")
 
-	_, err = repo.CreateConditionBySymptomID(eventId, 99)
+	conditionNoSymptomID := &entity.Condition{ConditionEventID: eventId, SymptomID: 99}
+	err = repo.CreateConditionBySymptomID(conditionNoSymptomID)
 	assert.EqualError(t, err, "not_found: not found")
 
 }

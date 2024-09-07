@@ -19,7 +19,9 @@ func (uc NoteUseCase) List() entity.Notes {
 }
 
 func (uc NoteUseCase) Create() (entity.Note, error) {
-	return uc.repo.Create()
+	var note = &entity.Note{Date: time.Now(), Text: ""}
+	err := uc.repo.Create(note)
+	return *note, err
 }
 
 func (uc NoteUseCase) Patch(id uint, date *time.Time, text *string) error {

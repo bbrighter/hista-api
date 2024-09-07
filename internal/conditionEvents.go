@@ -19,8 +19,10 @@ func (uc ConditionEventUseCase) List() entity.ConditionEvents {
 	return uc.events.ListConditionEvents()
 
 }
-func (uc ConditionEventUseCase) Create(date time.Time) (entity.ConditionEvent, error) {
-	return uc.events.CreateConditionEvent(date)
+func (uc ConditionEventUseCase) Create() (entity.ConditionEvent, error) {
+	var event = &entity.ConditionEvent{Date: time.Now()}
+	err := uc.events.CreateConditionEvent(event)
+	return *event, err
 
 }
 func (uc ConditionEventUseCase) Get(id uint) (entity.ConditionEvent, error) {

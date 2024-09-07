@@ -7,13 +7,9 @@ import (
 	entity "encore.app/entity"
 )
 
-type ConditionEventRequestParams struct {
-	Date time.Time `json:"date"`
-}
-
 // encore:api auth method=POST path=/condition-events
-func (service *Service) CreateConditionEvent(ctx context.Context, params ConditionEventRequestParams) (entity.ConditionEventResponse, error) {
-	event, err := service.conditionEvents.Create(params.Date)
+func (service *Service) CreateConditionEvent(ctx context.Context) (entity.ConditionEventResponse, error) {
+	event, err := service.conditionEvents.Create()
 	return event.ToResponse(), err
 }
 
@@ -27,6 +23,10 @@ func (service *Service) GetConditionEvents(ctx context.Context) (entity.Conditio
 func (service *Service) GetConditionEvent(ctx context.Context, eventId uint) (entity.ConditionEventResponse, error) {
 	event, err := service.conditionEvents.Get(eventId)
 	return event.ToResponse(), err
+}
+
+type ConditionEventRequestParams struct {
+	Date time.Time `json:"date"`
 }
 
 // encore:api auth method=PATCH path=/condition-events/:eventId
