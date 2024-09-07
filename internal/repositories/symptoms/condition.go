@@ -46,10 +46,12 @@ func (repo *SymptomsRepo) CreateConditionBySymptomID(condition *entity.Condition
 	if events == 0 {
 		return errors.ErrorNotFound
 	}
-	symptoms := repo.db.Find(&entity.Symptom{ID: condition.SymptomID}).RowsAffected
+	var symptom entity.Symptom
+	symptoms := repo.db.Find(&symptom, &entity.Symptom{ID: condition.SymptomID}).RowsAffected
 	if symptoms == 0 {
 		return errors.ErrorNotFound
 	}
+	condition.Symptom = symptom
 	var err error = repo.db.Create(condition).Error
 	return err
 }

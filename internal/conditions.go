@@ -37,6 +37,10 @@ func (uc ConditionUseCase) Create(eventId uint, symptomName *string, symptomId *
 	} else {
 		err = errors.ErrorAttributeMustBeSet("symptomId or symptomName and symptomCategoryId")
 	}
+	if err != nil {
+		return *condition, symptoms, err
+	}
+	*condition, err = uc.Conditions.GetCondition(condition.ID)
 	return *condition, symptoms, err
 }
 

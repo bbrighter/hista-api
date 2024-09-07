@@ -25,6 +25,7 @@ func (uc FoodUseCase) Create(mealId uint, ingredientName string, ingredientId ui
 	if ingredientId != 0 {
 		food.IngredientID = ingredientId
 		err = uc.food.CreateFoodByID(food)
+		*food = uc.food.GetFood(food.ID)
 	} else if ingredientName != "" {
 		err = uc.food.CreateFoodByName(food, ingredientName)
 	} else {
