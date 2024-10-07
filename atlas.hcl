@@ -6,7 +6,7 @@ data "external_schema" "gorm" {
 	src = data.external_schema.gorm.url
   
 	migration {
-	  dir = "file://service/migrations"
+	  dir = "file://api/migrations"
 	  format = golang-migrate
 	}
   

@@ -18,7 +18,7 @@ func TestPatchCondition(t *testing.T) {
 	err = service.PatchCondition(ctx, 100, PatchSeverityRequestParams{Severity: entity.HighSeverity})
 	assert.EqualError(t, err, "not_found: not found")
 
-	catId, err := service.symtpoms.CreateCategory("cat")
+	catId, err := service.symptoms.CreateCategory("cat")
 	assert.NoError(t, err)
 	symtpomName := "name"
 	resp, err := service.PostCondition(ctx, testEvent.ID, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
@@ -35,7 +35,7 @@ func TestDeleteCondition(t *testing.T) {
 
 	cleanup := service.createTestEvent(t)
 	defer cleanup(t)
-	catId, err := service.symtpoms.CreateCategory("cat2")
+	catId, err := service.symptoms.CreateCategory("cat2")
 	assert.NoError(t, err)
 	symtpomName := "name"
 	resp, err := service.PostCondition(ctx, testEvent.ID, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})

@@ -6,6 +6,6 @@ type SymptomsRepo struct {
 	db *gorm.DB
 }
 
-func NewSymtpomsRepo(db *gorm.DB) *SymptomsRepo {
+func NewSymptomsRepo(db *gorm.DB) *SymptomsRepo {
 	return &SymptomsRepo{db: db}
 }
