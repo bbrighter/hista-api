@@ -143,14 +143,4 @@ type (
 		Create() error
 		UseTestQuery(*testing.T)
 	}
-
-	IStatusRepo interface {
-		Find() entity.Statuses
-		Create(*entity.Status) error
-	}
-
-	IStatusUseCase interface {
-		Find() entity.Statuses
-		Create(date time.Time, timeOfDay entity.TimeOfDay, fitness entity.Quality, sleep *entity.Quality) (entity.Status, error)
-	}
 )

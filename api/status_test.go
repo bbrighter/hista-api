@@ -11,18 +11,34 @@ import (
 func TestCreateStatus(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	// sleep := entity.Bad
 	params := StatusParams{
+		TimeOfDay: entity.Morning,
 		Date:      time.Now(),
-		TimeOfDay: entity.Evening,
 		Fitness:   entity.Good,
-		Sleep:     nil,
+		Sleep:     entity.Good,
 	}
 
 	resp, err := service.CreateStatus(ctx, params)
+	defer service.DeleteStatus(ctx, resp.ID)
 
 	assert.NoError(t, err)
-	assert.Equal(t, entity.Good, resp.Fitness)
+	assert.GreaterOrEqual(t, resp.ID, uint(1))
+}
+
+func TestCreateStatusEvening(t *testing.T) {
+	service, ctx := initAPITest(t)
+
+	params := StatusParams{
+		TimeOfDay: entity.Evening,
+		Date:      time.Now(),
+		Fitness:   entity.Good,
+	}
+
+	resp, err := service.CreateStatus(ctx, params)
+	defer service.DeleteStatus(ctx, resp.ID)
+
+	assert.NoError(t, err)
+	assert.GreaterOrEqual(t, resp.ID, uint(1))
 }
 
 func TestListStatus(t *testing.T) {

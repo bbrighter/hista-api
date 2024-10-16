@@ -26,6 +26,8 @@ var models = []any{
 	&entity.Pollen{},
 	&entity.PollenEvent{},
 	&entity.Status{},
+	&entity.MorningStatus{},
+	&entity.EveningStatus{},
 }
 
 func main() {

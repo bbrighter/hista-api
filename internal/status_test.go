@@ -15,9 +15,19 @@ func (repo TestStatusRepo) Find() entity.Statuses {
 	return entity.Statuses{}
 }
 
-func (repo TestStatusRepo) Create(status *entity.Status) error {
+func (repo TestStatusRepo) Save(status *entity.Status) error {
 	status.ID = 1
 	return nil
+}
+
+func (repo TestStatusRepo) Delete(status *entity.Status) error {
+	status.ID = 0
+	return nil
+}
+
+func (repo TestStatusRepo) FindForDate(date time.Time) (entity.Status, bool) {
+	status := entity.Status{ID: 1, Date: time.Now(), Morning: &entity.MorningStatus{ID: 1}}
+	return status, true
 }
 
 func TestCreate(t *testing.T) {
@@ -26,17 +36,10 @@ func TestCreate(t *testing.T) {
 
 	var status entity.Status
 	var err error
-	status, err = uc.Create(time.Now(), entity.Evening, entity.Bad, nil)
+	status, err = uc.CreateMorning(time.Now(), entity.Bad, entity.Good)
+	assert.EqualError(t, err, "morning status already exists")
+
+	status, err = uc.CreateEvening(time.Now(), entity.Bad)
 	assert.NoError(t, err)
 	assert.EqualValues(t, 1, status.ID)
-
-	sleep := entity.Bad
-	_, err = uc.Create(time.Now(), entity.Evening, entity.Bad, &sleep)
-	assert.Error(t, err)
-
-	_, err = uc.Create(time.Now(), entity.Morning, entity.Bad, nil)
-	assert.Error(t, err)
-
-	_, err = uc.Create(time.Now(), entity.Morning, entity.Bad, &sleep)
-	assert.NoError(t, err)
 }
