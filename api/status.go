@@ -15,7 +15,7 @@ type StatusParams struct {
 	Sleep     entity.Quality   `json:"sleep,omitempty" encore:"optional"`
 }
 
-// encore:api auth method=POST path=/status
+// encore:api auth method=PUT path=/status
 func (service *Service) CreateStatus(ctx context.Context, params StatusParams) (entity.IDResponse, error) {
 	switch params.TimeOfDay {
 	case entity.Morning:
