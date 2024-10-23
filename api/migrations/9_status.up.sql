@@ -10,6 +10,7 @@ CREATE TABLE "evening_statuses" (
   "status_id" bigint NULL,
   "fitness" smallint NULL,
   PRIMARY KEY ("id"),
+  CONSTRAINT "uni_evening_statuses_status_id" UNIQUE ("status_id"),
   CONSTRAINT "fk_statuses_evening" FOREIGN KEY ("status_id") REFERENCES "statuses" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );
 -- create "morning_statuses" table
@@ -19,5 +20,6 @@ CREATE TABLE "morning_statuses" (
   "fitness" smallint NULL,
   "sleep" smallint NULL,
   PRIMARY KEY ("id"),
+  CONSTRAINT "uni_morning_statuses_status_id" UNIQUE ("status_id"),
   CONSTRAINT "fk_statuses_morning" FOREIGN KEY ("status_id") REFERENCES "statuses" ("id") ON UPDATE NO ACTION ON DELETE CASCADE
 );

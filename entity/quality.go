@@ -3,9 +3,9 @@ package entity
 type Quality uint8
 
 const (
-	VeryGood Quality = iota
-	Good
-	Middle
+	VeryBad Quality = iota + 1
 	Bad
-	VeryBad
+	Middle
+	Good
+	VeryGood
 )

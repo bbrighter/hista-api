@@ -13,19 +13,30 @@ type StatusParams struct {
 	Date      time.Time        `json:"date"`
 	Fitness   entity.Quality   `json:"fitness"`
 	Sleep     entity.Quality   `json:"sleep,omitempty" encore:"optional"`
+	ID        uint             `json:"id,omitempty" encore:"optional"`
 }
 
-// encore:api auth method=PUT path=/status
-func (service *Service) CreateStatus(ctx context.Context, params StatusParams) (entity.IDResponse, error) {
+type DateParam struct {
+	Date time.Time `json:"date"`
+}
+
+// encore:api auth method=POST path=/status
+func (service *Service) PostStatus(ctx context.Context, params DateParam) (entity.StatusResponse, error) {
+	status, err := service.status.Create(params.Date)
+	return status.ToResp(), err
+}
+
+// encore:api auth method=PUT path=/status/:id
+func (service *Service) PutStatus(ctx context.Context, id uint, params StatusParams) (entity.StatusResponse, error) {
 	switch params.TimeOfDay {
 	case entity.Morning:
-		status, err := service.status.CreateMorning(params.Date, params.Fitness, params.Sleep)
-		return entity.IDResponse{ID: status.ID}, err
+		status, err := service.status.SaveMorning(id, params.Date, params.ID, params.Fitness, params.Sleep)
+		return status.ToResp(), err
 	case entity.Evening:
-		status, err := service.status.CreateEvening(params.Date, params.Fitness)
-		return entity.IDResponse{ID: status.ID}, err
+		status, err := service.status.SaveEvening(id, params.Date, params.ID, params.Fitness)
+		return status.ToResp(), err
 	default:
-		return entity.IDResponse{}, errors.BadRequestf("timeOfDay must be valid value %v", params.TimeOfDay)
+		return entity.StatusResponse{}, errors.BadRequestf("timeOfDay must be a valid value %v", params.TimeOfDay)
 	}
 }
 
