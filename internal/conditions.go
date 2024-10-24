@@ -10,7 +10,7 @@ type ConditionUseCase struct {
 	Symptoms   ISymptomCategoriesRepo
 }
 
-func NewconditionsUseCase(conditions IConditionRepo, symptoms ISymptomCategoriesRepo) ConditionUseCase {
+func NewConditionsUseCase(conditions IConditionRepo, symptoms ISymptomCategoriesRepo) ConditionUseCase {
 	return ConditionUseCase{
 		Conditions: conditions,
 		Symptoms:   symptoms,

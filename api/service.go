@@ -8,6 +8,7 @@ import (
 	"encore.app/internal/repositories/notes"
 	"encore.app/internal/repositories/pollen"
 	"encore.app/internal/repositories/statistics"
+	"encore.app/internal/repositories/status"
 	"encore.app/internal/repositories/symptoms"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
@@ -21,12 +22,13 @@ type Service struct {
 	foods           internal.IFoodUseCase
 	ingredients     internal.IIngredientUseCase
 	notes           internal.INotesUseCase
-	symtpoms        internal.ISymptomsUseCase
+	symptoms        internal.ISymptomsUseCase
 	conditionEvents internal.IConditionEventUseCase
 	conditions      internal.IConditionUseCase
 	diary           internal.IDiaryUseCase
 	statistics      internal.IStatisticsUseCase
 	pollens         internal.IPollenUseCase
+	status          internal.IStatusUseCase
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -54,11 +56,12 @@ func initService() (*Service, error) {
 		return nil, err
 	}
 	mealRepo := meals.NewMealRepository(db)
-	symptomRepo := symptoms.NewSymtpomsRepo(db)
+	symptomRepo := symptoms.NewSymptomsRepo(db)
 	noteRepo := notes.NewNotesRepository(db)
 	statsRepo := statistics.NewStatisticsRepo(db)
 	pollenRepo := pollen.NewPollenRepo(db)
 	dwdRepo := pollen.NewDWDRepo()
+	statusRepo := status.NewStatusRepo(db)
 
 	return &Service{
 		DB:              db,
@@ -66,11 +69,12 @@ func initService() (*Service, error) {
 		ingredients:     internal.NewIngredientUseCase(mealRepo),
 		foods:           internal.NewFoodUseCase(mealRepo, mealRepo),
 		notes:           internal.NewNoteUseCase(noteRepo),
-		symtpoms:        internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
+		symptoms:        internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
 		conditionEvents: internal.NewConditionEventUseCase(symptomRepo, symptomRepo),
-		conditions:      internal.NewconditionsUseCase(symptomRepo, symptomRepo),
+		conditions:      internal.NewConditionsUseCase(symptomRepo, symptomRepo),
 		diary:           internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo, pollenRepo),
 		statistics:      internal.NewStatisticsUseCase(statsRepo),
 		pollens:         internal.NewPollenUseCase(pollenRepo, dwdRepo),
+		status:          internal.NewStatusUseCase(statusRepo),
 	}, nil
 }

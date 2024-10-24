@@ -3,11 +3,11 @@ package internal
 import "encore.app/entity"
 
 type SymptomsUseCase struct {
-	sym ISymtpomsRepo
+	sym ISymptomsRepo
 	cat ISymptomCategoriesRepo
 }
 
-func NewSymptomsUseCase(sym ISymtpomsRepo, cat ISymptomCategoriesRepo) SymptomsUseCase {
+func NewSymptomsUseCase(sym ISymptomsRepo, cat ISymptomCategoriesRepo) SymptomsUseCase {
 	return SymptomsUseCase{sym: sym, cat: cat}
 }
 

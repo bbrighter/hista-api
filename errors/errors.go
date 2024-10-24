@@ -1,6 +1,10 @@
 package errors
 
-import "encore.dev/beta/errs"
+import (
+	"fmt"
+
+	"encore.dev/beta/errs"
+)
 
 func NewError(msg string, code errs.ErrCode) *errs.Error {
 	return &errs.Error{
@@ -22,5 +26,10 @@ func ErrorAttributeMustBeSet(attribute string) *errs.Error {
 var ErrorUnauthenticated = NewError("unauthenticated", errs.Unauthenticated)
 
 func BadRequest(msg string) *errs.Error {
+	return NewError(msg, errs.InvalidArgument)
+}
+
+func BadRequestf(format string, args ...interface{}) *errs.Error {
+	msg := fmt.Sprintf(format, args...)
 	return NewError(msg, errs.InvalidArgument)
 }

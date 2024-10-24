@@ -96,8 +96,8 @@ type (
 		PatchSeverity(id uint, newSeverity entity.ConditionSeverity) error
 	}
 
-	ISymtpomsRepo interface {
-		CreateOrReplace(symptomName string, symtpomCategoryId uint) (uint, error)
+	ISymptomsRepo interface {
+		CreateOrReplace(symptomName string, symptomCategoryId uint) (uint, error)
 	}
 
 	ISymptomCategoriesRepo interface {
@@ -106,7 +106,7 @@ type (
 	}
 
 	ISymptomsUseCase interface {
-		PutSymptom(symptomName string, symtpomCategoryId uint) (uint, error)
+		PutSymptom(symptomName string, symptomCategoryId uint) (uint, error)
 		List() entity.SymptomCategories
 		CreateCategory(name string) (uint, error)
 	}

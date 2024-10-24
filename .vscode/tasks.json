@@ -42,7 +42,7 @@
 			"label": "Update hash for migrations",
 			"command": "atlas migrate hash",
 			"options": {
-				"cwd": "${workspaceFolder}/service",
+				"cwd": "${workspaceFolder}/api",
 			}
 		}
 	],
