@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"encore.app/internal"
+	"encore.app/internal/repositories/headaches"
 	"encore.app/internal/repositories/meals"
 	"encore.app/internal/repositories/notes"
 	"encore.app/internal/repositories/pollen"
@@ -29,6 +30,7 @@ type Service struct {
 	statistics      internal.IStatisticsUseCase
 	pollens         internal.IPollenUseCase
 	status          internal.IStatusUseCase
+	headaches       internal.IHeadacheUSeCase
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -62,6 +64,7 @@ func initService() (*Service, error) {
 	pollenRepo := pollen.NewPollenRepo(db)
 	dwdRepo := pollen.NewDWDRepo()
 	statusRepo := status.NewStatusRepo(db)
+	headacheRepo := headaches.NewHeadacheRepository(db)
 
 	return &Service{
 		DB:              db,
@@ -76,5 +79,6 @@ func initService() (*Service, error) {
 		statistics:      internal.NewStatisticsUseCase(statsRepo),
 		pollens:         internal.NewPollenUseCase(pollenRepo, dwdRepo),
 		status:          internal.NewStatusUseCase(statusRepo),
+		headaches:       internal.NewHeadacheUseCase(headacheRepo),
 	}, nil
 }

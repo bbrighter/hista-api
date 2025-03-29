@@ -149,6 +149,18 @@ type (
 		CreateHeadache(ha *entity.Headache) error
 		DeleteHeadache(haId uint) error
 		GetHeadache(haId uint) (entity.Headache, error)
-		PatchHeadache(haId uint, date *time.Time, severity *entity.Severity, types *entity.HeadacheTypes, positions *entity.HeadachePositions, symptoms *entity.HeadacheSymptoms)
+		PatchHeadache(haId uint, date *time.Time, severity *entity.Severity, types *entity.HeadacheTypes, positions *entity.HeadachePositions, symptoms *entity.HeadacheSymptoms) error
+	}
+
+	IHeadacheUSeCase interface {
+		List() []entity.Headache
+		Create(date time.Time, severity entity.Severity) (uint, error)
+		Delete(haId uint) error
+		Get(haId uint) (entity.Headache, error)
+		PatchDate(haId uint, date time.Time) error
+		PatchSeverity(haId uint, severity entity.Severity) error
+		PatchTypes(haId uint, types entity.HeadacheTypes) error
+		PatchPositions(haId uint, positions entity.HeadachePositions) error
+		PatchSymptoms(haId uint, symptoms entity.HeadacheSymptoms) error
 	}
 )

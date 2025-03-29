@@ -28,6 +28,7 @@ var models = []any{
 	&entity.Status{},
 	&entity.MorningStatus{},
 	&entity.EveningStatus{},
+	&entity.Headache{},
 }
 
 func main() {
