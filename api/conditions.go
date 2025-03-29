@@ -7,7 +7,7 @@ import (
 )
 
 type PatchSeverityRequestParams struct {
-	Severity entity.ConditionSeverity `json:"severity"`
+	Severity entity.Severity `json:"severity"`
 }
 
 // encore:api auth method=PATCH path=/conditions/:conditionID

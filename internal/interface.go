@@ -85,7 +85,7 @@ type (
 		CreateConditionBySymptomName(condition *entity.Condition, symptomName string, symptomCategoryId uint) error
 		CreateConditionBySymptomID(condition *entity.Condition) error
 		DeleteCondition(conditionId uint) error
-		ChangeSeverity(conditionId uint, newSeverity entity.ConditionSeverity) error
+		ChangeSeverity(conditionId uint, newSeverity entity.Severity) error
 		GetCondition(id uint) (entity.Condition, error)
 	}
 
@@ -93,7 +93,7 @@ type (
 		List(eventId uint) entity.Conditions
 		Create(eventId uint, symptomName *string, symptomId *uint, symptomCategoryId *uint) (entity.Condition, entity.SymptomCategories, error)
 		Delete(id uint) (entity.SymptomCategories, error)
-		PatchSeverity(id uint, newSeverity entity.ConditionSeverity) error
+		PatchSeverity(id uint, newSeverity entity.Severity) error
 	}
 
 	ISymptomsRepo interface {
@@ -142,5 +142,13 @@ type (
 		List() entity.PollenEvents
 		Create() error
 		UseTestQuery(*testing.T)
+	}
+
+	IHeadacheRepo interface {
+		ListHeadaches() []entity.Headache
+		CreateHeadache(ha *entity.Headache) error
+		DeleteHeadache(haId uint) error
+		GetHeadache(haId uint) (entity.Headache, error)
+		PatchHeadache(haId uint, date *time.Time, severity *entity.Severity, types *entity.HeadacheTypes, positions *entity.HeadachePositions, symptoms *entity.HeadacheSymptoms)
 	}
 )

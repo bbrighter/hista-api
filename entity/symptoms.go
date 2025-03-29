@@ -15,7 +15,7 @@ type Condition struct {
 	ID               uint
 	Symptom          Symptom
 	SymptomID        uint
-	Severity         ConditionSeverity
+	Severity         Severity
 	ConditionEventID uint
 }
 
@@ -35,14 +35,14 @@ type ConditionEvents []ConditionEvent
 
 type Conditions []Condition
 
-type ConditionSeverity uint8
+type Severity uint8
 
 const (
-	VeryLowSeverity  ConditionSeverity = 1
-	LowSeverity      ConditionSeverity = 2
-	MediumSeverity   ConditionSeverity = 3
-	HighSeverity     ConditionSeverity = 4
-	VeryHighSeverity ConditionSeverity = 5
+	VeryLowSeverity  Severity = 1
+	LowSeverity      Severity = 2
+	MediumSeverity   Severity = 3
+	HighSeverity     Severity = 4
+	VeryHighSeverity Severity = 5
 )
 
 type Symptoms []Symptom
@@ -81,9 +81,9 @@ type ConditionEventResponse struct {
 }
 
 type ConditionResponse struct {
-	ID       uint              `json:"id"`
-	Symptom  SymptomResponse   `json:"symptom"`
-	Severity ConditionSeverity `json:"severity"`
+	ID       uint            `json:"id"`
+	Symptom  SymptomResponse `json:"symptom"`
+	Severity Severity        `json:"severity"`
 }
 
 func (symptom Symptom) ToResponse() SymptomResponse {
