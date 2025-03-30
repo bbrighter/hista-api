@@ -6,11 +6,9 @@ import (
 	"fmt"
 )
 
-// @enum short-term memory, tinnitus, light-sensitive, noise-sensitive, odor-sensitive, dizziness, lack of concentration, tired, exhausted
 type HeadacheSymptom string
 
 const (
-	// kurzzeitgedächtnis, ohrenpiepsen, licht-, lärm-, geruchsempfindlich,schwindel, konzentrationsstörung, müde, erschöpft
 	ShortTermMemory   HeadacheSymptom = "short-term memory"
 	Tinnitus          HeadacheSymptom = "tinnitus"
 	LightSensitive    HeadacheSymptom = "light-sensitive"
