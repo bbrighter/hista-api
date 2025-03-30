@@ -6,24 +6,24 @@ import (
 	"fmt"
 )
 
-// @enum front, back, both, left, right, neck, ear, temple
 type HeadachePosition string
 
 const (
 	Front  HeadachePosition = "front"
 	Back   HeadachePosition = "back"
-	Both   HeadachePosition = "both"
+	Top    HeadachePosition = "top"
 	Left   HeadachePosition = "left"
 	Right  HeadachePosition = "right"
 	Neck   HeadachePosition = "neck"
 	Ear    HeadachePosition = "ear"
 	Temple HeadachePosition = "temple"
+	Side   HeadachePosition = "side"
 )
 
 var validHeadachePositions = map[HeadachePosition]struct{}{
-	Front: {}, Back: {}, Both: {},
+	Front: {}, Back: {}, Top: {},
 	Left: {}, Right: {}, Neck: {},
-	Ear: {}, Temple: {},
+	Ear: {}, Temple: {}, Side: {},
 }
 
 type HeadachePositions []HeadachePosition

@@ -6,11 +6,9 @@ import (
 	"fmt"
 )
 
-// @enum pulsating-pounding, dull-pressing, stabbing
 type HeadacheType string
 
 const (
-	// pulsierend-pochend, dumpf-drückend, stechend
 	Pulsating HeadacheType = "pulsating-pounding"
 	Dull      HeadacheType = "dull-pressing"
 	Stabbing  HeadacheType = "stabbing"
