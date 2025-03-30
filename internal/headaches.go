@@ -14,10 +14,10 @@ func NewHeadacheUseCase(hRepo IHeadacheRepo) HeadacheUseCase {
 	return HeadacheUseCase{hRepo: hRepo}
 }
 
-func (uc HeadacheUseCase) List() []entity.Headache {
+func (uc HeadacheUseCase) List() entity.Headaches {
 	return uc.hRepo.ListHeadaches()
 }
-func (uc HeadacheUseCase) Create(date time.Time, severity entity.Severity) (uint, error) {
+func (uc HeadacheUseCase) Create(date time.Time, severity entity.HeadacheSeverity) (uint, error) {
 	var headache = entity.Headache{
 		Date:     date,
 		Severity: severity,
@@ -34,7 +34,7 @@ func (uc HeadacheUseCase) Get(haId uint) (entity.Headache, error) {
 func (uc HeadacheUseCase) PatchDate(haId uint, date time.Time) error {
 	return uc.hRepo.PatchHeadache(haId, &date, nil, nil, nil, nil)
 }
-func (uc HeadacheUseCase) PatchSeverity(haId uint, severity entity.Severity) error {
+func (uc HeadacheUseCase) PatchSeverity(haId uint, severity entity.HeadacheSeverity) error {
 	return uc.hRepo.PatchHeadache(haId, nil, &severity, nil, nil, nil)
 }
 func (uc HeadacheUseCase) PatchTypes(haId uint, types entity.HeadacheTypes) error {

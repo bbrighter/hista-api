@@ -6,5 +6,6 @@ CREATE TABLE "headaches" (
   "types" json NULL,
   "positions" json NULL,
   "symptoms" json NULL,
+  "description" text NULL,
   PRIMARY KEY ("id")
 );

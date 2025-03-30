@@ -7,8 +7,8 @@ import (
 	"encore.dev/beta/errs"
 )
 
-func (repo *HeadacheRepository) ListHeadaches() []entity.Headache {
-	var headaches []entity.Headache
+func (repo *HeadacheRepository) ListHeadaches() entity.Headaches {
+	var headaches entity.Headaches
 	repo.db.Find(&headaches)
 	return headaches
 }
@@ -40,7 +40,7 @@ func (repo *HeadacheRepository) GetHeadache(haId uint) (entity.Headache, error) 
 func (repo *HeadacheRepository) PatchHeadache(
 	haId uint,
 	date *time.Time,
-	severity *entity.Severity,
+	severity *entity.HeadacheSeverity,
 	types *entity.HeadacheTypes,
 	positions *entity.HeadachePositions,
 	symptoms *entity.HeadacheSymptoms,

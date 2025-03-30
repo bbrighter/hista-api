@@ -21,7 +21,7 @@ func initTest(t *testing.T, addHeadache bool) (*HeadacheRepository, entity.Heada
 		headache = entity.Headache{
 			ID:        1,
 			Date:      time.Date(2020, 1, 1, 1, 0, 0, 0, time.UTC),
-			Severity:  entity.HighSeverity,
+			Severity:  3,
 			Types:     []entity.HeadacheType{entity.Dull},
 			Positions: []entity.HeadachePosition{entity.Front, entity.Back},
 			Symptoms:  []entity.HeadacheSymptom{entity.ConcentrationLack},
@@ -36,7 +36,7 @@ func TestListHeadaches(t *testing.T) {
 	tests := map[string]struct {
 		addHeadache      bool
 		expectedLen      int
-		expectedSeverity entity.Severity
+		expectedSeverity int
 	}{
 		"no headaches": {
 			addHeadache: false,
@@ -45,7 +45,7 @@ func TestListHeadaches(t *testing.T) {
 		"one headache": {
 			addHeadache:      true,
 			expectedLen:      1,
-			expectedSeverity: entity.HighSeverity,
+			expectedSeverity: 3,
 		},
 	}
 
@@ -56,7 +56,7 @@ func TestListHeadaches(t *testing.T) {
 			headaches := repo.ListHeadaches()
 			assert.Len(t, headaches, test.expectedLen)
 			if test.expectedLen > 0 {
-				assert.Equal(t, test.expectedSeverity, headaches[0].Severity)
+				assert.EqualValues(t, test.expectedSeverity, headaches[0].Severity)
 			}
 		})
 	}
@@ -68,7 +68,7 @@ func TestCreateHeadache(t *testing.T) {
 		errorExpected bool
 	}{
 		"valid headache": {
-			headache:      &entity.Headache{ID: 1, Date: time.Now(), Severity: entity.HighSeverity, Positions: []entity.HeadachePosition{entity.Front}},
+			headache:      &entity.Headache{ID: 1, Date: time.Now(), Severity: 3, Positions: []entity.HeadachePosition{entity.Front}},
 			errorExpected: false,
 		},
 		"invalid headache": {
@@ -137,14 +137,14 @@ func TestGetHeadache(t *testing.T) {
 
 func TestPatchHeadache(t *testing.T) {
 	date := time.Date(2022, 1, 1, 1, 0, 0, 0, time.UTC)
-	severity := entity.MediumSeverity
+	var severity entity.HeadacheSeverity = 2
 	types := entity.HeadacheTypes{entity.Pulsating}
 	positions := entity.HeadachePositions{entity.Temple}
 	symptoms := entity.HeadacheSymptoms{entity.Tinnitus}
 	tests := map[string]struct {
 		haID      uint
 		date      *time.Time
-		severity  *entity.Severity
+		severity  *entity.HeadacheSeverity
 		types     *entity.HeadacheTypes
 		positions *entity.HeadachePositions
 		symptoms  *entity.HeadacheSymptoms

@@ -19,7 +19,7 @@ func TestHeadachesAPI(t *testing.T) {
 
 	// Create one headache
 	date := time.Date(2018, 1, 2, 3, 4, 5, 0, time.Local)
-	severity := entity.HighSeverity
+	var severity entity.HeadacheSeverity = 5
 	idResp, err := service.PostHeadache(ctx, PostHeadacheParams{Date: date, Severity: severity})
 	id := idResp.ID
 	assert.NoError(t, err)
@@ -40,7 +40,7 @@ func TestHeadachesAPI(t *testing.T) {
 	newDate := time.Date(2019, 1, 2, 3, 4, 5, 0, time.Local)
 	err = service.PatchHeadacheDate(ctx, id, PatchHeadacheDateParams{Date: newDate})
 	assert.NoError(t, err)
-	newSeverity := entity.LowSeverity
+	var newSeverity entity.HeadacheSeverity = 1
 	err = service.PatchHeadacheSeverity(ctx, id, PatchHeadacheSeverityParams{Severity: newSeverity})
 	assert.NoError(t, err)
 	newTypes := entity.HeadacheTypes{entity.Dull}

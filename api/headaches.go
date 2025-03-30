@@ -10,7 +10,7 @@ import (
 // encore:api auth method=GET path=/headaches
 func (service *Service) GetHeadaches(ctx context.Context) (entity.HeadachesResponse, error) {
 	headaches := service.headaches.List()
-	return entity.HeadachesResponse{Headaches: headaches}, nil
+	return headaches.ToResp(), nil
 }
 
 // encore:api auth method=GET path=/headaches/:id
@@ -25,8 +25,8 @@ func (service *Service) DeleteHeadache(ctx context.Context, id uint) error {
 }
 
 type PostHeadacheParams struct {
-	Date     time.Time       `json:"date"`
-	Severity entity.Severity `json:"severity"`
+	Date     time.Time               `json:"date"`
+	Severity entity.HeadacheSeverity `json:"severity"`
 }
 
 // encore:api auth method=POST path=/headaches
@@ -45,7 +45,7 @@ func (service *Service) PatchHeadacheDate(ctx context.Context, id uint, params P
 }
 
 type PatchHeadacheSeverityParams struct {
-	Severity entity.Severity `json:"severity"`
+	Severity entity.HeadacheSeverity `json:"severity"`
 }
 
 // encore:api auth method=PATCH path=/headaches/:id/severity
