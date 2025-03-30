@@ -68,7 +68,7 @@ func (repo *SymptomsRepo) DeleteCondition(conditionId uint) error {
 	return tx.Error
 }
 
-func (repo *SymptomsRepo) ChangeSeverity(conditionId uint, newSeverity entity.ConditionSeverity) error {
+func (repo *SymptomsRepo) ChangeSeverity(conditionId uint, newSeverity entity.Severity) error {
 	var condition = entity.Condition{ID: conditionId}
 	tx := repo.db.Model(condition).Where(&condition).Updates(&entity.Condition{Severity: newSeverity})
 	if tx.RowsAffected == 0 {

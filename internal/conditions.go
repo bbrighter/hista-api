@@ -52,6 +52,6 @@ func (uc ConditionUseCase) Delete(id uint) (entity.SymptomCategories, error) {
 	return uc.Symptoms.ListCategories(), nil
 }
 
-func (uc ConditionUseCase) PatchSeverity(id uint, newSeverity entity.ConditionSeverity) error {
+func (uc ConditionUseCase) PatchSeverity(id uint, newSeverity entity.Severity) error {
 	return uc.Conditions.ChangeSeverity(id, newSeverity)
 }

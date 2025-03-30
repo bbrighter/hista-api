@@ -23,7 +23,7 @@ func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, params St
 	if params.ToDate.IsZero() {
 		return resp, errors.ErrorAttributeMustBeSet("toDate")
 	}
-	if params.IDs == nil || len(params.IDs) == 0 {
+	if len(params.IDs) == 0 {
 		return resp, errors.ErrorAttributeMustBeSet("ids")
 	}
 	stats, err := service.statistics.FindFoodForSymptoms(params.FromDate, params.ToDate, params.IDs)
@@ -41,7 +41,7 @@ func (service *Service) GetStatisticsByIngredientsIds(ctx context.Context, param
 	if params.ToDate.IsZero() {
 		return resp, errors.ErrorAttributeMustBeSet("toDate")
 	}
-	if params.IDs == nil || len(params.IDs) == 0 {
+	if len(params.IDs) == 0 {
 		return resp, errors.ErrorAttributeMustBeSet("ids")
 	}
 	stats, err := service.statistics.FindSymptomsForFoods(params.FromDate, params.ToDate, params.IDs)
