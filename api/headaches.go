@@ -79,3 +79,12 @@ type PatchHeadacheTypesParams struct {
 func (service *Service) PatchHeadacheTypes(ctx context.Context, id uint, params PatchHeadacheTypesParams) error {
 	return service.headaches.PatchTypes(id, params.Types)
 }
+
+type PatchHeadacheDescriptionParams struct {
+	Description string `json:"description"`
+}
+
+// encore:api auth method=PATCH path=/headaches/:id/description
+func (service *Service) PatchHeadacheDescription(ctx context.Context, id uint, params PatchHeadacheDescriptionParams) error {
+	return service.headaches.PatchDescription(id, params.Description)
+}
