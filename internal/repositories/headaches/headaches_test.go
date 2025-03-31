@@ -141,14 +141,16 @@ func TestPatchHeadache(t *testing.T) {
 	types := entity.HeadacheTypes{entity.Pulsating}
 	positions := entity.HeadachePositions{entity.Temple}
 	symptoms := entity.HeadacheSymptoms{entity.Tinnitus}
+	description := "desc"
 	tests := map[string]struct {
-		haID      uint
-		date      *time.Time
-		severity  *entity.HeadacheSeverity
-		types     *entity.HeadacheTypes
-		positions *entity.HeadachePositions
-		symptoms  *entity.HeadacheSymptoms
-		isError   bool
+		haID        uint
+		date        *time.Time
+		severity    *entity.HeadacheSeverity
+		types       *entity.HeadacheTypes
+		positions   *entity.HeadachePositions
+		symptoms    *entity.HeadacheSymptoms
+		description *string
+		isError     bool
 	}{
 		"update date only": {
 			haID: 1,
@@ -159,16 +161,18 @@ func TestPatchHeadache(t *testing.T) {
 			severity: &severity,
 		},
 		"update everything": {
-			haID:      1,
-			date:      &date,
-			severity:  &severity,
-			types:     &types,
-			positions: &positions,
-			symptoms:  &symptoms,
+			haID:        1,
+			date:        &date,
+			severity:    &severity,
+			types:       &types,
+			positions:   &positions,
+			symptoms:    &symptoms,
+			description: &description,
 		},
 		"not found": {
 			haID:    100,
 			isError: true,
+			date:    &date,
 		},
 		"invalid entry": {
 			haID:      1,
@@ -180,7 +184,7 @@ func TestPatchHeadache(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			repo, origHeadache := initTest(t, true)
-			err := repo.PatchHeadache(test.haID, test.date, test.severity, test.types, test.positions, test.symptoms)
+			err := repo.PatchHeadache(test.haID, test.date, test.severity, test.types, test.positions, test.symptoms, test.description)
 			if test.isError {
 				assert.Error(t, err)
 				return
@@ -218,6 +222,12 @@ func TestPatchHeadache(t *testing.T) {
 				expectedSymptoms = symptoms
 			}
 			assert.Equal(t, expectedSymptoms, result.Symptoms)
+
+			expectedDescription := origHeadache.Description
+			if test.description != nil {
+				expectedDescription = description
+			}
+			assert.Equal(t, expectedDescription, result.Description)
 		})
 	}
 }

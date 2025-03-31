@@ -30,7 +30,7 @@ type Service struct {
 	statistics      internal.IStatisticsUseCase
 	pollens         internal.IPollenUseCase
 	status          internal.IStatusUseCase
-	headaches       internal.IHeadacheUSeCase
+	headaches       internal.IHeadacheUseCase
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{

@@ -3,6 +3,7 @@ package entity
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 )
 
@@ -28,9 +29,9 @@ type HeadacheResponse struct {
 	ID          uint              `json:"id"`
 	Date        time.Time         `json:"date"`
 	Severity    HeadacheSeverity  `json:"severity"`
-	Types       HeadacheTypes     `json:"types"`
-	Positions   HeadachePositions `json:"positions"`
-	Symptoms    HeadacheSymptoms  `json:"symptoms"`
+	Types       HeadacheTypes     `json:"types" encore:"optional"`
+	Positions   HeadachePositions `json:"positions" encore:"optional"`
+	Symptoms    HeadacheSymptoms  `json:"symptoms" encore:"optional"`
 	Description string            `json:"description"`
 }
 
@@ -43,6 +44,9 @@ func (hs Headaches) ToResp() HeadachesResponse {
 	for _, h := range hs {
 		headaches = append(headaches, h.ToResp())
 	}
+	sort.Slice(headaches, func(i, j int) bool {
+		return headaches[i].Date.After(headaches[j].Date)
+	})
 	return HeadachesResponse{Headaches: headaches}
 }
 

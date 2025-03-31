@@ -23,7 +23,7 @@ func (r HeadacheTestRepo) DeleteHeadache(haId uint) error {
 func (r HeadacheTestRepo) GetHeadache(haId uint) (entity.Headache, error) {
 	return entity.Headache{}, nil
 }
-func (r HeadacheTestRepo) PatchHeadache(haId uint, date *time.Time, severity *entity.HeadacheSeverity, types *entity.HeadacheTypes, positions *entity.HeadachePositions, symptoms *entity.HeadacheSymptoms) error {
+func (r HeadacheTestRepo) PatchHeadache(haId uint, date *time.Time, severity *entity.HeadacheSeverity, types *entity.HeadacheTypes, positions *entity.HeadachePositions, symptoms *entity.HeadacheSymptoms, description *string) error {
 	return nil
 }
 

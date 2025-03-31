@@ -44,24 +44,31 @@ func (repo *HeadacheRepository) PatchHeadache(
 	types *entity.HeadacheTypes,
 	positions *entity.HeadachePositions,
 	symptoms *entity.HeadacheSymptoms,
+	description *string,
 ) error {
-	var headache = entity.Headache{ID: haId}
+	updates := make(map[string]interface{})
 	if date != nil {
-		headache.Date = *date
+		updates["date"] = *date
 	}
 	if severity != nil {
-		headache.Severity = *severity
+		updates["severity"] = *severity
 	}
 	if types != nil {
-		headache.Types = *types
+		updates["types"] = *types
 	}
 	if positions != nil {
-		headache.Positions = *positions
+		updates["positions"] = *positions
 	}
 	if symptoms != nil {
-		headache.Symptoms = *symptoms
+		updates["symptoms"] = *symptoms
 	}
-	tx := repo.db.Debug().Model(&headache).Updates(&headache)
+	if description != nil {
+		updates["description"] = *description
+	}
+	if len(updates) == 0 {
+		return nil
+	}
+	tx := repo.db.Model(&entity.Headache{ID: haId}).Updates(updates)
 	if tx.Error != nil {
 		return tx.Error
 	}

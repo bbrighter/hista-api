@@ -32,17 +32,20 @@ func (uc HeadacheUseCase) Get(haId uint) (entity.Headache, error) {
 	return uc.hRepo.GetHeadache(haId)
 }
 func (uc HeadacheUseCase) PatchDate(haId uint, date time.Time) error {
-	return uc.hRepo.PatchHeadache(haId, &date, nil, nil, nil, nil)
+	return uc.hRepo.PatchHeadache(haId, &date, nil, nil, nil, nil, nil)
 }
 func (uc HeadacheUseCase) PatchSeverity(haId uint, severity entity.HeadacheSeverity) error {
-	return uc.hRepo.PatchHeadache(haId, nil, &severity, nil, nil, nil)
+	return uc.hRepo.PatchHeadache(haId, nil, &severity, nil, nil, nil, nil)
 }
 func (uc HeadacheUseCase) PatchTypes(haId uint, types entity.HeadacheTypes) error {
-	return uc.hRepo.PatchHeadache(haId, nil, nil, &types, nil, nil)
+	return uc.hRepo.PatchHeadache(haId, nil, nil, &types, nil, nil, nil)
 }
 func (uc HeadacheUseCase) PatchPositions(haId uint, positions entity.HeadachePositions) error {
-	return uc.hRepo.PatchHeadache(haId, nil, nil, nil, &positions, nil)
+	return uc.hRepo.PatchHeadache(haId, nil, nil, nil, &positions, nil, nil)
 }
 func (uc HeadacheUseCase) PatchSymptoms(haId uint, symptoms entity.HeadacheSymptoms) error {
-	return uc.hRepo.PatchHeadache(haId, nil, nil, nil, nil, &symptoms)
+	return uc.hRepo.PatchHeadache(haId, nil, nil, nil, nil, &symptoms, nil)
+}
+func (uc HeadacheUseCase) PatchDescription(haId uint, description string) error {
+	return uc.hRepo.PatchHeadache(haId, nil, nil, nil, nil, nil, &description)
 }
