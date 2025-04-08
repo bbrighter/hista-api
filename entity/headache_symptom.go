@@ -19,13 +19,14 @@ const (
 	Tired             HeadacheSymptom = "tired"
 	Exhausted         HeadacheSymptom = "exhausted"
 	PhysicalActivity  HeadacheSymptom = "physical activity"
+	MindActivity      HeadacheSymptom = "mind activity"
 )
 
 var validHeadacheSymptoms = map[HeadacheSymptom]struct{}{
 	ShortTermMemory: {}, Tinnitus: {}, LightSensitive: {},
 	NoiseSensitive: {}, OdorSensitive: {}, Dizziness: {},
 	ConcentrationLack: {}, Tired: {}, Exhausted: {},
-	PhysicalActivity: {},
+	PhysicalActivity: {}, MindActivity: {},
 }
 
 type HeadacheSymptoms []HeadacheSymptom
@@ -45,7 +46,8 @@ func (e *HeadacheSymptoms) Scan(value any) error {
 			return fmt.Errorf("invalid headache symptom: %s", s)
 		}
 	}
-	return json.Unmarshal(value.([]byte), e)
+	*e = symptoms
+	return nil
 }
 
 func (e HeadacheSymptoms) Value() (driver.Value, error) {
