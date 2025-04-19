@@ -5,6 +5,7 @@ import (
 	"time"
 
 	entity "encore.app/entity"
+	"encore.app/errors"
 )
 
 // encore:api auth method=POST path=/condition-events
@@ -31,6 +32,9 @@ type ConditionEventRequestParams struct {
 
 // encore:api auth method=PATCH path=/condition-events/:eventId
 func (service *Service) PatchDate(ctx context.Context, eventId uint, params ConditionEventRequestParams) error {
+	if params.Date.IsZero() {
+		return errors.ErrorAttributeMustBeSet("date")
+	}
 	return service.conditionEvents.Patch(eventId, params.Date)
 }
 

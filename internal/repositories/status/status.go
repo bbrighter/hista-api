@@ -10,7 +10,7 @@ import (
 )
 
 func (repo *StatusRepo) Save(status *entity.Status) error {
-	err := repo.db.Debug().Transaction(func(tx *gorm.DB) error {
+	err := repo.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Save(status).Error; err != nil {
 			return err
 		}
