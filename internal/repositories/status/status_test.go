@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"encore.app/entity"
+	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -71,7 +71,7 @@ func TestSave(t *testing.T) {
 	assert.Equal(t, updatedStatusWithMorning.ID, uint(2))
 
 	responseStatus = &entity.Status{ID: id2}
-	repo.db.Debug().Preload(clause.Associations).First(responseStatus)
+	repo.db.Preload(clause.Associations).First(responseStatus)
 	assert.NotNil(t, responseStatus.Morning)
 	assert.EqualValues(t, entity.VeryGood, responseStatus.Morning.Fitness)
 }

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,4 +19,10 @@ func TestInitService(t *testing.T) {
 	_, err = initService()
 
 	assert.NoError(t, err)
+}
+
+func initAPITest(t *testing.T) (*Service, context.Context) {
+	service, err := initService()
+	assert.NoError(t, err)
+	return service, context.TODO()
 }
