@@ -4,7 +4,4 @@
         "allow_origins_with_credentials": ["https://hista-ui.vercel.app*", "https://hista-ui-git*bbrighters-projects.vercel.app*"],
         "allow_headers": ["UserName"]
     },
-    "build": {
-        "cgo_enabled": true
-    }
 }

@@ -20,13 +20,14 @@ const (
 	Exhausted         HeadacheSymptom = "exhausted"
 	PhysicalActivity  HeadacheSymptom = "physical activity"
 	MindActivity      HeadacheSymptom = "mind activity"
+	Nausea            HeadacheSymptom = "nausea"
 )
 
 var validHeadacheSymptoms = map[HeadacheSymptom]struct{}{
 	ShortTermMemory: {}, Tinnitus: {}, LightSensitive: {},
 	NoiseSensitive: {}, OdorSensitive: {}, Dizziness: {},
 	ConcentrationLack: {}, Tired: {}, Exhausted: {},
-	PhysicalActivity: {}, MindActivity: {},
+	PhysicalActivity: {}, MindActivity: {}, Nausea: {},
 }
 
 type HeadacheSymptoms []HeadacheSymptom
