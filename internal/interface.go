@@ -98,17 +98,25 @@ type (
 
 	ISymptomsRepo interface {
 		CreateOrReplace(symptomName string, symptomCategoryId uint) (uint, error)
+		ChangeCategory(symptomId, newCategoryId uint) error
+		RenameSymptom(symptomId uint, newName string) error
 	}
 
 	ISymptomCategoriesRepo interface {
 		ListCategories() entity.SymptomCategories
 		CreateCategory(*entity.SymptomCategory) error
+		RenameCategory(cat *entity.SymptomCategory, newName string) error
+		DeleteCategory(catId uint) error
 	}
 
 	ISymptomsUseCase interface {
 		PutSymptom(symptomName string, symptomCategoryId uint) (uint, error)
 		List() entity.SymptomCategories
 		CreateCategory(name string) (uint, error)
+		ChangeCategory(symptomId, newCategoryId uint) error
+		RenameSymptom(symptomId uint, newName string) error
+		RenameCategory(catId uint, newName string) error
+		DeleteCategory(catId uint) error
 	}
 
 	IDiaryUseCase interface {

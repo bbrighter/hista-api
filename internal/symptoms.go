@@ -24,3 +24,17 @@ func (uc SymptomsUseCase) CreateCategory(name string) (uint, error) {
 func (uc SymptomsUseCase) PutSymptom(symptomName string, symtpomCategoryId uint) (uint, error) {
 	return uc.sym.CreateOrReplace(symptomName, symtpomCategoryId)
 }
+
+func (uc SymptomsUseCase) ChangeCategory(symptomId, newCategoryId uint) error {
+	return uc.sym.ChangeCategory(symptomId, newCategoryId)
+}
+func (uc SymptomsUseCase) RenameSymptom(symptomId uint, newName string) error {
+	return uc.sym.RenameSymptom(symptomId, newName)
+}
+func (uc SymptomsUseCase) RenameCategory(catId uint, newName string) error {
+	var cat = &entity.SymptomCategory{ID: catId}
+	return uc.cat.RenameCategory(cat, newName)
+}
+func (uc SymptomsUseCase) DeleteCategory(catId uint) error {
+	return uc.cat.DeleteCategory(catId)
+}
