@@ -61,7 +61,7 @@ func (service *Service) PutStatus(ctx context.Context, id uint, params PatchStat
 			evening.StatusID = params.Evening.ID
 		}
 	}
-	return service.status.UpdateMorningEvening(id, params.Date, morning, evening)
+	return service.status.Update(id, params.Date, morning, evening)
 }
 
 // encore:api auth method=GET path=/status

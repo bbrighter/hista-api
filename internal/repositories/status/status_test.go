@@ -111,16 +111,6 @@ func TestFind(t *testing.T) {
 	assert.Len(t, statuses, 1)
 }
 
-func TestFirst(t *testing.T) {
-	repo := initTest(t)
-
-	repo.db.Create(&entity.Status{Date: time.Now(), Morning: &entity.MorningStatus{Fitness: entity.Bad}})
-	var status = &entity.Status{ID: 1}
-	err := repo.First(status)
-	assert.NoError(t, err)
-	assert.Equal(t, entity.Bad, status.Morning.Fitness)
-}
-
 func TestSave(t *testing.T) {
 	repo := initTest(t)
 

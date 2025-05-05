@@ -55,10 +55,6 @@ func (repo *StatusRepo) Save(status *entity.Status) error {
 	return err
 }
 
-func (repo *StatusRepo) First(status *entity.Status) error {
-	return repo.db.Preload(clause.Associations).First(status).Error
-}
-
 func (repo *StatusRepo) Find() (statuses entity.Statuses) {
 	repo.db.Preload(clause.Associations).Find(&statuses)
 	return statuses
