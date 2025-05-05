@@ -43,7 +43,7 @@ type EveningParams struct {
 }
 
 // encore:api auth method=PUT path=/status/:id
-func (service *Service) PutStatus(ctx context.Context, id uint, params PatchStatusParams) error {
+func (service *Service) PutStatus(ctx context.Context, id uint, params PatchStatusParams) (entity.StatusResponse, error) {
 	morning := new(entity.MorningStatus)
 	if params.Morning != nil {
 		morning.Fitness = params.Morning.Fitness
@@ -61,7 +61,8 @@ func (service *Service) PutStatus(ctx context.Context, id uint, params PatchStat
 			evening.StatusID = params.Evening.ID
 		}
 	}
-	return service.status.Update(id, params.Date, morning, evening)
+	status, err := service.status.Update(id, params.Date, morning, evening)
+	return status.ToResp(), err
 }
 
 // encore:api auth method=GET path=/status

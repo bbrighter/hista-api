@@ -9,6 +9,7 @@ import (
 
 type IStatusRepo interface {
 	Find() entity.Statuses
+	First(*entity.Status) error
 	Create(*entity.Status) error
 	Update(*entity.Status) error
 	Delete(*entity.Status) error
@@ -19,7 +20,7 @@ type IStatusUseCase interface {
 	Find() entity.Statuses
 	Create(time.Time) (entity.Status, error)
 	Delete(id uint) error
-	Update(statusId uint, date time.Time, morning *entity.MorningStatus, evening *entity.EveningStatus) error
+	Update(statusId uint, date time.Time, morning *entity.MorningStatus, evening *entity.EveningStatus) (entity.Status, error)
 }
 
 type StatusUseCase struct {
@@ -44,17 +45,12 @@ func (uc StatusUseCase) Create(date time.Time) (entity.Status, error) {
 	return status, nil
 }
 
-func (uc StatusUseCase) UpdateDate(id uint, date time.Time) error {
-	status := &entity.Status{ID: id, Date: date}
-	return uc.repo.Update(status)
-}
-
 func (uc StatusUseCase) Update(
 	statusId uint,
 	date time.Time,
 	morning *entity.MorningStatus,
 	evening *entity.EveningStatus,
-) error {
+) (entity.Status, error) {
 	status := &entity.Status{ID: statusId, Date: date}
 	if morning != nil {
 		status.Morning = new(entity.MorningStatus)
@@ -73,7 +69,11 @@ func (uc StatusUseCase) Update(
 			status.Evening.ID = evening.ID
 		}
 	}
-	return uc.repo.Update(status)
+	if err := uc.repo.Update(status); err != nil {
+		return entity.Status{}, err
+	}
+	uc.repo.First(status)
+	return *status, nil
 }
 
 func (uc StatusUseCase) Delete(id uint) error {

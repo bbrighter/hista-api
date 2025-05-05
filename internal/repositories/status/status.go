@@ -13,6 +13,13 @@ func (repo *StatusRepo) Create(status *entity.Status) error {
 	return repo.db.Create(status).Error
 }
 
+func (repo *StatusRepo) First(status *entity.Status) error {
+	if rows := repo.db.Preload(clause.Associations).First(&status).RowsAffected; rows == 0 {
+		return errors.ErrorNotFound
+	}
+	return nil
+}
+
 func (repo *StatusRepo) Update(status *entity.Status) error {
 	err := repo.db.Transaction(func(tx *gorm.DB) error {
 		if !status.Date.IsZero() {

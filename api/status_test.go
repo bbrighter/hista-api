@@ -110,11 +110,8 @@ func TestUpdateStatus(t *testing.T) {
 				params.Evening.Fitness = 2
 			}
 
-			err = service.PutStatus(ctx, statusId, params)
+			status, err := service.PutStatus(ctx, statusId, params)
 			assert.NoError(t, err)
-
-			statuses, _ := service.ListStatus(ctx)
-			status := statuses.Statuses[0]
 
 			if test.date {
 				assert.True(t, time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC).Equal(status.Date))

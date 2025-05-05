@@ -24,6 +24,16 @@ func initTest(t *testing.T) *StatusRepo {
 	return NewStatusRepo(db)
 }
 
+func TestFirst(t *testing.T) {
+	repo := initTest(t)
+
+	repo.db.Debug().Create(&entity.Status{Date: time.Now(), Morning: &entity.MorningStatus{Fitness: entity.Bad}, Evening: new(entity.EveningStatus)})
+	var status = &entity.Status{ID: 1}
+	err := repo.First(status)
+	assert.NoError(t, err)
+	assert.Equal(t, entity.Bad, status.Morning.Fitness)
+}
+
 func TestCreate(t *testing.T) {
 	tests := map[string]struct {
 		morning *entity.MorningStatus
