@@ -24,6 +24,80 @@ func initTest(t *testing.T) *StatusRepo {
 	return NewStatusRepo(db)
 }
 
+func TestCreate(t *testing.T) {
+	tests := map[string]struct {
+		morning *entity.MorningStatus
+		evening *entity.EveningStatus
+	}{
+		"only date":     {},
+		"morning":       {morning: &entity.MorningStatus{Fitness: 3}},
+		"evening":       {evening: &entity.EveningStatus{Fitness: 3}},
+		"both":          {morning: &entity.MorningStatus{Fitness: 3}, evening: &entity.EveningStatus{Fitness: 3}},
+		"no-fitting id": {morning: &entity.MorningStatus{Fitness: 3, StatusID: 8}},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			repo := initTest(t)
+			var status = &entity.Status{Date: time.Now()}
+			status.Morning = test.morning
+			status.Evening = test.evening
+
+			err := repo.Create(status)
+			assert.NoError(t, err)
+			var result entity.Status
+			repo.db.Preload(clause.Associations).First(&result)
+
+			if test.evening == nil {
+				assert.Nil(t, result.Evening)
+			} else {
+				assert.NotNil(t, result.Evening)
+			}
+			if test.morning == nil {
+				assert.Nil(t, result.Morning)
+			} else {
+				assert.NotNil(t, result.Morning)
+			}
+
+		})
+	}
+
+}
+
+func TestUpdateStatus(t *testing.T) {
+	tests := map[string]struct {
+		morning *entity.MorningStatus
+		evening *entity.EveningStatus
+	}{
+		"only date":     {},
+		"morning":       {morning: &entity.MorningStatus{Fitness: 3}},
+		"evening":       {evening: &entity.EveningStatus{Fitness: 3}},
+		"both":          {morning: &entity.MorningStatus{Fitness: 3}, evening: &entity.EveningStatus{Fitness: 3}},
+		"no-fitting id": {morning: &entity.MorningStatus{Fitness: 3, StatusID: 8}},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			repo := initTest(t)
+			var status = &entity.Status{Date: time.Now()}
+			repo.Create(status)
+
+			status.Morning = test.morning
+			status.Evening = test.evening
+			err := repo.Update(status)
+			assert.NoError(t, err)
+
+			var result entity.Status
+			repo.db.Preload(clause.Associations).First(&result)
+			if test.morning != nil {
+				assert.Equal(t, test.morning.Fitness, result.Morning.Fitness)
+				assert.EqualValues(t, 0, result.Morning.Sleep)
+			}
+			if test.evening != nil {
+				assert.Equal(t, test.evening.Fitness, result.Evening.Fitness)
+			}
+		})
+	}
+}
+
 func TestFind(t *testing.T) {
 	repo := initTest(t)
 

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"encore.app/entity"
-	"encore.app/errors"
 )
 
 type StatusParams struct {
@@ -26,18 +25,43 @@ func (service *Service) PostStatus(ctx context.Context, params DateParam) (entit
 	return status.ToResp(), err
 }
 
+type PatchStatusParams struct {
+	Date    time.Time      `json:"date"`
+	Morning *MorningParams `json:"morning" encore:"optional"`
+	Evening *EveningParams `json:"evening" encore:"optional"`
+}
+
+type MorningParams struct {
+	Fitness entity.Quality `json:"fitness"`
+	Sleep   entity.Quality `json:"sleep,omitempty" encore:"optional"`
+	ID      uint           `json:"id,omitempty" encore:"optional"`
+}
+
+type EveningParams struct {
+	Fitness entity.Quality `json:"fitness"`
+	ID      uint           `json:"id,omitempty" encore:"optional"`
+}
+
 // encore:api auth method=PUT path=/status/:id
-func (service *Service) PutStatus(ctx context.Context, id uint, params StatusParams) (entity.StatusResponse, error) {
-	switch params.TimeOfDay {
-	case entity.Morning:
-		status, err := service.status.SaveMorning(id, params.Date, params.ID, params.Fitness, params.Sleep)
-		return status.ToResp(), err
-	case entity.Evening:
-		status, err := service.status.SaveEvening(id, params.Date, params.ID, params.Fitness)
-		return status.ToResp(), err
-	default:
-		return entity.StatusResponse{}, errors.BadRequestf("timeOfDay must be a valid value %v", params.TimeOfDay)
+func (service *Service) PutStatus(ctx context.Context, id uint, params PatchStatusParams) error {
+	morning := new(entity.MorningStatus)
+	if params.Morning != nil {
+		morning.Fitness = params.Morning.Fitness
+		morning.Sleep = params.Morning.Sleep
+		morning.StatusID = id
+		if params.Morning.ID > 0 {
+			morning.StatusID = params.Morning.ID
+		}
 	}
+	evening := new(entity.EveningStatus)
+	if params.Evening != nil {
+		evening.Fitness = params.Evening.Fitness
+		evening.StatusID = id
+		if params.Evening.ID > 0 {
+			evening.StatusID = params.Evening.ID
+		}
+	}
+	return service.status.UpdateMorningEvening(id, params.Date, morning, evening)
 }
 
 // encore:api auth method=GET path=/status
