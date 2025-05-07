@@ -101,28 +101,30 @@ func TestUpdateStatus(t *testing.T) {
 			if test.date {
 				params.Date = time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC)
 			}
+			morningFitness := 1
 			if test.morning {
-				params.Morning = new(MorningParams)
-				params.Morning.Fitness = 1
+				params.MorningFitness = &morningFitness
 			}
+			eveningFitness := 3
 			if test.evening {
-				params.Evening = new(EveningParams)
-				params.Evening.Fitness = 2
+				params.EveningFitness = &eveningFitness
 			}
 
-			status, err := service.PutStatus(ctx, statusId, params)
+			err = service.PatchStatus(ctx, statusId, params)
 			assert.NoError(t, err)
 
+			statuses := service.status.Find()
+			status := statuses[0]
 			if test.date {
 				assert.True(t, time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC).Equal(status.Date))
 			} else {
 				assert.True(t, time.Now().After(status.Date))
 			}
 			if test.morning {
-				assert.EqualValues(t, 1, status.Morning.Fitness)
+				assert.EqualValues(t, &morningFitness, status.MorningFitness)
 			}
 			if test.evening {
-				assert.EqualValues(t, 2, status.Evening.Fitness)
+				assert.EqualValues(t, &eveningFitness, status.EveningFitness)
 			}
 		})
 	}

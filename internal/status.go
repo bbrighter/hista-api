@@ -20,7 +20,7 @@ type IStatusUseCase interface {
 	Find() entity.Statuses
 	Create(time.Time) (entity.Status, error)
 	Delete(id uint) error
-	Update(statusId uint, date time.Time, morning *entity.MorningStatus, evening *entity.EveningStatus) (entity.Status, error)
+	Update(statusId uint, date time.Time, morning entity.MorningStatus, evening entity.EveningStatus) error
 }
 
 type StatusUseCase struct {
@@ -48,32 +48,18 @@ func (uc StatusUseCase) Create(date time.Time) (entity.Status, error) {
 func (uc StatusUseCase) Update(
 	statusId uint,
 	date time.Time,
-	morning *entity.MorningStatus,
-	evening *entity.EveningStatus,
-) (entity.Status, error) {
-	status := &entity.Status{ID: statusId, Date: date}
-	if morning != nil {
-		status.Morning = new(entity.MorningStatus)
-		status.Morning.Fitness = morning.Fitness
-		status.Morning.Sleep = morning.Sleep
-		status.Morning.StatusID = statusId
-		if status.Morning.ID > 0 {
-			status.Morning.ID = morning.ID
-		}
+	morning entity.MorningStatus,
+	evening entity.EveningStatus,
+) error {
+	status := &entity.Status{
+		ID:             statusId,
+		Date:           date,
+		MorningFitness: morning.Fitness,
+		EveningFitness: evening.Fitness,
+		MorningSleep:   morning.Sleep,
 	}
-	if evening != nil {
-		status.Evening = new(entity.EveningStatus)
-		status.Evening.Fitness = evening.Fitness
-		status.Evening.StatusID = statusId
-		if status.Evening.ID > 0 {
-			status.Evening.ID = evening.ID
-		}
-	}
-	if err := uc.repo.Update(status); err != nil {
-		return entity.Status{}, err
-	}
-	uc.repo.First(status)
-	return *status, nil
+	return uc.repo.Update(status)
+
 }
 
 func (uc StatusUseCase) Delete(id uint) error {
