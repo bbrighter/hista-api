@@ -5,16 +5,7 @@ import (
 	"time"
 
 	"encore.app/entity"
-	"encore.app/errors"
 )
-
-type StatusParams struct {
-	TimeOfDay entity.TimeOfDay `json:"timeOfDay"`
-	Date      time.Time        `json:"date"`
-	Fitness   entity.Quality   `json:"fitness"`
-	Sleep     entity.Quality   `json:"sleep,omitempty" encore:"optional"`
-	ID        uint             `json:"id,omitempty" encore:"optional"`
-}
 
 type DateParam struct {
 	Date time.Time `json:"date"`
@@ -26,18 +17,19 @@ func (service *Service) PostStatus(ctx context.Context, params DateParam) (entit
 	return status.ToResp(), err
 }
 
-// encore:api auth method=PUT path=/status/:id
-func (service *Service) PutStatus(ctx context.Context, id uint, params StatusParams) (entity.StatusResponse, error) {
-	switch params.TimeOfDay {
-	case entity.Morning:
-		status, err := service.status.SaveMorning(id, params.Date, params.ID, params.Fitness, params.Sleep)
-		return status.ToResp(), err
-	case entity.Evening:
-		status, err := service.status.SaveEvening(id, params.Date, params.ID, params.Fitness)
-		return status.ToResp(), err
-	default:
-		return entity.StatusResponse{}, errors.BadRequestf("timeOfDay must be a valid value %v", params.TimeOfDay)
-	}
+type PatchStatusParams struct {
+	Date           time.Time `json:"date" encore:"optional"`
+	MorningFitness *int      `json:"morningFitness" encore:"optional"`
+	MorningSleep   *int      `json:"morningSleep" encore:"optional"`
+	EveningFitness *int      `json:"eveningFitness" encore:"optional"`
+}
+
+// encore:api auth method=PATCH path=/status/:id
+func (service *Service) PatchStatus(ctx context.Context, id uint, params PatchStatusParams) error {
+	morningStatus := entity.MorningStatus{Fitness: params.MorningFitness, Sleep: params.MorningSleep}
+	eveningStatus := entity.EveningStatus{Fitness: params.EveningFitness}
+	err := service.status.Update(id, params.Date, morningStatus, eveningStatus)
+	return err
 }
 
 // encore:api auth method=GET path=/status

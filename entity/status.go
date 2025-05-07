@@ -6,23 +6,19 @@ import (
 )
 
 type Status struct {
-	ID      uint
-	Date    time.Time
-	Morning *MorningStatus `gorm:"constraint:OnDelete:CASCADE"`
-	Evening *EveningStatus `gorm:"constraint:OnDelete:CASCADE"`
+	ID             uint
+	Date           time.Time
+	MorningFitness *int
+	EveningFitness *int
+	MorningSleep   *int
 }
 
-type MorningStatus struct {
-	ID       uint    `json:"id"`
-	StatusID uint    `json:"statusId" gorm:"unique"`
-	Fitness  Quality `json:"fitness"`
-	Sleep    Quality `json:"sleep"`
-}
-
-type EveningStatus struct {
-	ID       uint    `json:"id"`
-	StatusID uint    `json:"statusId" gorm:"unique"`
-	Fitness  Quality `json:"fitness"`
+type StatusResponse struct {
+	ID             uint      `json:"id"`
+	Date           time.Time `json:"date"`
+	MorningFitness *int      `json:"morningFitness" encore:"optional"`
+	EveningFitness *int      `json:"eveningFitness" encore:"optional"`
+	MorningSleep   *int      `json:"morningSleep" encore:"optional"`
 }
 
 type Statuses []Status
@@ -34,7 +30,7 @@ type StatusesResponse struct {
 func (statuses Statuses) ToResp() StatusesResponse {
 	responses := []StatusResponse{}
 	for _, s := range statuses {
-		responses = append(responses, StatusResponse(s))
+		responses = append(responses, s.ToResp())
 	}
 	slices.SortFunc(responses, func(a, b StatusResponse) int {
 		return b.Date.Compare(a.Date)
@@ -42,28 +38,15 @@ func (statuses Statuses) ToResp() StatusesResponse {
 	return StatusesResponse{Statuses: responses}
 }
 
-type StatusResponse struct {
-	ID      uint           `json:"id"`
-	Date    time.Time      `json:"date"`
-	Morning *MorningStatus `json:"morning,omitempty" encore:"optional"`
-	Evening *EveningStatus `json:"evening,omitempty" encore:"optional"`
+type MorningStatus struct {
+	Fitness *int `json:"fitness"`
+	Sleep   *int `json:"sleep"`
 }
 
-func (status Status) ToResp() StatusResponse {
-	return StatusResponse(status)
+type EveningStatus struct {
+	Fitness *int `json:"fitness"`
 }
 
-type TimeOfDay string
-
-const (
-	Morning TimeOfDay = "morning"
-	Evening TimeOfDay = "evening"
-)
-
-func (tod TimeOfDay) IsValid() bool {
-	switch tod {
-	case Morning, Evening:
-		return true
-	}
-	return false
+func (s Status) ToResp() StatusResponse {
+	return StatusResponse(s)
 }

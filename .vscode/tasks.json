@@ -44,6 +44,12 @@
 			"options": {
 				"cwd": "${workspaceFolder}/api",
 			}
+		},
+		{
+			"type": "shell",
+			"label": "Detect deadcode",
+			"command": "deadcode .",
+			"icon": {"id": "broadcast"}
 		}
 	],
 	"inputs": [

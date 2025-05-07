@@ -8,7 +8,6 @@ import (
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
 func initTest(t *testing.T) *StatusRepo {
@@ -24,6 +23,94 @@ func initTest(t *testing.T) *StatusRepo {
 	return NewStatusRepo(db)
 }
 
+func TestFirst(t *testing.T) {
+	repo := initTest(t)
+
+	morningFitness := 3
+	repo.db.Create(&entity.Status{Date: time.Now(), MorningFitness: &morningFitness})
+	var status = &entity.Status{ID: 1}
+	err := repo.First(status)
+	assert.NoError(t, err)
+	assert.Equal(t, &morningFitness, status.MorningFitness)
+}
+
+func TestCreate(t *testing.T) {
+	tests := map[string]struct {
+		morningFitness int
+		eveningFitness int
+	}{
+		"only date": {},
+		"morning":   {morningFitness: 8},
+		"evening":   {morningFitness: 8},
+		"both":      {morningFitness: 8, eveningFitness: 3},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			repo := initTest(t)
+			var status = &entity.Status{Date: time.Now(), MorningFitness: &test.morningFitness, EveningFitness: &test.eveningFitness}
+
+			err := repo.Create(status)
+			assert.NoError(t, err)
+			var result entity.Status
+			repo.db.First(&result)
+
+			assert.Equal(t, &test.eveningFitness, result.EveningFitness)
+			assert.Equal(t, &test.morningFitness, result.MorningFitness)
+		})
+	}
+
+}
+
+func TestUpdateStatus(t *testing.T) {
+	date := time.Date(2023, 12, 11, 10, 9, 8, 6, time.UTC)
+	initDate := time.Date(2022, 12, 11, 10, 9, 8, 6, time.UTC)
+
+	changeFitness := 3
+	tests := map[string]struct {
+		date           time.Time
+		morningFitness *int
+		eveningFitness *int
+	}{
+		"only date": {date: date},
+		"morning":   {morningFitness: &changeFitness},
+		"evening":   {eveningFitness: &changeFitness},
+		"both":      {morningFitness: &changeFitness, eveningFitness: &changeFitness},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			repo := initTest(t)
+			morningFitness := 1
+			eveningFitness := 5
+			var status = &entity.Status{Date: initDate, MorningFitness: &morningFitness, EveningFitness: &eveningFitness}
+			repo.Create(status)
+
+			status.MorningFitness = test.morningFitness
+			status.EveningFitness = test.eveningFitness
+			status.Date = test.date
+			err := repo.Update(status)
+			assert.NoError(t, err)
+
+			var result entity.Status
+			repo.db.First(&result)
+			if test.date.IsZero() {
+				assert.True(t, result.Date.Equal(initDate))
+			} else {
+				assert.True(t, result.Date.Equal(date))
+			}
+			if test.eveningFitness == nil {
+				assert.Equal(t, &eveningFitness, result.EveningFitness)
+			} else {
+				assert.Equal(t, test.eveningFitness, result.EveningFitness)
+			}
+			if test.morningFitness == nil {
+				assert.Equal(t, &morningFitness, result.MorningFitness)
+			} else {
+				assert.Equal(t, test.morningFitness, result.MorningFitness)
+			}
+		})
+	}
+}
+
 func TestFind(t *testing.T) {
 	repo := initTest(t)
 
@@ -37,50 +124,12 @@ func TestFind(t *testing.T) {
 	assert.Len(t, statuses, 1)
 }
 
-func TestFirst(t *testing.T) {
-	repo := initTest(t)
-
-	repo.db.Create(&entity.Status{Date: time.Now(), Morning: &entity.MorningStatus{Fitness: entity.Bad}})
-	var status = &entity.Status{ID: 1}
-	err := repo.First(status)
-	assert.NoError(t, err)
-	assert.Equal(t, entity.Bad, status.Morning.Fitness)
-}
-
-func TestSave(t *testing.T) {
-	repo := initTest(t)
-
-	var err error
-	var status, statusWithMorning, updatedStatusWithMorning, responseStatus *entity.Status
-	var id1, id2 uint
-	status = &entity.Status{}
-	err = repo.Save(status)
-	id1 = status.ID
-	assert.NoError(t, err)
-	assert.EqualValues(t, 1, id1)
-
-	statusWithMorning = &entity.Status{Morning: &entity.MorningStatus{Fitness: entity.Good}}
-	err = repo.Save(statusWithMorning)
-	id2 = statusWithMorning.ID
-	assert.NoError(t, err)
-	assert.EqualValues(t, 2, id2)
-
-	updatedStatusWithMorning = &entity.Status{ID: id2, Morning: &entity.MorningStatus{ID: statusWithMorning.Morning.ID, Fitness: entity.VeryGood}}
-	err = repo.Save(updatedStatusWithMorning)
-	assert.NoError(t, err)
-	assert.Equal(t, updatedStatusWithMorning.ID, uint(2))
-
-	responseStatus = &entity.Status{ID: id2}
-	repo.db.Preload(clause.Associations).First(responseStatus)
-	assert.NotNil(t, responseStatus.Morning)
-	assert.EqualValues(t, entity.VeryGood, responseStatus.Morning.Fitness)
-}
-
 func TestDelete(t *testing.T) {
 	repo := initTest(t)
 
-	status := &entity.Status{Date: time.Now(), Morning: &entity.MorningStatus{Fitness: entity.Bad}}
-	err := repo.Save(status)
+	morningFitness := 1
+	status := &entity.Status{Date: time.Now(), MorningFitness: &morningFitness}
+	err := repo.db.Create(status).Error
 	assert.NoError(t, err)
 	err = repo.Delete(status)
 	assert.NoError(t, err)
@@ -94,7 +143,7 @@ func TestDelete(t *testing.T) {
 
 func TestDeleteNotFound(t *testing.T) {
 	repo := initTest(t)
-	status := &entity.Status{ID: 1, Morning: &entity.MorningStatus{ID: 1, StatusID: 1}}
+	status := &entity.Status{ID: 1}
 	err := repo.Delete(status)
 	assert.EqualError(t, err, "not_found: not found")
 }
@@ -102,11 +151,10 @@ func TestDeleteNotFound(t *testing.T) {
 func TestFindForDate(t *testing.T) {
 	repo := initTest(t)
 
-	status := &entity.Status{ID: 1, Date: time.Now(), Morning: &entity.MorningStatus{Fitness: 4}}
+	status := &entity.Status{ID: 1, Date: time.Now()}
 	repo.db.Create(status)
 
 	found, exists := repo.FindForDate(time.Now())
 	assert.True(t, exists)
-	assert.NotNil(t, found.Morning)
-	assert.Nil(t, found.Evening)
+	assert.EqualValues(t, 1, found.ID)
 }
