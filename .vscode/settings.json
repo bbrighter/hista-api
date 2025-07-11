@@ -7,5 +7,14 @@
         "plaintext": false,
         "markdown": false,
         "scminput": false
-    }
+    },
+  "command.pickEncorePid": {
+    "command": "powershell",
+    "args": [
+      "-ExecutionPolicy",
+      "Bypass",
+      "-File",
+      "${workspaceFolder}/.vscode/start-encore-and-get-pid.ps1"
+    ]
+  }
 }
