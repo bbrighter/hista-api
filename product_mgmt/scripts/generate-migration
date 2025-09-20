@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 set -eu
-DB_NAME=hista_db
+DB_NAME=product_mgmt_db
 MIGRATION_NAME=${1:-}
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
@@ -14,4 +14,4 @@ encore db reset --shadow $DB_NAME
 export ENCORERUNTIME_NOPANIC=1
 
 # Generate the migration
-atlas migrate diff $MIGRATION_NAME --env local --dev-url "$(encore db conn-uri --shadow $DB_NAME)&search_path=public"
+atlas migrate diff $MIGRATION_NAME --env product_mgmt --dev-url "$(encore db conn-uri --shadow $DB_NAME)&search_path=public"

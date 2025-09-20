@@ -8,7 +8,6 @@ import (
 	_ "ariga.io/atlas-go-sdk/recordriver"
 	gormSchema "ariga.io/atlas-provider-gorm/gormschema"
 	"encore.app/entity"
-	"encore.app/internalAuth"
 )
 
 // Define the models to generate migrations for.
@@ -20,8 +19,6 @@ var models = []any{
 	&entity.SymptomCategory{},
 	&entity.Symptom{},
 	&entity.ConditionEvent{},
-	&internalAuth.Token{},
-	&internalAuth.User{},
 	&entity.Note{},
 	&entity.Pollen{},
 	&entity.PollenEvent{},
