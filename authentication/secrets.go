@@ -19,7 +19,7 @@ type Keys struct {
 
 var keys *Keys
 
-func init() {
+func newKeys() *Keys {
 	dec, _ := pem.Decode([]byte(secrets.PrivateKey))
 	if dec == nil {
 		log.Fatal("cannot decode private key")
@@ -32,4 +32,5 @@ func init() {
 		privateKey: privateKey,
 		publicKey:  &privateKey.PublicKey,
 	}
+	return keys
 }

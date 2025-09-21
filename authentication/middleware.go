@@ -1,7 +1,7 @@
-package users
+package authentication
 
 import (
-	"encore.app/authentication"
+	"encore.app/entity"
 	"encore.app/errors"
 	"encore.dev/beta/auth"
 	"encore.dev/middleware"
@@ -9,9 +9,9 @@ import (
 
 const USER_MANAGEMENT_APP string = "user-management"
 
-// encore:middleware target=tag:user
+// encore:middleware target=tag:user-management
 func ValidationMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
-	data, ok := auth.Data().(authentication.AuthData)
+	data, ok := auth.Data().(entity.AuthData)
 	if !ok {
 		return next(req)
 	}

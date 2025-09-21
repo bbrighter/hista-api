@@ -11,7 +11,7 @@ type UserPasswordChangeParams struct {
 	OldPassword string `json:"oldPassword"`
 }
 
-// encore:api auth method=PATCH path=/user/:id tag:user
+// encore:api auth method=PATCH path=/user/:id
 func (s *Service) PatchPassword(ctx context.Context, id uuid.UUID, params UserPasswordChangeParams) error {
 	return s.user.ChangePassword(ctx, id, params.NewPassword, params.OldPassword)
 }

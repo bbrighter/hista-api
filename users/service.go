@@ -10,11 +10,10 @@ import (
 
 // encore:service
 type Service struct {
-	db      *gorm.DB
-	user    internal.IUser
-	mgmt    internal.IUserManagement
-	auth    internal.IAuth
-	secrets *Secrets
+	db   *gorm.DB
+	user internal.IUser
+	mgmt internal.IUserManagement
+	auth internal.IAuth
 }
 
 var usersDB = sqldb.NewDatabase("users_db", sqldb.DatabaseConfig{
@@ -32,14 +31,12 @@ func setupService(db *gorm.DB, cost int) *Service {
 	user := internal.NewUserUseCase(r)
 	mgmt := internal.NewUserManagement(r)
 	auth := internal.NewAuthUseCase(r)
-	secrets := NewSecrets()
 
 	var service = &Service{
-		db:      db,
-		user:    user,
-		mgmt:    mgmt,
-		auth:    auth,
-		secrets: secrets,
+		db:   db,
+		user: user,
+		mgmt: mgmt,
+		auth: auth,
 	}
 	return service
 }
