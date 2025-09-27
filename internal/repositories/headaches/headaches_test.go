@@ -1,16 +1,21 @@
 package headaches
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"encore.app/entity"
+	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
-func initTest(t *testing.T, addHeadache bool) (*HeadacheRepository, entity.Headache) {
+const TEST_GUID = "0c5e945e-ef6c-4934-91ff-702d94e2e7a8"
+
+func initTest(t *testing.T, addHeadache bool) (*HeadacheRepository, context.Context, entity.Headache) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	var err error
 	err = db.AutoMigrate(&entity.Headache{})
@@ -25,12 +30,16 @@ func initTest(t *testing.T, addHeadache bool) (*HeadacheRepository, entity.Heada
 			Types:     []entity.HeadacheType{entity.Dull},
 			Positions: []entity.HeadachePosition{entity.Front, entity.Back},
 			Symptoms:  []entity.HeadacheSymptom{entity.ConcentrationLack},
+			PIID:      uuid.FromStringOrNil(TEST_GUID),
 		}
 		err = db.Create(&headache).Error
 		assert.NoError(t, err)
 	}
 
-	return NewHeadacheRepository(db), headache
+	ctx := t.Context()
+	ctx = context.WithValue(ctx, "piid", uuid.FromStringOrNil(TEST_GUID))
+
+	return NewHeadacheRepository(db), ctx, headache
 }
 func TestListHeadaches(t *testing.T) {
 	tests := map[string]struct {
@@ -51,10 +60,11 @@ func TestListHeadaches(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			repo, _ := initTest(t, test.addHeadache)
+			repo, ctx, _ := initTest(t, test.addHeadache)
 
-			headaches := repo.ListHeadaches()
-			assert.Len(t, headaches, test.expectedLen)
+			headaches, err := repo.ListHeadaches(ctx)
+			assert.NoError(t, err)
+			require.Len(t, headaches, test.expectedLen)
 			if test.expectedLen > 0 {
 				assert.EqualValues(t, test.expectedSeverity, headaches[0].Severity)
 			}
@@ -68,24 +78,25 @@ func TestCreateHeadache(t *testing.T) {
 		errorExpected bool
 	}{
 		"valid headache": {
-			headache:      &entity.Headache{ID: 1, Date: time.Now(), Severity: 3, Positions: []entity.HeadachePosition{entity.Front}},
+			headache:      &entity.Headache{Date: time.Now(), Severity: 3, Positions: []entity.HeadachePosition{entity.Front}},
 			errorExpected: false,
 		},
 		"invalid headache": {
-			headache:      &entity.Headache{ID: 1, Positions: []entity.HeadachePosition{"something"}},
+			headache:      &entity.Headache{Positions: []entity.HeadachePosition{"something"}},
 			errorExpected: true,
 		},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			repo, _ := initTest(t, false)
+			repo, ctx, _ := initTest(t, false)
 
-			err := repo.CreateHeadache(test.headache)
+			err := repo.CreateHeadache(ctx, test.headache)
 			if test.errorExpected {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+				assert.Greater(t, test.headache.ID, uint(0), "id > 0 is returned")
 			}
 		})
 	}
@@ -101,8 +112,8 @@ func TestDeleteHeadache(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			repo, _ := initTest(t, true)
-			err := repo.DeleteHeadache(test.haId)
+			repo, ctx, _ := initTest(t, true)
+			err := repo.DeleteHeadache(ctx, test.haId)
 			if test.isError {
 				assert.Error(t, err)
 			} else {
@@ -122,11 +133,11 @@ func TestGetHeadache(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			repo, origH := initTest(t, true)
-			headache, err := repo.GetHeadache(test.haId)
+			repo, ctx, origH := initTest(t, true)
+			headache, err := repo.GetHeadache(ctx, test.haId)
 			if test.found {
 				assert.NoError(t, err)
-				assert.Equal(t, origH, headache)
+				assert.Equal(t, &origH, headache)
 			} else {
 				assert.Error(t, err)
 				return
@@ -183,8 +194,8 @@ func TestPatchHeadache(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			repo, origHeadache := initTest(t, true)
-			err := repo.PatchHeadache(test.haID, test.date, test.severity, test.types, test.positions, test.symptoms, test.description)
+			repo, ctx, origHeadache := initTest(t, true)
+			err := repo.PatchHeadache(ctx, test.haID, test.date, test.severity, test.types, test.positions, test.symptoms, test.description)
 			if test.isError {
 				assert.Error(t, err)
 				return

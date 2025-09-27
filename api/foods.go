@@ -9,7 +9,7 @@ import (
 
 // encore:api auth method=DELETE path=/foods/:foodId
 func (service *Service) DeleteFood(ctx context.Context, foodId uint) (entity.IngredientsResponse, error) {
-	ingredients, err := service.foods.Delete(foodId)
+	ingredients, err := service.foods.Delete(ctx, foodId)
 	return ingredients.ToIngredientsResponse(), err
 }
 
@@ -24,6 +24,6 @@ func (service *Service) PatchFoodCondition(ctx context.Context, foodId uint, par
 	if err != nil {
 		return err
 	}
-	return service.foods.ChangeCondition(foodId, condition)
+	return service.foods.ChangeCondition(ctx, foodId, condition)
 
 }

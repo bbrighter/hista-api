@@ -9,13 +9,13 @@ import (
 
 // encore:api auth method=GET path=/notes
 func (service *Service) GetNotes(ctx context.Context) (entity.NotesResp, error) {
-	notes := service.notes.List()
-	return notes.ToResp(), nil
+	notes, err := service.notes.List(ctx)
+	return notes.ToResp(), err
 }
 
 // encore:api auth method=POST path=/notes
 func (service *Service) PostNote(ctx context.Context) (entity.NoteResp, error) {
-	note, err := service.notes.Create()
+	note, err := service.notes.Create(ctx)
 	if err != nil {
 		return entity.NoteResp{}, err
 	}
@@ -24,7 +24,7 @@ func (service *Service) PostNote(ctx context.Context) (entity.NoteResp, error) {
 
 // encore:api auth method=DELETE path=/notes/:noteId
 func (service *Service) DeleteNote(ctx context.Context, noteId uint) error {
-	return service.notes.Delete(noteId)
+	return service.notes.Delete(ctx, noteId)
 }
 
 type NoteParams struct {
@@ -34,5 +34,5 @@ type NoteParams struct {
 
 // encore:api auth method=PATCH path=/notes/:noteId
 func (service *Service) PatchNote(ctx context.Context, noteId uint, params NoteParams) error {
-	return service.notes.Patch(noteId, params.Date, params.Text)
+	return service.notes.Patch(ctx, noteId, params.Date, params.Text)
 }

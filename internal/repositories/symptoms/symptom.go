@@ -1,43 +1,45 @@
 package symptoms
 
 import (
+	"context"
 	"strings"
 
 	"encore.app/entity"
-	"encore.app/errors"
+	"encore.app/generic_queries"
+	"gorm.io/gorm"
 )
 
 // Creates a symptom or replaces it. Equality checked by name and categoryId
-func (repo *SymptomsRepo) CreateOrReplace(symptomName string, symptomCategoryId uint) (uint, error) {
-	var symptom entity.Symptom
-	err := repo.db.
-		FirstOrCreate(&symptom,
-			entity.Symptom{
-				Name:              strings.TrimSpace(symptomName),
-				SymptomCategoryID: symptomCategoryId}).
-		Error
-	return symptom.ID, err
+func (repo *SymptomsRepo) CreateOrReplace(ctx context.Context, symptomName string, symptomCategoryId uint) (uint, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return 0, err
+	}
+	trimmedName := strings.TrimSpace(symptomName)
+	symptom, err := gorm.G[entity.Symptom](repo.db).
+		Where("pi_id = ?", piid).
+		Where("symptom_category_id = ?", symptomCategoryId).
+		Where("name = ?", trimmedName).
+		First(ctx)
+	if err == nil {
+		return symptom.ID, err
+	}
+	newSymptom := &entity.Symptom{Name: trimmedName, SymptomCategoryID: symptomCategoryId}
+	err = generic_queries.Create(ctx, repo.db, newSymptom)
+	return newSymptom.ID, err
 }
 
-func (repo *SymptomsRepo) ChangeCategory(symptomId, newCategoryId uint) error {
-	if rowsAffected := repo.db.Take(&entity.SymptomCategory{}, newCategoryId).RowsAffected; rowsAffected == 0 {
-		return errors.ErrorNotFound
+func (repo *SymptomsRepo) ChangeCategory(ctx context.Context, symptomId, newCategoryId uint) error {
+	count, err := generic_queries.Count[*entity.SymptomCategory](ctx, repo.db, newCategoryId)
+	if err != nil {
+		return err
 	}
-	tx := repo.db.Model(&entity.Symptom{}).
-		Where("id = ?", symptomId).
-		UpdateColumn("symptom_category_id", newCategoryId)
-	if tx.RowsAffected == 0 {
-		return errors.ErrorNotFound
+	if count == 0 {
+		return gorm.ErrRecordNotFound
 	}
-	return tx.Error
+	return generic_queries.UpdateColumn[*entity.Symptom](ctx, repo.db, symptomId, "symptom_category_id", newCategoryId)
 }
 
-func (repo *SymptomsRepo) RenameSymptom(symptomId uint, newName string) error {
-	tx := repo.db.Model(&entity.Symptom{}).
-		Where("id = ?", symptomId).
-		UpdateColumn("name", newName)
-	if tx.RowsAffected == 0 {
-		return errors.ErrorNotFound
-	}
-	return tx.Error
+func (repo *SymptomsRepo) RenameSymptom(ctx context.Context, symptomId uint, newName string) error {
+	return generic_queries.UpdateColumn[*entity.Symptom](ctx, repo.db, symptomId, "name", newName)
 }

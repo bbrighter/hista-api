@@ -6,31 +6,18 @@ import (
 
 	entity "encore.app/entity"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-var testSymptom = new(entity.Symptom)
-var testCondition = new(entity.Condition)
-
-func (service *Service) createTestSymptom(t *testing.T) func(t *testing.T) {
-	cleanupEvent := service.createTestEvent(t)
-	ctx := context.TODO()
+func (service *Service) createTestSymptom(ctx context.Context, t *testing.T) (condId uint, symptomId uint, catId uint) {
+	id := service.createTestEvent(ctx, t)
 	catResp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "cat"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	var name string = "name"
-	condition, cats, err := service.conditions.Create(testEvent.ID, &name, nil, &catResp.ID)
-	testCondition = &condition
-	testSymptom.ID = cats[0].Symptoms[0].ID
-	testSymptom.SymptomCategoryID = catResp.ID
-	assert.NoError(t, err)
+	resp, err := service.PostCondition(ctx, id, ConditionRequestParams{SymptomName: &name, CategoryID: &catResp.ID})
+	require.NoError(t, err)
 
-	cleanup := func(t *testing.T) {
-		_, err := service.DeleteCondition(ctx, condition.ID)
-		assert.NoError(t, err)
-		cleanupEvent(t)
-		testCondition = new(entity.Condition)
-	}
-
-	return cleanup
+	return resp.Condition.ID, resp.Condition.Symptom.ID, resp.Condition.Symptom.CategoryID
 }
 
 func TestGetSymptoms(t *testing.T) {
@@ -39,8 +26,7 @@ func TestGetSymptoms(t *testing.T) {
 	resp, _ := service.GetSymptoms(ctx)
 	assert.Len(t, resp.Categories, 0)
 
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
+	service.createTestSymptom(ctx, t)
 
 	resp, _ = service.GetSymptoms(ctx)
 	assert.Len(t, resp.Categories, 1)
@@ -61,58 +47,54 @@ func TestPostSymptomCategory(t *testing.T) {
 func TestPatchSymptomName(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
+	_, symptomId, _ := service.createTestSymptom(ctx, t)
 
-	err := service.PatchSymptomName(ctx, testSymptom.ID, PatchSymptomNameParams{Name: "new name"})
+	err := service.PatchSymptomName(ctx, symptomId, PatchSymptomNameParams{Name: "new name"})
 	assert.NoError(t, err)
 
 	var symptom entity.Symptom
-	service.DB.Take(&symptom, testSymptom.ID)
+	service.DB.Take(&symptom, symptomId)
 	assert.Equal(t, "new name", symptom.Name)
 }
 
 func TestPatchSymptomCategory(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
+	_, symptomId, _ := service.createTestSymptom(ctx, t)
 
 	resp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "new cat"})
 	assert.NoError(t, err)
 	defer service.DeleteSymptomCategory(ctx, resp.ID)
 
-	err = service.PatchSymptomCategory(ctx, testSymptom.ID, PatchSymptomCategoryParams{ToCategoryID: resp.ID})
+	err = service.PatchSymptomCategory(ctx, symptomId, PatchSymptomCategoryParams{ToCategoryID: resp.ID})
 	assert.NoError(t, err)
 
 	var symptom entity.Symptom
-	service.DB.Take(&symptom, testSymptom.ID)
+	service.DB.Take(&symptom, symptomId)
 	assert.Equal(t, resp.ID, symptom.SymptomCategoryID)
 }
 
 func TestPatchCategoryName(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
+	_, symptomId, catId := service.createTestSymptom(ctx, t)
 
-	err := service.PatchCategoryName(ctx, testSymptom.SymptomCategoryID, PatchCategoryNameParams{Name: "new cat name"})
+	err := service.PatchCategoryName(ctx, symptomId, PatchCategoryNameParams{Name: "new cat name"})
 	assert.NoError(t, err)
 
 	var cat entity.SymptomCategory
-	service.DB.Debug().Take(&cat, testSymptom.SymptomCategoryID)
+	service.DB.Take(&cat, catId)
 	assert.Equal(t, "new cat name", cat.Name)
 }
 
 func TestDeleteSymptomCategory(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
+	_, _, catId := service.createTestSymptom(ctx, t)
 
-	err := service.DeleteSymptomCategory(ctx, testSymptom.SymptomCategoryID)
+	err := service.DeleteSymptomCategory(ctx, catId)
 	assert.Error(t, err)
-	rows := service.DB.Take(&entity.SymptomCategories{}, testSymptom.SymptomCategoryID).RowsAffected
+	rows := service.DB.Take(&entity.SymptomCategories{}, catId).RowsAffected
 	assert.EqualValues(t, 1, rows)
 
 	resp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "new cat"})

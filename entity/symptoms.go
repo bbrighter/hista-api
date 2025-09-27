@@ -3,12 +3,19 @@ package entity
 import (
 	"sort"
 	"time"
+
+	"encore.dev/types/uuid"
 )
 
 type ConditionEvent struct {
 	ID         uint
 	Date       time.Time
 	Conditions []Condition
+	PIID       uuid.UUID `gorm:"type:uuid;index"`
+}
+
+func (c *ConditionEvent) SetPiid(id uuid.UUID) {
+	c.PIID = id
 }
 
 type Condition struct {
@@ -17,23 +24,38 @@ type Condition struct {
 	SymptomID        uint
 	Severity         Severity
 	ConditionEventID uint
+	PIID             uuid.UUID `gorm:"type:uuid;index"`
+}
+
+func (c *Condition) SetPiid(id uuid.UUID) {
+	c.PIID = id
 }
 
 type Symptom struct {
 	ID                uint
 	Name              string
 	SymptomCategoryID uint
+	PIID              uuid.UUID `gorm:"type:uuid;index"`
+}
+
+func (c *Symptom) SetPiid(id uuid.UUID) {
+	c.PIID = id
 }
 
 type SymptomCategory struct {
 	ID       uint
 	Name     string
 	Symptoms []Symptom
+	PIID     uuid.UUID `gorm:"type:uuid;index"`
 }
 
-type ConditionEvents []ConditionEvent
+func (c *SymptomCategory) SetPiid(id uuid.UUID) {
+	c.PIID = id
+}
 
-type Conditions []Condition
+type ConditionEvents []*ConditionEvent
+
+type Conditions []*Condition
 
 type Severity uint8
 
@@ -47,7 +69,7 @@ const (
 
 type Symptoms []Symptom
 
-type SymptomCategories []SymptomCategory
+type SymptomCategories []*SymptomCategory
 
 type ConditionEventsResponse struct {
 	ConditionEvents []ConditionEventMetaResponse `json:"conditionEvents"`

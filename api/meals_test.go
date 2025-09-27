@@ -9,8 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func (service *Service) createTestMeal(t *testing.T) (uint, func()) {
-	ctx := context.TODO()
+func (service *Service) createTestMeal(ctx context.Context, t *testing.T) (uint, func()) {
 	meal, err := service.PostMeal(ctx, entity.MealParams{})
 	assert.NoError(t, err)
 	cleanUp := func() {
@@ -26,7 +25,7 @@ func TestGetMealsAPI(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, resp.Meals, 0)
 
-	_, cleanup := service.createTestMeal(t)
+	_, cleanup := service.createTestMeal(ctx, t)
 	defer cleanup()
 
 	resp, err = service.GetMeals(ctx)
@@ -53,7 +52,7 @@ func TestGetMealAPI(t *testing.T) {
 	_, err = service.GetMeal(ctx, 100)
 	assert.Error(t, err)
 
-	id, cleanup := service.createTestMeal(t)
+	id, cleanup := service.createTestMeal(ctx, t)
 	defer cleanup()
 
 	resp, err := service.GetMeal(ctx, id)
@@ -68,7 +67,7 @@ func TestDeleteMealAPI(t *testing.T) {
 	_, err = service.DeleteMeal(ctx, 10000)
 	assert.Error(t, err)
 
-	id, cleanup := service.createTestMeal(t)
+	id, cleanup := service.createTestMeal(ctx, t)
 	defer cleanup()
 	ings, err := service.DeleteMeal(ctx, id)
 	assert.NoError(t, err)
@@ -84,7 +83,7 @@ func TestPatchMealAPI(t *testing.T) {
 
 	err := service.PatchMeal(ctx, 10000, params)
 	assert.Error(t, err)
-	id, cleanup := service.createTestMeal(t)
+	id, cleanup := service.createTestMeal(ctx, t)
 	defer cleanup()
 
 	err = service.PatchMeal(ctx, id, params)
@@ -103,7 +102,7 @@ func TestGetFoods(t *testing.T) {
 	resp, err := service.GetFoods(ctx, 1)
 	assert.NoError(t, err)
 
-	id, cleanup := service.createTestMeal(t)
+	id, cleanup := service.createTestMeal(ctx, t)
 	defer cleanup()
 
 	resp, err = service.GetFoods(ctx, id)
@@ -114,7 +113,7 @@ func TestGetFoods(t *testing.T) {
 func TestPostFood(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	mealId, cleanup := service.createTestMeal(t)
+	mealId, cleanup := service.createTestMeal(ctx, t)
 	defer cleanup()
 
 	var params = FoodParams{IngredientName: "New", Condition: entity.Cooked}
@@ -129,7 +128,7 @@ func TestDeleteFoodAPI(t *testing.T) {
 	_, err := service.DeleteFood(ctx, 100)
 	assert.EqualError(t, err, "not_found: not found")
 
-	mealId, cleanup := service.createTestMeal(t)
+	mealId, cleanup := service.createTestMeal(ctx, t)
 	defer cleanup()
 	var params = FoodParams{IngredientName: "New", Condition: entity.Cooked}
 	food, _ := service.PostFood(ctx, mealId, params)

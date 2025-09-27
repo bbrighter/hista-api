@@ -11,8 +11,8 @@ CREATE UNIQUE INDEX "idx_users_name" ON "users" ("name");
 CREATE TABLE "user_product_instances" (
   "id" bigserial NOT NULL,
   "product_id" text NULL,
-  "user_id" text NULL,
-  "product_instance_id" text NULL,
+  "user_id" uuid NULL,
+  "product_instance_id" uuid NULL,
   PRIMARY KEY ("id")
 );
 -- create index "idx_user_instance" to table: "user_product_instances"

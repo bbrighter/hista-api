@@ -1,42 +1,43 @@
 package status
 
 import (
+	"context"
 	"time"
 
 	"encore.app/entity"
-	"encore.app/errors"
+	"encore.app/generic_queries"
 )
 
-func (repo *StatusRepo) Create(status *entity.Status) error {
-	return repo.db.Create(status).Error
+func (repo *StatusRepo) Create(ctx context.Context, status *entity.Status) error {
+	return generic_queries.Create(ctx, repo.db, status)
 }
 
-func (repo *StatusRepo) First(status *entity.Status) error {
-	if rows := repo.db.First(&status).RowsAffected; rows == 0 {
-		return errors.ErrorNotFound
+func (repo *StatusRepo) First(ctx context.Context, id uint) (*entity.Status, error) {
+	return generic_queries.First[*entity.Status](ctx, repo.db, id)
+}
+
+func (repo *StatusRepo) Update(ctx context.Context, status *entity.Status) error {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return err
 	}
-	return nil
+	return repo.db.Model(&entity.Status{}).Where(&entity.Status{ID: status.ID}).Where("pi_id = ?", piid).Updates(status).Error
 }
 
-func (repo *StatusRepo) Update(status *entity.Status) error {
-	return repo.db.Model(&entity.Status{}).Where(&entity.Status{ID: status.ID}).Updates(status).Error
+func (repo *StatusRepo) Find(ctx context.Context) ([]*entity.Status, error) {
+	return generic_queries.List[*entity.Status](ctx, repo.db)
 }
 
-func (repo *StatusRepo) Find() (statuses entity.Statuses) {
-	repo.db.Find(&statuses)
-	return statuses
-}
-
-func (repo *StatusRepo) FindForDate(date time.Time) (entity.Status, bool) {
+func (repo *StatusRepo) FindForDate(ctx context.Context, date time.Time) (entity.Status, bool) {
 	var status entity.Status
-	tx := repo.db.Where("DATE(date) = ?", date.Format("2006-01-02")).First(&status)
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return status, false
+	}
+	tx := repo.db.Where("pi_id = ?", piid).Where("DATE(date) = ?", date.Format("2006-01-02")).First(&status)
 	return status, tx.RowsAffected > 0
 }
 
-func (repo *StatusRepo) Delete(status *entity.Status) error {
-	tx := repo.db.Delete(status)
-	if tx.RowsAffected == 0 {
-		return errors.ErrorNotFound
-	}
-	return tx.Error
+func (repo *StatusRepo) Delete(ctx context.Context, id uint) error {
+	return generic_queries.Delete[*entity.Status](ctx, repo.db, id)
 }

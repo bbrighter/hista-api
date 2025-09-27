@@ -3,6 +3,8 @@ package entity
 import (
 	"slices"
 	"time"
+
+	"encore.dev/types/uuid"
 )
 
 type Status struct {
@@ -11,6 +13,11 @@ type Status struct {
 	MorningFitness *int
 	EveningFitness *int
 	MorningSleep   *int
+	PIID           uuid.UUID `gorm:"type:uuid;index"`
+}
+
+func (s *Status) SetPiid(id uuid.UUID) {
+	s.PIID = id
 }
 
 type StatusResponse struct {
@@ -21,7 +28,7 @@ type StatusResponse struct {
 	MorningSleep   *int      `json:"morningSleep" encore:"optional"`
 }
 
-type Statuses []Status
+type Statuses []*Status
 
 type StatusesResponse struct {
 	Statuses []StatusResponse `json:"statuses"`
@@ -48,5 +55,11 @@ type EveningStatus struct {
 }
 
 func (s Status) ToResp() StatusResponse {
-	return StatusResponse(s)
+	return StatusResponse{
+		ID:             s.ID,
+		Date:           s.Date,
+		MorningFitness: s.MorningFitness,
+		EveningFitness: s.EveningFitness,
+		MorningSleep:   s.MorningSleep,
+	}
 }

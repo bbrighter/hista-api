@@ -9,17 +9,18 @@ import (
 
 func TestFindSymptomsForFoods(t *testing.T) {
 	t.Skip() // Doesn't work for SQLite, has to be tested in integration tests
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	resp, err := repo.FindSymptomsForFoods(time.Now(), time.Now().Add(time.Minute), []uint{1})
+	resp, err := repo.FindSymptomsForFoods(ctx, time.Now(), time.Now().Add(time.Minute), []uint{1})
 	assert.NoError(t, err)
 	assert.Len(t, resp, 0)
 }
 
 func TestCountSymptoms(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	results := repo.CountSymptoms([]uint{1})
+	results, err := repo.CountSymptoms(ctx, []uint{1})
+	assert.NoError(t, err)
 	assert.Len(t, results, 0)
 
 	// TODO: test with data filled

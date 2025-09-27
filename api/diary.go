@@ -12,7 +12,7 @@ type DiaryResp struct {
 
 // encore:api auth method=GET path=/diary
 func (service *Service) GetDiary(ctx context.Context) (DiaryResp, error) {
-	meals, events, cats, notes, pollens := service.diary.Get()
+	meals, events, cats, notes, pollens := service.diary.Get(ctx)
 	diaries := entity.CreateRawDiary(meals, events, cats, notes, pollens)
 	return DiaryResp{Diaries: diaries}, nil
 }

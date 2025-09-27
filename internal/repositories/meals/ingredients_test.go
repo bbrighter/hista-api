@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"encore.app/entity"
+	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -36,14 +37,15 @@ import (
 // }
 
 func TestGetIngredients(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	var ingredients entity.Ingredients
-	ingredients = repo.ListIngredients()
+	ingredients, err := repo.ListIngredients(ctx)
+	assert.NoError(t, err)
 	assert.Len(t, ingredients, 0)
 
-	repo.db.Create(&entity.Ingredient{Name: "ingredient"})
-	ingredients = repo.ListIngredients()
+	repo.db.Create(&entity.Ingredient{Name: "ingredient", PIID: uuid.FromStringOrNil(GUID_STR)})
+	ingredients, err = repo.ListIngredients(ctx)
+	assert.NoError(t, err)
 	assert.Len(t, ingredients, 1)
 }
 

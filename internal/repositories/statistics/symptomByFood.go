@@ -1,12 +1,18 @@
 package statistics
 
 import (
+	"context"
 	"time"
 
 	"encore.app/entity"
+	"encore.app/generic_queries"
 )
 
-func (repo *StatisticsRepo) FindSymptomsForFoods(fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error) {
+func (repo *StatisticsRepo) FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return entity.FoodResults{}, err
+	}
 	var results entity.FoodResults
 	subquery := repo.db.Select(
 		"conditions.symptom_id as symptom_id",
@@ -22,9 +28,14 @@ func (repo *StatisticsRepo) FindSymptomsForFoods(fromDate time.Time, toDate time
 		Joins("JOIN conditions ON conditions.condition_event_id = condition_events.id").
 		Where("foods.ingredient_id in (?)", ingredientIds).
 		Where("condition_events.date BETWEEN ? AND ?", fromDate, toDate).
+		Where("meals.pi_id = ?", piid).
+		Where("foods.pi_id = ?", piid).
+		Where("condition_events.pi_id = ?", piid).
+		Where("conditions.pi_id = ?", piid).
+		Where("ingredients.pi_id = ?", piid).
 		Group("symptom_id, severity, condition_events.id")
 
-	var err error = repo.db.
+	err = repo.db.
 		Table("(?) as u", subquery).
 		Select(
 			"u.symptom_id as symptom_id",
@@ -39,13 +50,18 @@ func (repo *StatisticsRepo) FindSymptomsForFoods(fromDate time.Time, toDate time
 	return results, err
 }
 
-func (repo *StatisticsRepo) CountSymptoms(symptomIds []uint) []entity.CountResult {
+func (repo *StatisticsRepo) CountSymptoms(ctx context.Context, symptomIds []uint) ([]entity.CountResult, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return []entity.CountResult{}, err
+	}
 	var countResults []entity.CountResult
-	repo.db.
+	tx := repo.db.
 		Table("conditions").
 		Select("count(*) as count", "conditions.symptom_id as id").
 		Where("symptom_id in (?)", symptomIds).
+		Where("pi_id = ?", piid).
 		Group("symptom_id").
 		Scan(&countResults)
-	return countResults
+	return countResults, tx.Error
 }

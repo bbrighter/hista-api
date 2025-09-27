@@ -11,8 +11,7 @@ import (
 
 var testNote = new(entity.Note)
 
-func (service *Service) createTestNote(t *testing.T) func(t *testing.T) {
-	ctx := context.TODO()
+func (service *Service) createTestNote(ctx context.Context, t *testing.T) func(t *testing.T) {
 	resp, err := service.PostNote(ctx)
 	assert.NoError(t, err)
 	testNote.ID = resp.ID
@@ -31,7 +30,7 @@ func TestGetNotes(t *testing.T) {
 	resp, _ = service.GetNotes(ctx)
 	assert.Len(t, resp.Notes, 0)
 
-	cleanUp := service.createTestNote(t)
+	cleanUp := service.createTestNote(ctx, t)
 	defer cleanUp(t)
 	resp, _ = service.GetNotes(ctx)
 	assert.Len(t, resp.Notes, 1)
@@ -44,7 +43,7 @@ func TestDeleteNote(t *testing.T) {
 	err = service.DeleteNote(ctx, 1)
 	assert.Error(t, err)
 
-	service.createTestNote(t)
+	service.createTestNote(ctx, t)
 
 	err = service.DeleteNote(ctx, testNote.ID)
 	assert.NoError(t, err)
@@ -58,7 +57,7 @@ func TestPatchNote(t *testing.T) {
 	err = service.PatchNote(ctx, 1, params)
 	assert.Error(t, err)
 
-	cleanup := service.createTestNote(t)
+	cleanup := service.createTestNote(ctx, t)
 	defer cleanup(t)
 
 	err = service.PatchNote(ctx, testNote.ID, params)

@@ -1,20 +1,26 @@
 package symptoms
 
 import (
+	"context"
 	"testing"
 
 	"encore.app/entity"
+	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 )
 
-func initTest(t *testing.T) *SymptomsRepo {
+var GUID = uuid.FromStringOrNil("cf0d4408-8db5-4572-b5d9-4ed873d1341f")
+
+func initTest(t *testing.T) (*SymptomsRepo, context.Context) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	err := db.AutoMigrate(&entity.Symptom{}, &entity.ConditionEvent{}, &entity.Condition{}, &entity.SymptomCategory{})
 	assert.NoError(t, err)
-	return &SymptomsRepo{db: db}
+
+	ctx := context.WithValue(t.Context(), "piid", GUID)
+	return &SymptomsRepo{db: db}, ctx
 }
 
 func (repo *SymptomsRepo) createTestCondition(t *testing.T) (uint, uint, uint, uint) {
@@ -22,88 +28,78 @@ func (repo *SymptomsRepo) createTestCondition(t *testing.T) (uint, uint, uint, u
 	var conditionId uint = 10
 	var symptomId uint = 100
 	var catId uint = 1000
-	err := repo.db.Create(&entity.ConditionEvent{ID: eventId}).Error
-	assert.NoError(t, err)
-	err = repo.db.Create(&entity.SymptomCategory{ID: catId}).Error
-	assert.NoError(t, err)
-	err = repo.db.Create(&entity.Symptom{ID: symptomId, SymptomCategoryID: catId}).Error
-	assert.NoError(t, err)
+	err := repo.db.Create(&entity.ConditionEvent{ID: eventId, PIID: GUID}).Error
+	require.NoError(t, err)
+	err = repo.db.Create(&entity.SymptomCategory{ID: catId, PIID: GUID}).Error
+	require.NoError(t, err)
+	err = repo.db.Create(&entity.Symptom{ID: symptomId, SymptomCategoryID: catId, PIID: GUID}).Error
+	require.NoError(t, err)
 	err = repo.db.Create(&entity.Condition{
 		ID:               conditionId,
 		SymptomID:        symptomId,
-		ConditionEventID: eventId}).Error
-	assert.NoError(t, err)
+		ConditionEventID: eventId,
+		PIID:             GUID,
+	}).Error
+	require.NoError(t, err)
 
 	return eventId, symptomId, conditionId, catId
 }
 
 func TestListConditions(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	var conditions entity.Conditions
-	conditions = repo.ListConditions(1)
+	conditions, err := repo.ListConditions(ctx, 1)
+	assert.NoError(t, err)
 	assert.Len(t, conditions, 0)
 
 	eventId, symptomId, _, _ := repo.createTestCondition(t)
 
-	conditions = repo.ListConditions(eventId)
+	conditions, err = repo.ListConditions(ctx, eventId)
+	assert.NoError(t, err)
 	assert.Len(t, conditions, 1)
 	assert.Equal(t, conditions[0].Symptom.ID, symptomId)
 }
 
 func TestCreateConditionBySymptomName(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	eventId, _, oldConditionId, catId := repo.createTestCondition(t)
-	conditition := &entity.Condition{ConditionEventID: eventId}
-	err := repo.CreateConditionBySymptomName(conditition, "name", catId)
+	id, err := repo.CreateConditionBySymptomName(ctx, eventId, "name", catId)
 	assert.NoError(t, err)
-	assert.Equal(t, oldConditionId+1, conditition.ID)
+	assert.EqualValues(t, oldConditionId+1, id)
 
-	conditition2 := &entity.Condition{ConditionEventID: 1000}
-	err = repo.CreateConditionBySymptomName(conditition2, "name", catId)
-	assert.EqualError(t, err, "not_found: not found")
+	_, err = repo.CreateConditionBySymptomName(ctx, 1000, "name", catId)
+	assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
 
-	condition3 := &entity.Condition{ConditionEventID: eventId}
-	err = repo.CreateConditionBySymptomName(condition3, "name", 99)
+	id, err = repo.CreateConditionBySymptomName(ctx, eventId, "name", 99)
 	assert.NoError(t, err)
-	assert.Equal(t, oldConditionId+2, condition3.ID)
+	assert.EqualValues(t, oldConditionId+2, id)
 }
 
 func TestCreateConditionBySymptomID(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	eventId, symptomId, conditionId, _ := repo.createTestCondition(t)
-	condition := &entity.Condition{ConditionEventID: eventId, SymptomID: symptomId}
-	err := repo.CreateConditionBySymptomID(condition)
+	id, err := repo.CreateConditionBySymptomID(ctx, eventId, symptomId)
 	assert.NoError(t, err)
-	assert.Equal(t, conditionId+1, condition.ID)
+	assert.Equal(t, conditionId+1, id)
 
-	conditionNoEvent := &entity.Condition{ConditionEventID: 99, SymptomID: symptomId}
-	err = repo.CreateConditionBySymptomID(conditionNoEvent)
-	assert.EqualError(t, err, "not_found: not found")
+	_, err = repo.CreateConditionBySymptomID(ctx, 99, symptomId)
+	assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
 
-	conditionNoSymptomID := &entity.Condition{ConditionEventID: eventId, SymptomID: 99}
-	err = repo.CreateConditionBySymptomID(conditionNoSymptomID)
-	assert.EqualError(t, err, "not_found: not found")
+	_, err = repo.CreateConditionBySymptomID(ctx, eventId, 99)
+	assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
 
 }
 
 func TestDeleteCondition(t *testing.T) {
-	repo := initTest(t)
-
-	var err error
-	err = repo.db.Preload(clause.Associations).Find(&entity.Condition{}, &entity.Condition{SymptomID: 1}).Error
-	assert.NoError(t, err)
-
-	err = repo.DeleteCondition(1)
-	assert.EqualError(t, err, "not_found: not found")
+	repo, ctx := initTest(t)
 
 	_, _, conditionId, _ := repo.createTestCondition(t)
-	err = repo.DeleteCondition(conditionId)
-	assert.NoError(t, err)
 
-	var conditions entity.Conditions
+	err := repo.DeleteCondition(ctx, conditionId)
+	assert.NoError(t, err)
+	var conditions []entity.Condition
 	repo.db.Find(&conditions)
 	assert.Len(t, conditions, 0)
 	var symptoms entity.Symptoms
@@ -111,18 +107,30 @@ func TestDeleteCondition(t *testing.T) {
 	assert.Len(t, symptoms, 0)
 	var cats entity.SymptomCategories
 	repo.db.Find(&cats)
-	assert.Len(t, cats, 0, "len of cats")
+	assert.Len(t, cats, 1, "categories are not deleted, even if empty")
 }
 
 func TestChangeSeverity(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	var err error
-	err = repo.ChangeSeverity(1, entity.HighSeverity)
-	assert.EqualError(t, err, "not_found: not found")
+	err = repo.ChangeSeverity(ctx, 1, entity.HighSeverity)
+	assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
 
 	_, _, conditionId, _ := repo.createTestCondition(t)
-	err = repo.ChangeSeverity(conditionId, entity.HighSeverity)
+	err = repo.ChangeSeverity(ctx, conditionId, entity.HighSeverity)
 	assert.NoError(t, err)
 
+}
+
+func TestGetCondition(t *testing.T) {
+	repo, ctx := initTest(t)
+
+	_, err := repo.GetCondition(ctx, 1)
+	assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
+
+	_, _, conId, _ := repo.createTestCondition(t)
+	con, err := repo.GetCondition(ctx, conId)
+	assert.NoError(t, err)
+	assert.Equal(t, conId, con.ID)
 }

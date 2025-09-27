@@ -17,11 +17,9 @@ func TestGetStatisticsBySymptomIds(t *testing.T) {
 	_, err := service.GetStatisticsBySymptomIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)
 
-	cleanupFood := service.createTestFood(t)
-	defer cleanupFood(t)
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
-	ids = append(ids, testSymptom.ID)
+	service.createTestFood(ctx, t)
+	_, symptomId, _ := service.createTestSymptom(ctx, t)
+	ids = append(ids, symptomId)
 
 	resp, err := service.GetStatisticsBySymptomIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)
@@ -43,11 +41,9 @@ func TestGetStatisticsByIngredientsIds(t *testing.T) {
 	_, err := service.GetStatisticsByIngredientsIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)
 
-	cleanupFood := service.createTestFood(t)
-	defer cleanupFood(t)
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
-	ids = append(ids, testFood.IngredientID)
+	_, ingredientId := service.createTestFood(ctx, t)
+	service.createTestSymptom(ctx, t)
+	ids = append(ids, ingredientId)
 
 	resp, err := service.GetStatisticsByIngredientsIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)

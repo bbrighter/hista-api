@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sort"
 	"time"
+
+	"encore.dev/types/uuid"
 )
 
 type Headache struct {
@@ -15,14 +17,31 @@ type Headache struct {
 	Positions   HeadachePositions `gorm:"type:json"`
 	Symptoms    HeadacheSymptoms  `gorm:"type:json"`
 	Description string
+	PIID        uuid.UUID `gorm:"type:uuid;index"`
+}
+
+func (h *Headache) GetPiid() uuid.UUID {
+	return h.PIID
+}
+
+func (h *Headache) SetPiid(id uuid.UUID) {
+	h.PIID = id
 }
 
 type HeadacheSeverity uint8
 
-type Headaches []Headache
+type Headaches []*Headache
 
 func (h Headache) ToResp() HeadacheResponse {
-	return HeadacheResponse(h)
+	return HeadacheResponse{
+		ID:          h.ID,
+		Date:        h.Date,
+		Severity:    h.Severity,
+		Types:       h.Types,
+		Positions:   h.Positions,
+		Symptoms:    h.Symptoms,
+		Description: h.Description,
+	}
 }
 
 type HeadacheResponse struct {

@@ -1,16 +1,20 @@
 package statistics
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"encore.app/entity"
+	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
-func initTest(t *testing.T) *StatisticsRepo {
+var GUID = uuid.FromStringOrNil("5f0347ae-38e8-49f4-9707-c3f4500e1768")
+
+func initTest(t *testing.T) (*StatisticsRepo, context.Context) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	err := db.AutoMigrate(
 		&entity.ConditionEvent{},
@@ -22,22 +26,25 @@ func initTest(t *testing.T) *StatisticsRepo {
 		&entity.Ingredient{},
 	)
 	assert.NoError(t, err)
-	return &StatisticsRepo{db: db}
+
+	ctx := context.WithValue(t.Context(), "piid", GUID)
+	return &StatisticsRepo{db: db}, ctx
 }
 
 func TestFindFoodForSymptoms(t *testing.T) {
 	t.Skip() // Doesn't work for SQLite, has to be tested in integration tests
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	resp, err := repo.FindFoodForSymptoms(time.Now(), time.Now().Add(time.Minute), []uint{1})
+	resp, err := repo.FindFoodForSymptoms(ctx, time.Now(), time.Now().Add(time.Minute), []uint{1})
 	assert.NoError(t, err)
 	assert.Len(t, resp, 0)
 }
 
 func TestCoundFoods(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	results := repo.CountFoods([]uint{1})
+	results, err := repo.CountFoods(ctx, []uint{1})
+	assert.NoError(t, err)
 	assert.Len(t, results, 0)
 
 	// TODO: test with data filled

@@ -113,7 +113,8 @@ func TestUpdateStatus(t *testing.T) {
 			err = service.PatchStatus(ctx, statusId, params)
 			assert.NoError(t, err)
 
-			statuses := service.status.Find()
+			statuses, err := service.status.Find(ctx)
+			assert.NoError(t, err)
 			status := statuses[0]
 			if test.date {
 				assert.True(t, time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC).Equal(status.Date))

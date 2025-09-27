@@ -75,7 +75,7 @@ func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories,
 }
 
 func findSymptomCategoryById(id uint, categories SymptomCategories) string {
-	categoryIndex := slices.IndexFunc(categories, func(cat SymptomCategory) bool {
+	categoryIndex := slices.IndexFunc(categories, func(cat *SymptomCategory) bool {
 		return cat.ID == id
 	})
 	return categories[categoryIndex].Name

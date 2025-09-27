@@ -1,8 +1,28 @@
 package internal
 
 import (
+	"context"
+
 	"encore.app/entity"
 	"encore.app/errors"
+)
+
+type (
+	IFoodRepository interface {
+		ListFoods(ctx context.Context, mealId uint) ([]*entity.Food, error)
+		CreateFoodByName(ctx context.Context, food *entity.Food, ingredientName string) error
+		CreateFoodByID(ctx context.Context, food *entity.Food) error
+		DeleteFood(ctx context.Context, foodId uint) error
+		ChangeCondition(ctx context.Context, foodId uint, condition entity.FoodCondition) error
+		GetFood(ctx context.Context, foodId uint) (entity.Food, error)
+	}
+
+	IFoodUseCase interface {
+		List(ctx context.Context, mealId uint) (entity.Foods, error)
+		Create(ctx context.Context, mealId uint, ingredientName string, ingredientId uint) (entity.Food, entity.Ingredients, error)
+		Delete(ctx context.Context, foodId uint) (entity.Ingredients, error)
+		ChangeCondition(ctx context.Context, foodId uint, newCond entity.FoodCondition) error
+	}
 )
 
 type FoodUseCase struct {
@@ -14,37 +34,39 @@ func NewFoodUseCase(foodRepo IFoodRepository, ingRepo IIngredientRepository) Foo
 	return FoodUseCase{food: foodRepo, ingredients: ingRepo}
 }
 
-func (uc FoodUseCase) List(mealId uint) entity.Foods {
-	return uc.food.ListFoods(mealId)
+func (uc FoodUseCase) List(ctx context.Context, mealId uint) (entity.Foods, error) {
+	foods, err := uc.food.ListFoods(ctx, mealId)
+	return foods, errorMapper(err)
 }
 
-func (uc FoodUseCase) Create(mealId uint, ingredientName string, ingredientId uint) (entity.Food, entity.Ingredients, error) {
+func (uc FoodUseCase) Create(ctx context.Context, mealId uint, ingredientName string, ingredientId uint) (entity.Food, entity.Ingredients, error) {
 	var food = &entity.Food{MealID: mealId, Condition: entity.Cooked}
 	var err error
 	var ingredients entity.Ingredients
 	if ingredientId != 0 {
 		food.IngredientID = ingredientId
-		err = uc.food.CreateFoodByID(food)
-		*food = uc.food.GetFood(food.ID)
+		err = uc.food.CreateFoodByID(ctx, food)
+		*food, err = uc.food.GetFood(ctx, food.ID)
 	} else if ingredientName != "" {
-		err = uc.food.CreateFoodByName(food, ingredientName)
+		err = uc.food.CreateFoodByName(ctx, food, ingredientName)
 	} else {
 		err = errors.ErrorAttributeMustBeSet("ingredientName or ingredientId")
 	}
 	if err == nil {
-		ingredients = uc.ingredients.ListIngredients()
+		ingredients, err = uc.ingredients.ListIngredients(ctx)
 	}
-	return *food, ingredients, err
+	return *food, ingredients, errorMapper(err)
 }
 
-func (uc FoodUseCase) Delete(foodId uint) (ingredients entity.Ingredients, err error) {
-	err = uc.food.DeleteFood(foodId)
+func (uc FoodUseCase) Delete(ctx context.Context, foodId uint) (ingredients entity.Ingredients, err error) {
+	err = uc.food.DeleteFood(ctx, foodId)
 	if err == nil {
-		ingredients = uc.ingredients.ListIngredients()
+		ingredients, err := uc.ingredients.ListIngredients(ctx)
+		return ingredients, errorMapper(err)
 	}
-	return ingredients, err
+	return ingredients, errorMapper(err)
 }
 
-func (uc FoodUseCase) ChangeCondition(foodId uint, newCond entity.FoodCondition) error {
-	return uc.food.ChangeCondition(foodId, newCond)
+func (uc FoodUseCase) ChangeCondition(ctx context.Context, foodId uint, newCond entity.FoodCondition) error {
+	return errorMapper(uc.food.ChangeCondition(ctx, foodId, newCond))
 }

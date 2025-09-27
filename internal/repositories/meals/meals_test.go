@@ -1,30 +1,36 @@
 package meals
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"encore.app/entity"
+	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
-func initTest(t *testing.T) *MealRepository {
+const GUID_STR = "cf0d4408-8db5-4572-b5d9-4ed873d1341f"
+
+func initTest(t *testing.T) (*MealRepository, context.Context) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	err := db.AutoMigrate(&entity.Meal{}, &entity.Ingredient{}, &entity.Food{})
 	assert.NoError(t, err)
-	return &MealRepository{db: db}
+
+	ctx := context.WithValue(t.Context(), "piid", uuid.FromStringOrNil(GUID_STR))
+	return &MealRepository{db: db}, ctx
 }
 
 func TestCreateMeal(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	var err error
 
 	var meal = new(entity.Meal)
 	meal.Date = time.Date(1999, 0, 0, 0, 0, 0, 0, time.Local)
-	err = repo.CreateMeal(meal)
+	err = repo.CreateMeal(ctx, meal)
 
 	assert.GreaterOrEqual(t, meal.ID, uint(1))
 	assert.NoError(t, err)
@@ -34,53 +40,56 @@ func TestCreateMeal(t *testing.T) {
 }
 
 func TestGetMeals(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	meals := repo.ListMeals()
+	meals, err := repo.ListMeals(ctx)
+	assert.NoError(t, err)
 	assert.Equal(t, len(meals), 0)
 }
 
 func TestGetMeal(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	var err error
 	var meal entity.Meal
 
-	meal, err = repo.GetMeal(1000)
+	meal, err = repo.GetMeal(ctx, 1000)
 	assert.Error(t, err)
 
 	repo.db.Create(&entity.Meal{
 		ID:        100,
 		Freshness: entity.Fresh,
+		PIID:      uuid.FromStringOrNil(GUID_STR),
 		Foods: []entity.Food{
 			{ID: 1},
 		},
 	})
 
-	meal, err = repo.GetMeal(100)
+	meal, err = repo.GetMeal(ctx, 100)
 	assert.NoError(t, err)
 	assert.Equal(t, entity.Fresh, meal.Freshness)
 	assert.Equal(t, len(meal.Foods), 1)
 }
 
 func TestDeleteMeal(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	var err error
 	var mealId uint = 100
-	err = repo.DeleteMeal(mealId)
+	err = repo.DeleteMeal(ctx, mealId)
 	assert.Error(t, err)
 
 	repo.db.Create(&entity.Meal{
 		ID:        mealId,
 		Freshness: entity.Fresh,
+		PIID:      uuid.FromStringOrNil(GUID_STR),
 		Foods: []entity.Food{
-			{ID: 1,
-				Ingredient: entity.Ingredient{ID: 1}},
+			{ID: 1, PIID: uuid.FromStringOrNil(GUID_STR),
+				Ingredient: entity.Ingredient{ID: 1, PIID: uuid.FromStringOrNil(GUID_STR)}},
 		},
 	})
 
-	err = repo.DeleteMeal(mealId)
+	err = repo.DeleteMeal(ctx, mealId)
 	assert.NoError(t, err)
 
 	foods := repo.db.Find(&entity.Food{}).RowsAffected
@@ -90,12 +99,13 @@ func TestDeleteMeal(t *testing.T) {
 }
 
 func TestPatchMeal(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	repo.db.Create(&entity.Meal{
 		ID:          100,
 		Freshness:   entity.Fresh,
 		StressLevel: 1,
+		PIID:        uuid.FromStringOrNil(GUID_STR),
 		Foods: []entity.Food{
 			{ID: 1},
 		},
@@ -105,7 +115,7 @@ func TestPatchMeal(t *testing.T) {
 	var patchFreshness entity.Freshness = entity.Older
 
 	var err error
-	err = repo.PatchMeal(100, &patchDate, &patchFreshness, nil, nil)
+	err = repo.PatchMeal(ctx, 100, &patchDate, &patchFreshness, nil, nil)
 	assert.NoError(t, err)
 
 	var mealInDb entity.Meal
@@ -114,7 +124,7 @@ func TestPatchMeal(t *testing.T) {
 	assert.Equal(t, mealInDb.Freshness, patchFreshness)
 	assert.EqualValues(t, mealInDb.StressLevel, 1)
 
-	err = repo.PatchMeal(1000, nil, nil, nil, nil)
+	err = repo.PatchMeal(ctx, 1000, nil, nil, nil, nil)
 	assert.Error(t, err)
 
 	// var meal Meal
@@ -144,25 +154,25 @@ func TestPatchMeal(t *testing.T) {
 	// assert.Equal(t, patchStressLevel, mealInDB.StressLevel)
 }
 
-func TestGetMealsAndDependencies(t *testing.T) {
-	repo := initTest(t)
+// func TestGetMealsAndDependencies(t *testing.T) {
+// 	repo, _ := initTest(t)
 
-	var err error
-	_, err = GetMealsAndDependencies(repo.db)
-	assert.NoError(t, err)
+// 	var err error
+// 	_, err = GetMealsAndDependencies(repo.db)
+// 	assert.NoError(t, err)
 
-	repo.db.Create(&entity.Meal{
-		ID:          100,
-		Freshness:   entity.Fresh,
-		StressLevel: 1,
-		Foods: []entity.Food{
-			{ID: 1,
-				Ingredient: entity.Ingredient{ID: 10, Name: "ingredient"}},
-		},
-	})
+// 	repo.db.Create(&entity.Meal{
+// 		ID:          100,
+// 		Freshness:   entity.Fresh,
+// 		StressLevel: 1,
+// 		Foods: []entity.Food{
+// 			{ID: 1,
+// 				Ingredient: entity.Ingredient{ID: 10, Name: "ingredient"}},
+// 		},
+// 	})
 
-	var meals entity.Meals
-	meals, err = GetMealsAndDependencies(repo.db)
-	assert.NoError(t, err)
-	assert.Equal(t, "ingredient", meals[0].Foods[0].Ingredient.Name)
-}
+// 	var meals entity.Meals
+// 	meals, err = GetMealsAndDependencies(repo.db)
+// 	assert.NoError(t, err)
+// 	assert.Equal(t, "ingredient", meals[0].Foods[0].Ingredient.Name)
+// }

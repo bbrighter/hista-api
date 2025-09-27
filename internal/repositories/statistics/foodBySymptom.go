@@ -1,12 +1,18 @@
 package statistics
 
 import (
+	"context"
 	"time"
 
 	"encore.app/entity"
+	"encore.app/generic_queries"
 )
 
-func (repo *StatisticsRepo) FindFoodForSymptoms(fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error) {
+func (repo *StatisticsRepo) FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return entity.SymptomResults{}, err
+	}
 	var results []entity.SymptomsResult
 	subquery := repo.db.Select(
 		"foods.ingredient_id as ingredient_id",
@@ -22,9 +28,13 @@ func (repo *StatisticsRepo) FindFoodForSymptoms(fromDate time.Time, toDate time.
 		Joins("JOIN conditions ON conditions.condition_event_id = condition_events.id").
 		Where("conditions.symptom_id in (?)", symptomIds).
 		Where("meals.date BETWEEN ? AND ?", fromDate, toDate).
+		Where("foods.pi_id = ?", piid).
+		Where("meals.pi_id = ?", piid).
+		Where("conditions.pi_id = ?", piid).
+		Where("condition_events.pi_id = ?", piid).
 		Group("ingredient_id, food_condition, meals.id")
 
-	var err error = repo.db.
+	err = repo.db.
 		Table("(?) as u", subquery).
 		Select(
 			"u.ingredient_id as ingredient_id",
@@ -39,13 +49,18 @@ func (repo *StatisticsRepo) FindFoodForSymptoms(fromDate time.Time, toDate time.
 	return results, err
 }
 
-func (repo *StatisticsRepo) CountFoods(relevantSymptomIds []uint) []entity.CountResult {
+func (repo *StatisticsRepo) CountFoods(ctx context.Context, relevantSymptomIds []uint) ([]entity.CountResult, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return []entity.CountResult{}, err
+	}
 	var countResults []entity.CountResult
 	repo.db.
 		Table("foods").
 		Select("count(*) as count", "foods.ingredient_id as id").
 		Where("ingredient_id in (?)", relevantSymptomIds).
+		Where("pi_id = ?", piid).
 		Group("ingredient_id").
 		Scan(&countResults)
-	return countResults
+	return countResults, nil
 }

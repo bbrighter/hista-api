@@ -13,15 +13,15 @@ type Users []User
 type UserProductInstance struct {
 	ID                uint
 	ProductId         string
-	UserId            uuid.UUID `gorm:"index:idx_user_instance,unique"`
-	ProductInstanceId uuid.UUID `gorm:"index:idx_user_instance,unique"`
+	UserId            uuid.UUID `gorm:"index:idx_user_instance,unique;type:uuid"`
+	ProductInstanceId uuid.UUID `gorm:"index:idx_user_instance,unique;type:uuid"`
 }
 
 type UserAppPermission struct {
 	ID                    uint
 	UserProductInstanceId uint `gorm:"index:idx_user_app_instance,unique"`
 	UserProductInstance   UserProductInstance
-	UserId                uuid.UUID `gorm:"index:idx_user_app_instance,unique"`
+	UserId                uuid.UUID `gorm:"index:idx_user_app_instance,unique;type:uuid"`
 	User                  User
 	App                   string `gorm:"index:idx_user_app_instance,unique"`
 	PermissionLevel       string

@@ -10,19 +10,19 @@ import (
 
 // encore:api auth method=POST path=/condition-events
 func (service *Service) CreateConditionEvent(ctx context.Context) (entity.ConditionEventResponse, error) {
-	event, err := service.conditionEvents.Create()
+	event, err := service.conditionEvents.Create(ctx)
 	return event.ToResponse(), err
 }
 
 // encore:api auth method=GET path=/condition-events
 func (service *Service) GetConditionEvents(ctx context.Context) (entity.ConditionEventsResponse, error) {
-	events := service.conditionEvents.List()
-	return events.ToResponse(), nil
+	events, err := service.conditionEvents.List(ctx)
+	return events.ToResponse(), err
 }
 
 // encore:api auth method=GET path=/condition-events/:eventId
 func (service *Service) GetConditionEvent(ctx context.Context, eventId uint) (entity.ConditionEventResponse, error) {
-	event, err := service.conditionEvents.Get(eventId)
+	event, err := service.conditionEvents.Get(ctx, eventId)
 	return event.ToResponse(), err
 }
 
@@ -35,12 +35,12 @@ func (service *Service) PatchDate(ctx context.Context, eventId uint, params Cond
 	if params.Date.IsZero() {
 		return errors.ErrorAttributeMustBeSet("date")
 	}
-	return service.conditionEvents.Patch(eventId, params.Date)
+	return service.conditionEvents.Patch(ctx, eventId, params.Date)
 }
 
 // encore:api auth method=DELETE path=/condition-events/:eventId
 func (service *Service) DeleteConditionEvent(ctx context.Context, eventId uint) (entity.SymptomCategoriesResponse, error) {
-	cats, err := service.conditionEvents.Delete(eventId)
+	cats, err := service.conditionEvents.Delete(ctx, eventId)
 	return cats.ToResponse(), err
 }
 
@@ -52,7 +52,7 @@ type ConditionRequestParams struct {
 
 // encore:api auth method=POST path=/condition-events/:eventId/conditions
 func (service *Service) PostCondition(ctx context.Context, eventId uint, params ConditionRequestParams) (resp entity.PostConditionResponse, err error) {
-	condition, symptoms, err := service.conditions.Create(eventId, params.SymptomName, params.SymptomID, params.CategoryID)
+	condition, symptoms, err := service.conditions.Create(ctx, eventId, params.SymptomName, params.SymptomID, params.CategoryID)
 	if err != nil {
 		return resp, err
 	}

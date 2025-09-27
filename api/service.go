@@ -57,6 +57,10 @@ func initService() (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+	return initServiceWithDb(db), nil
+}
+
+func initServiceWithDb(db *gorm.DB) *Service {
 	mealRepo := meals.NewMealRepository(db)
 	symptomRepo := symptoms.NewSymptomsRepo(db)
 	noteRepo := notes.NewNotesRepository(db)
@@ -80,5 +84,5 @@ func initService() (*Service, error) {
 		pollens:         internal.NewPollenUseCase(pollenRepo, dwdRepo),
 		status:          internal.NewStatusUseCase(statusRepo),
 		headaches:       internal.NewHeadacheUseCase(headacheRepo),
-	}, nil
+	}
 }
