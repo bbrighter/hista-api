@@ -32,7 +32,6 @@ func (repo *StatisticsRepo) FindSymptomsForFoods(ctx context.Context, fromDate t
 		Where("foods.pi_id = ?", piid).
 		Where("condition_events.pi_id = ?", piid).
 		Where("conditions.pi_id = ?", piid).
-		Where("ingredients.pi_id = ?", piid).
 		Group("symptom_id, severity, condition_events.id")
 
 	err = repo.db.

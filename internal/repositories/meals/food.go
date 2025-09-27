@@ -59,20 +59,35 @@ func (repo *MealRepository) CreateFoodByID(ctx context.Context, food *entity.Foo
 }
 
 func (repo *MealRepository) DeleteFood(ctx context.Context, foodId uint) error {
-	// TODO: Delete ingredients as well if last!
-	return generic_queries.Delete[*entity.Food](ctx, repo.db, foodId)
-}
-
-func (repo *MealRepository) ChangeCondition(ctx context.Context, foodId uint, condition entity.FoodCondition) error {
 	piid, err := generic_queries.PiidFromCtx(ctx)
 	if err != nil {
 		return err
 	}
-	tx := repo.db.Where(&entity.Food{ID: foodId, PIID: piid}).Updates(entity.Food{Condition: condition})
-	if tx.RowsAffected == 0 {
-		return errors.ErrorNotFound
+	food, err := generic_queries.First[*entity.Food](ctx, repo.db, foodId)
+	if err != nil {
+		return err
 	}
-	return tx.Error
+	return repo.db.Transaction(func(tx *gorm.DB) error {
+		if err := generic_queries.Delete[*entity.Food](ctx, tx, foodId); err != nil {
+			return err
+		}
+		numberOfIngredientUsage, err := gorm.G[entity.Food](tx).
+			Where("pi_id = ?", piid).
+			Where("ingredient_id = ?", food.IngredientID).
+			Count(ctx, "*")
+		if err != nil {
+			return err
+		}
+		if numberOfIngredientUsage == 0 {
+			return generic_queries.Delete[*entity.Ingredient](ctx, tx, food.IngredientID)
+		}
+
+		return nil
+	})
+}
+
+func (repo *MealRepository) ChangeCondition(ctx context.Context, foodId uint, condition entity.FoodCondition) error {
+	return generic_queries.UpdateColumn[*entity.Food](ctx, repo.db, foodId, "condition", string(condition))
 }
 
 func (repo *MealRepository) GetFood(ctx context.Context, foodId uint) (entity.Food, error) {

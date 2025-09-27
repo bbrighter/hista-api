@@ -31,31 +31,24 @@ func TestListCategories(t *testing.T) {
 
 func TestCreateCategory(t *testing.T) {
 	tests := map[string]struct {
-		catNameSet           bool
 		catNameExistsAlready bool
 		expectError          bool
 	}{
-		"ok":           {catNameSet: true},
-		"ok and exits": {catNameSet: true, catNameExistsAlready: true},
-		"name missing": {catNameSet: false, expectError: true},
+		"ok":           {},
+		"ok and exits": {catNameExistsAlready: true},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			repo, ctx := initTest(t)
 			if test.catNameExistsAlready {
-				repo.CreateCategory(ctx, &entity.SymptomCategory{Name: "cat"})
+				repo.CreateCategory(ctx, "cat")
 			}
-			var cat = &entity.SymptomCategory{}
-			if test.catNameSet {
-				cat.Name = "cat"
-			}
-
-			err := repo.CreateCategory(ctx, cat)
+			id, err := repo.CreateCategory(ctx, "cat")
 			if test.expectError {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
-				assert.Greater(t, cat.ID, uint(0))
+				assert.Greater(t, id, uint(0))
 			}
 		})
 	}

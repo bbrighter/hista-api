@@ -16,7 +16,11 @@ const GUID_STR = "cf0d4408-8db5-4572-b5d9-4ed873d1341f"
 
 func initTest(t *testing.T) (*MealRepository, context.Context) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	err := db.AutoMigrate(&entity.Meal{}, &entity.Ingredient{}, &entity.Food{})
+	err := db.AutoMigrate(
+		&entity.Meal{},
+		&entity.Ingredient{},
+		&entity.Food{},
+	)
 	assert.NoError(t, err)
 
 	ctx := context.WithValue(t.Context(), "piid", uuid.FromStringOrNil(GUID_STR))

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetStatisticsBySymptomIds(t *testing.T) {
@@ -47,7 +48,7 @@ func TestGetStatisticsByIngredientsIds(t *testing.T) {
 
 	resp, err := service.GetStatisticsByIngredientsIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)
-	assert.Len(t, resp.Statistics, 1)
+	require.Len(t, resp.Statistics, 1)
 	stat := resp.Statistics[0]
 	assert.EqualValues(t, 1, stat.Count)
 	assert.EqualValues(t, 1, stat.Hours1)

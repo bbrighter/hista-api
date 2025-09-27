@@ -20,23 +20,22 @@ func (repo *SymptomsRepo) ListCategories(ctx context.Context) ([]*entity.Symptom
 
 // Create a new symptom category
 // Name is required
-func (repo *SymptomsRepo) CreateCategory(ctx context.Context, cat *entity.SymptomCategory) error {
+func (repo *SymptomsRepo) CreateCategory(ctx context.Context, catName string) (uint, error) {
 	piid, err := generic_queries.PiidFromCtx(ctx)
 	if err != nil {
-		return err
+		return 0, err
 	}
-	if cat.Name == "" {
-		return errors.New("attribute name must be set")
+	cat, err := gorm.G[entity.SymptomCategory](repo.db).
+		Where("pi_id = ?", piid).Where("name = ?", catName).First(ctx)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return 0, err
 	}
-	cat.PIID = piid
-	tx := repo.db.Where("pi_id = ?", piid).FirstOrCreate(&cat, &cat)
-	if tx.Error != nil {
-		return tx.Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		cat := entity.SymptomCategory{Name: catName}
+		err = generic_queries.Create(ctx, repo.db, &cat)
+		return cat.ID, err
 	}
-	if tx.RowsAffected == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
+	return cat.ID, err
 }
 
 func (repo *SymptomsRepo) RenameCategory(ctx context.Context, cat *entity.SymptomCategory, newName string) error {

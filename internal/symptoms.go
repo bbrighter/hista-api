@@ -15,7 +15,7 @@ type (
 
 	ISymptomCategoriesRepo interface {
 		ListCategories(ctx context.Context) ([]*entity.SymptomCategory, error)
-		CreateCategory(ctx context.Context, cat *entity.SymptomCategory) error
+		CreateCategory(ctx context.Context, catName string) (uint, error)
 		RenameCategory(ctx context.Context, cat *entity.SymptomCategory, newName string) error
 		DeleteCategory(ctx context.Context, catId uint) error
 	}
@@ -45,9 +45,8 @@ func (uc SymptomsUseCase) List(ctx context.Context) (entity.SymptomCategories, e
 }
 
 func (uc SymptomsUseCase) CreateCategory(ctx context.Context, name string) (uint, error) {
-	var cat = &entity.SymptomCategory{Name: name}
-	err := uc.cat.CreateCategory(ctx, cat)
-	return cat.ID, errorMapper(err)
+	id, err := uc.cat.CreateCategory(ctx, name)
+	return id, errorMapper(err)
 }
 
 func (uc SymptomsUseCase) PutSymptom(ctx context.Context, symptomName string, symtpomCategoryId uint) (uint, error) {
