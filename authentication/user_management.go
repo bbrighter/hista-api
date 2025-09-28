@@ -67,3 +67,22 @@ func (s Service) RemoveUserFromProductInstance(ctx context.Context, userId uuid.
 	}
 	return users.RemoveUserFromProductInstance(ctx, userId, productInstanceId)
 }
+
+type UserResponse struct {
+	Name string    `json:"name"`
+	ID   uuid.UUID `json:"id"`
+}
+
+type UserListResponse struct {
+	Users []UserResponse `json:"users"`
+}
+
+// encore:api auth method=GET path=/product-instance/:productInstanceId/users
+func (s Service) GetUsersForProductInstance(ctx context.Context, productInstanceId uuid.UUID) (UserListResponse, error) {
+	users, err := users.ListUsersForProductInstance(ctx, productInstanceId)
+	var resp []UserResponse
+	for _, u := range users.Users {
+		resp = append(resp, UserResponse{Name: u.Name, ID: u.ID})
+	}
+	return UserListResponse{Users: resp}, err
+}

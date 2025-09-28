@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/product_mgmt/entity"
 	"encore.dev/types/uuid"
 )
@@ -11,10 +12,12 @@ type (
 	ProductInstanceStoreRepo interface {
 		Find(ctx context.Context, id uuid.UUID) (entity.ProductInstance, error)
 		Create(ctx context.Context, name string, productId string) (entity.ProductInstance, error)
+		List(ctx context.Context) ([]entity.ProductInstance, error)
 	}
 	InstanceStore interface {
 		Create(ctx context.Context, name string, productId string) (uuid.UUID, error)
 		Find(ctx context.Context, id uuid.UUID) (entity.ProductInstance, error)
+		List(ctx context.Context) (entity.ProductInstances, error)
 	}
 )
 
@@ -51,4 +54,9 @@ func (uc InstanceUseCase) Find(ctx context.Context, id uuid.UUID) (entity.Produc
 	}
 	instance.Product = product
 	return instance, nil
+}
+
+func (uc InstanceUseCase) List(ctx context.Context) (entity.ProductInstances, error) {
+	instances, err := uc.is.List(ctx)
+	return entity.ProductInstances(instances), errors.MapError(err)
 }

@@ -52,3 +52,9 @@ func (s *Service) AddUserToProductInstance(ctx context.Context, userId uuid.UUID
 func (s *Service) RemoveUserFromProductInstance(ctx context.Context, userId uuid.UUID, productInstanceId uuid.UUID) error {
 	return s.mgmt.RemoveUserFromInstance(ctx, productInstanceId, userId)
 }
+
+// encore:api private method=GET path=/internal/product-instance/:productInstanceId/users
+func (s *Service) ListUsersForProductInstance(ctx context.Context, productInstanceId uuid.UUID) (entity.UserListResponse, error) {
+	users, err := s.mgmt.ListForInstance(ctx, productInstanceId)
+	return users.ToResponse(), err
+}

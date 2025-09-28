@@ -3,6 +3,7 @@ package users
 import (
 	"testing"
 
+	"encore.dev/beta/errs"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,19 +16,24 @@ func TestLogin(t *testing.T) {
 	tests := map[string]struct {
 		userName    string
 		password    string
-		expectError bool
+		expectError errs.ErrCode
 	}{
 		"ok":       {userName: "Name", password: "Password"},
-		"no user":  {userName: "unknown", password: "Password", expectError: true},
-		"wrong pw": {userName: "Name", password: "Wrong", expectError: true},
+		"no user":  {userName: "unknown", password: "Password", expectError: errs.NotFound},
+		"wrong pw": {userName: "Name", password: "Wrong", expectError: errs.Unauthenticated},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			_, err := service.GetPermissions(ctx, LoginParams{UserName: test.userName, Password: test.password})
 
-			if test.expectError {
+			if test.expectError > 0 {
 				assert.Error(t, err)
+				e, ok := err.(*errs.Error)
+				require.True(t, ok)
+				assert.Equal(t, test.expectError, e.Code)
+				// assert.ErrorIs(t, err, test.expectError)
+
 			} else {
 				assert.NoError(t, err)
 				// assert.Contains(t, resp.Token, "ey")

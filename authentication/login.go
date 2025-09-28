@@ -23,7 +23,7 @@ func (service *Service) Login(ctx context.Context, params LoginParams) (*LoginRe
 		Password: params.Password,
 	})
 	if err != nil {
-		return &LoginResponse{}, nil
+		return &LoginResponse{}, err
 	}
 	var appIds []string
 	var piid uuid.UUID

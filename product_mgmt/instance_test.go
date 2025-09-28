@@ -10,6 +10,7 @@ import (
 	"encore.dev/et"
 	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -69,7 +70,7 @@ func TestFindInstance(t *testing.T) {
 	ctx := t.Context()
 	service := initTestService(t)
 	resp, err := service.CreateInstance(ctx, ProductInstanceParams{ProductId: "product-id", InstanceName: "name"})
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	guid := resp.ID
 	otherGuid, _ := uuid.NewV4()
 
@@ -99,4 +100,18 @@ func TestFindInstance(t *testing.T) {
 		})
 	}
 
+}
+
+func TestListInstances(t *testing.T) {
+	ctx := t.Context()
+	s := initTestService(t)
+	_, err := s.CreateInstance(ctx, ProductInstanceParams{ProductId: "product-id", InstanceName: "name"})
+	require.NoError(t, err)
+
+	resp, err := s.ListInstances(ctx)
+	assert.NoError(t, err)
+	if assert.Len(t, resp.Instances, 1) {
+		instance := resp.Instances[0]
+		assert.Equal(t, "name", instance.Name)
+	}
 }

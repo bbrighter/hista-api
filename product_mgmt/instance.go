@@ -23,6 +23,12 @@ func (s *Service) CreateInstance(ctx context.Context, params ProductInstancePara
 	return UuidResponse{ID: id}, err
 }
 
+// encore:api private method=GET path=/internal/instance
+func (s *Service) ListInstances(ctx context.Context) (entity.ProductInstancesResponse, error) {
+	instances, err := s.instance.List(ctx)
+	return instances.ToResponse(), err
+}
+
 // encore:api private method=GET path=/internal/instance/:id
 func (s *Service) FindInstance(ctx context.Context, id uuid.UUID) (entity.ProductInstanceResponse, error) {
 	instance, err := s.instance.Find(ctx, id)

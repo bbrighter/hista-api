@@ -30,9 +30,8 @@ func (r *InstanceRepo) Create(ctx context.Context, name string, productId string
 	return instance, err
 }
 
-func (r *InstanceRepo) List(ctx context.Context) []entity.ProductInstance {
-	instances, _ := gorm.G[entity.ProductInstance](r.db).Find(ctx)
-	return instances
+func (r *InstanceRepo) List(ctx context.Context) ([]entity.ProductInstance, error) {
+	return gorm.G[entity.ProductInstance](r.db).Find(ctx)
 }
 
 func (r *InstanceRepo) Find(ctx context.Context, id uuid.UUID) (entity.ProductInstance, error) {

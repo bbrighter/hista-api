@@ -19,6 +19,9 @@ func (r testInstanceStoreOk) Create(ctx context.Context, name string, productId 
 func (r testInstanceStoreOk) Find(ctx context.Context, id uuid.UUID) (entity.ProductInstance, error) {
 	return entity.ProductInstance{}, nil
 }
+func (r testInstanceStoreOk) List(ctx context.Context) ([]entity.ProductInstance, error) {
+	return []entity.ProductInstance{}, nil
+}
 
 type testProductFinderOk struct{}
 

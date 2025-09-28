@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/users/entity"
 )
 
@@ -25,5 +26,6 @@ func NewAuthUseCase(u IAuthRepo) AuthUseCase {
 }
 
 func (uc AuthUseCase) Login(ctx context.Context, userName string, password string) (entity.User, []entity.UserAppPermission, error) {
-	return uc.u.Login(ctx, userName, password)
+	user, perm, err := uc.u.Login(ctx, userName, password)
+	return user, perm, errors.MapError(err)
 }

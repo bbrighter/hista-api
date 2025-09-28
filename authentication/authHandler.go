@@ -8,17 +8,16 @@ import (
 	"encore.app/entity"
 	"encore.app/errors"
 	"encore.dev/beta/auth"
-	"encore.dev/types/uuid"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthParams struct {
-	token string `header:"Auth"`
+	Token string `header:"Authorization"`
 }
 
 //encore:authhandler
 func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, *entity.AuthData, error) {
-	token, err := parseToken(params.token)
+	token, err := parseToken(params.Token)
 	if err != nil {
 		return auth.UID(""), &entity.AuthData{}, errors.ErrorUnauthenticated
 	}
@@ -26,7 +25,7 @@ func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, *entity.Aut
 
 	authData := &entity.AuthData{
 		AppMapping: appMapping,
-		PIID:       uuid.UUID{},
+		PIID:       token.PIID,
 	}
 
 	return auth.UID(token.Subject), authData, nil

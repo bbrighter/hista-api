@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/users/entity"
 	"encore.dev/types/uuid"
 )
@@ -15,6 +16,7 @@ type (
 		RemoveUser(ctx context.Context, instanceId uuid.UUID, user entity.User) error
 		List(ctx context.Context) entity.Users
 		Find(ctx context.Context, id uuid.UUID) (entity.User, error)
+		ListUserForInstance(ctx context.Context, instanceId uuid.UUID) ([]entity.User, error)
 	}
 
 	IUserManagement interface {
@@ -24,6 +26,7 @@ type (
 		RemoveUserFromInstance(ctx context.Context, instanceId uuid.UUID, userId uuid.UUID) error
 		List(ctx context.Context) entity.Users
 		Exists(ctx context.Context, id uuid.UUID) error
+		ListForInstance(ctx context.Context, instanceId uuid.UUID) (entity.Users, error)
 	}
 )
 
@@ -56,5 +59,10 @@ func (uc UserManagementUseCase) List(ctx context.Context) entity.Users {
 
 func (uc UserManagementUseCase) Exists(ctx context.Context, id uuid.UUID) error {
 	_, err := uc.r.Find(ctx, id)
-	return err
+	return errors.MapError(err)
+}
+
+func (uc UserManagementUseCase) ListForInstance(ctx context.Context, instanceId uuid.UUID) (entity.Users, error) {
+	users, err := uc.r.ListUserForInstance(ctx, instanceId)
+	return users, errors.MapError(err)
 }

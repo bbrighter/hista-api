@@ -3,7 +3,6 @@ package users
 import (
 	"context"
 
-	"encore.app/errors"
 	"encore.app/users/entity"
 )
 
@@ -21,7 +20,7 @@ type PermissionResponse struct {
 func (service *Service) GetPermissions(ctx context.Context, params LoginParams) (*PermissionResponse, error) {
 	user, perm, err := service.auth.Login(ctx, params.UserName, params.Password)
 	if err != nil {
-		return &PermissionResponse{}, errors.MapError(err)
+		return &PermissionResponse{}, err
 	}
-	return &PermissionResponse{User: user, Permissions: perm}, err
+	return &PermissionResponse{User: user, Permissions: perm}, nil
 }

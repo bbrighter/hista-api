@@ -139,3 +139,15 @@ func (r *UserRepo) RemoveUser(ctx context.Context, instanceId uuid.UUID, user en
 		return err
 	})
 }
+
+func (r *UserRepo) ListUserForInstance(ctx context.Context, instanceId uuid.UUID) ([]entity.User, error) {
+	usersForProdInstance, err := gorm.G[entity.UserProductInstance](r.db).Where("product_instance_id = ?", instanceId).Find(ctx)
+	if err != nil {
+		return []entity.User{}, err
+	}
+	var userIds []uuid.UUID
+	for _, u := range usersForProdInstance {
+		userIds = append(userIds, u.UserId)
+	}
+	return gorm.G[entity.User](r.db).Where("id IN ?", userIds).Find(ctx)
+}

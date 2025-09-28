@@ -16,7 +16,7 @@ func List[T Piider](ctx context.Context, db *gorm.DB) ([]T, error) {
 	if err != nil {
 		return []T{}, err
 	}
-	return gorm.G[T](db).Where("pi_id = ?", piid).Find(ctx)
+	return gorm.G[T](db.Debug()).Where("pi_id = ?", piid).Find(ctx)
 }
 
 func First[T Piider](ctx context.Context, db *gorm.DB, id uint) (T, error) {
