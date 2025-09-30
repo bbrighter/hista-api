@@ -17,18 +17,21 @@ type AuthParams struct {
 
 //encore:authhandler
 func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, *entity.AuthData, error) {
-	token, err := parseToken(params.Token)
+	claims, err := parseToken(params.Token)
 	if err != nil {
 		return auth.UID(""), &entity.AuthData{}, errors.ErrorUnauthenticated
 	}
-	var appMapping = make(map[string]bool)
 
-	authData := &entity.AuthData{
-		AppMapping: appMapping,
-		PIID:       token.PIID,
+	var instances []entity.AuthProductInstance
+	for _, c := range claims.ProductInstances {
+		var appMapping = make(map[string]bool)
+		for _, a := range c.AppIds {
+			appMapping[a] = true
+		}
+		inst := entity.AuthProductInstance{PIID: c.PIID, AppMapping: appMapping}
+		instances = append(instances, inst)
 	}
-
-	return auth.UID(token.Subject), authData, nil
+	return auth.UID(claims.Subject), &entity.AuthData{Instances: instances}, nil
 }
 
 func parseToken(token string) (*entity.CustomClaims, error) {

@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"encore.app/entity"
+	"encore.dev/types/uuid"
 )
 
-// encore:api auth method=GET path=/ingredients
-func (service *Service) GetIngredients(ctx context.Context) (entity.IngredientsResponse, error) {
+// encore:api auth method=GET path=/piid/:piid/ingredients
+func (service *Service) ListIngredients(ctx context.Context, piid uuid.UUID) (entity.IngredientsResponse, error) {
 	ing, err := service.ingredients.List(ctx)
 	return ing.ToIngredientsResponse(), err
 }

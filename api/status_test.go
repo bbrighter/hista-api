@@ -10,8 +10,8 @@ import (
 func TestCreateStatus(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	resp, err := service.PostStatus(ctx, DateParam{time.Now()})
-	defer service.DeleteStatus(ctx, resp.ID)
+	resp, err := service.PostStatus(ctx, TEST_PIID, DateParam{time.Now()})
+	defer service.DeleteStatus(ctx, TEST_PIID, resp.ID)
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, resp.ID, uint(1))
 }
@@ -73,7 +73,7 @@ func TestCreateStatus(t *testing.T) {
 func TestListStatus(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	resp, _ := service.ListStatus(ctx)
+	resp, _ := service.ListStatus(ctx, TEST_PIID)
 	assert.Len(t, resp.Statuses, 0)
 }
 
@@ -92,9 +92,9 @@ func TestUpdateStatus(t *testing.T) {
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			resp, err := service.PostStatus(ctx, DateParam{time.Now()})
+			resp, err := service.PostStatus(ctx, TEST_PIID, DateParam{time.Now()})
 			statusId := resp.ID
-			defer service.DeleteStatus(ctx, statusId)
+			defer service.DeleteStatus(ctx, TEST_PIID, statusId)
 			assert.NoError(t, err)
 
 			var params = PatchStatusParams{}
@@ -110,7 +110,7 @@ func TestUpdateStatus(t *testing.T) {
 				params.EveningFitness = &eveningFitness
 			}
 
-			err = service.PatchStatus(ctx, statusId, params)
+			err = service.PatchStatus(ctx, TEST_PIID, statusId, params)
 			assert.NoError(t, err)
 
 			statuses, err := service.status.Find(ctx)

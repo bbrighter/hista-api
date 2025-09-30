@@ -18,11 +18,14 @@ func NewTokenRepo(privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) *TokenRe
 	return &TokenRepo{privateKey: privateKey, publicKey: publicKey}
 }
 
-func (r *TokenRepo) GenerateToken(username string, userId uuid.UUID, appIds []string, piid uuid.UUID, expirationDuration time.Duration) *jwt.Token {
+func (r *TokenRepo) GenerateToken(username string, userId uuid.UUID, piidApps map[uuid.UUID][]string, expirationDuration time.Duration) *jwt.Token {
+	var instances []entity.ProductInstanceClaim
+	for piid, appIds := range piidApps {
+		instances = append(instances, entity.ProductInstanceClaim{PIID: piid, AppIds: appIds})
+	}
 	claims := entity.CustomClaims{
-		Name:   username,
-		AppIds: appIds,
-		PIID:   piid,
+		UserName:         username,
+		ProductInstances: instances,
 		RegisteredClaims: jwt.RegisteredClaims{
 			Subject:   userId.String(),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

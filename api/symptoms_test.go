@@ -11,10 +11,10 @@ import (
 
 func (service *Service) createTestSymptom(ctx context.Context, t *testing.T) (condId uint, symptomId uint, catId uint) {
 	id := service.createTestEvent(ctx, t)
-	catResp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "cat"})
+	catResp, err := service.PostSymptomCategory(ctx, TEST_PIID, PostSymptomCategoryRequest{Name: "cat"})
 	require.NoError(t, err)
 	var name string = "name"
-	resp, err := service.PostCondition(ctx, id, ConditionRequestParams{SymptomName: &name, CategoryID: &catResp.ID})
+	resp, err := service.PostCondition(ctx, TEST_PIID, id, ConditionRequestParams{SymptomName: &name, CategoryID: &catResp.ID})
 	require.NoError(t, err)
 
 	return resp.Condition.ID, resp.Condition.Symptom.ID, resp.Condition.Symptom.CategoryID
@@ -23,12 +23,12 @@ func (service *Service) createTestSymptom(ctx context.Context, t *testing.T) (co
 func TestGetSymptoms(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	resp, _ := service.GetSymptoms(ctx)
+	resp, _ := service.ListSymptoms(ctx, TEST_PIID)
 	assert.Len(t, resp.Categories, 0)
 
 	service.createTestSymptom(ctx, t)
 
-	resp, _ = service.GetSymptoms(ctx)
+	resp, _ = service.ListSymptoms(ctx, TEST_PIID)
 	assert.Len(t, resp.Categories, 1)
 	assert.Equal(t, "cat", resp.Categories[0].Name)
 	assert.Len(t, resp.Categories[0].Symptoms, 1)
@@ -38,7 +38,7 @@ func TestGetSymptoms(t *testing.T) {
 func TestPostSymptomCategory(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	resp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "cat"})
+	resp, err := service.PostSymptomCategory(ctx, TEST_PIID, PostSymptomCategoryRequest{Name: "cat"})
 	assert.NoError(t, err)
 	assert.Greater(t, resp.ID, uint(0))
 
@@ -49,7 +49,7 @@ func TestPatchSymptomName(t *testing.T) {
 
 	_, symptomId, _ := service.createTestSymptom(ctx, t)
 
-	err := service.PatchSymptomName(ctx, symptomId, PatchSymptomNameParams{Name: "new name"})
+	err := service.PatchSymptomName(ctx, TEST_PIID, symptomId, PatchSymptomNameParams{Name: "new name"})
 	assert.NoError(t, err)
 
 	var symptom entity.Symptom
@@ -62,11 +62,11 @@ func TestPatchSymptomCategory(t *testing.T) {
 
 	_, symptomId, _ := service.createTestSymptom(ctx, t)
 
-	resp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "new cat"})
+	resp, err := service.PostSymptomCategory(ctx, TEST_PIID, PostSymptomCategoryRequest{Name: "new cat"})
 	assert.NoError(t, err)
-	defer service.DeleteSymptomCategory(ctx, resp.ID)
+	defer service.DeleteSymptomCategory(ctx, TEST_PIID, resp.ID)
 
-	err = service.PatchSymptomCategory(ctx, symptomId, PatchSymptomCategoryParams{ToCategoryID: resp.ID})
+	err = service.PatchSymptomCategory(ctx, TEST_PIID, symptomId, PatchSymptomCategoryParams{ToCategoryID: resp.ID})
 	assert.NoError(t, err)
 
 	var symptom entity.Symptom
@@ -79,7 +79,7 @@ func TestPatchCategoryName(t *testing.T) {
 
 	_, symptomId, catId := service.createTestSymptom(ctx, t)
 
-	err := service.PatchCategoryName(ctx, symptomId, PatchCategoryNameParams{Name: "new cat name"})
+	err := service.PatchCategoryName(ctx, TEST_PIID, symptomId, PatchCategoryNameParams{Name: "new cat name"})
 	assert.NoError(t, err)
 
 	var cat entity.SymptomCategory
@@ -92,14 +92,14 @@ func TestDeleteSymptomCategory(t *testing.T) {
 
 	_, _, catId := service.createTestSymptom(ctx, t)
 
-	err := service.DeleteSymptomCategory(ctx, catId)
+	err := service.DeleteSymptomCategory(ctx, TEST_PIID, catId)
 	assert.Error(t, err)
 	rows := service.DB.Take(&entity.SymptomCategories{}, catId).RowsAffected
 	assert.EqualValues(t, 1, rows)
 
-	resp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "new cat"})
+	resp, err := service.PostSymptomCategory(ctx, TEST_PIID, PostSymptomCategoryRequest{Name: "new cat"})
 	assert.NoError(t, err)
-	err = service.DeleteSymptomCategory(ctx, resp.ID)
+	err = service.DeleteSymptomCategory(ctx, TEST_PIID, resp.ID)
 	assert.NoError(t, err)
 	rows = service.DB.Take(&entity.SymptomCategories{}, resp.ID).RowsAffected
 	assert.EqualValues(t, 0, rows)

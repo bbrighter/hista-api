@@ -27,6 +27,10 @@ type UserAppPermission struct {
 	PermissionLevel       string
 }
 
+type UserProductInstanceList []UserProductInstance
+
+type UserAppPermissionList []UserAppPermission
+
 func (u User) ToResponse() UserResponse {
 	return UserResponse{ID: u.ID, Name: u.Name}
 }
@@ -37,4 +41,17 @@ func (us Users) ToResponse() UserListResponse {
 		users = append(users, u.ToResponse())
 	}
 	return UserListResponse{Users: users}
+}
+
+func (uapl UserAppPermissionList) ToMap() map[uuid.UUID][]string {
+	permMap := make(map[uuid.UUID][]string)
+	for _, u := range uapl {
+		piid := u.UserProductInstance.ProductInstanceId
+		if appIds, ok := permMap[piid]; ok {
+			appIds = append(appIds, u.App)
+		} else {
+			permMap[piid] = []string{u.App}
+		}
+	}
+	return permMap
 }

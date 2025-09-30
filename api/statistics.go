@@ -7,6 +7,7 @@ import (
 
 	entity "encore.app/entity"
 	"encore.app/errors"
+	uuid "encore.dev/types/uuid"
 )
 
 type StatisticParams struct {
@@ -15,8 +16,8 @@ type StatisticParams struct {
 	ToDate   time.Time `json:"toDate"`
 }
 
-// encore:api auth method=GET path=/statistics/symptoms
-func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, params StatisticParams) (resp entity.FoodStatisticsResponse, err error) {
+// encore:api auth method=GET path=/piid/:piid/statistics/symptoms
+func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, piid uuid.UUID, params StatisticParams) (resp entity.FoodStatisticsResponse, err error) {
 	if params.FromDate.IsZero() {
 		return resp, errors.ErrorAttributeMustBeSet("fromDate")
 	}
@@ -33,8 +34,8 @@ func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, params St
 	return stats.ToResponse(), err
 }
 
-// encore:api auth method=GET path=/statistics/ingredients
-func (service *Service) GetStatisticsByIngredientsIds(ctx context.Context, params StatisticParams) (resp entity.SymptomStatisticsResponse, err error) {
+// encore:api auth method=GET path=/piid/:piid/statistics/ingredients
+func (service *Service) GetStatisticsByIngredientsIds(ctx context.Context, piid uuid.UUID, params StatisticParams) (resp entity.SymptomStatisticsResponse, err error) {
 	if params.FromDate.IsZero() {
 		return resp, errors.ErrorAttributeMustBeSet("fromDate")
 	}

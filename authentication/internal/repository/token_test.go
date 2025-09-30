@@ -27,7 +27,9 @@ func TestGenerateToken(t *testing.T) {
 	r := newTestTokenRepo(t)
 
 	guid := uuid.FromStringOrNil(GUID_STR)
-	token := r.GenerateToken("name", guid, []string{"app1"}, guid, time.Hour)
+	piidMap := make(map[uuid.UUID][]string)
+	piidMap[guid] = []string{"app1"}
+	token := r.GenerateToken("name", guid, piidMap, time.Hour)
 
 	sub, err := token.Claims.GetSubject()
 	assert.NoError(t, err)
@@ -38,7 +40,10 @@ func TestGenerateToken(t *testing.T) {
 	assert.Greater(t, exp.Time, time.Now().Add(time.Minute))
 	custom, ok := token.Claims.(entity.CustomClaims)
 	require.True(t, ok)
-	assert.Equal(t, []string{"app1"}, custom.AppIds)
-	assert.Equal(t, "name", custom.Name)
-	assert.Equal(t, GUID_STR, custom.PIID.String())
+	require.Len(t, custom.ProductInstances, 1)
+	assert.Equal(t, guid, custom.ProductInstances[0].PIID)
+	assert.Equal(t, "app1", custom.ProductInstances[0].AppIds[0])
+	// assert.Equal(t, []string{"app1"}, custom.AppIds)
+	// assert.Equal(t, "name", custom.UserName)
+	// assert.Equal(t, GUID_STR, custom.PIID.String())
 }

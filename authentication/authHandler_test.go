@@ -27,7 +27,10 @@ func TestAuthHandler(t *testing.T) {
 			var piid_guid string = "31d621bc-cba4-479e-94b6-d66f919ea612"
 			ctx := context.Background()
 			s, _ := initService()
-			token, err := s.g.GenerateToken("name", uuid.FromStringOrNil(user_guid), []string{"app1"}, uuid.FromStringOrNil(piid_guid))
+
+			piidMap := make(map[uuid.UUID][]string)
+			piidMap[uuid.FromStringOrNil(piid_guid)] = []string{"app1"}
+			token, err := s.g.GenerateToken("name", uuid.FromStringOrNil(user_guid), piidMap)
 			// token := initTestToken(t)
 			require.NoError(t, err)
 			require.NoError(t, err)

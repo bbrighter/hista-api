@@ -10,16 +10,16 @@ import (
 func TestGetDiary(t *testing.T) {
 	service, ctx := initAPITest(t)
 
-	resp, err := service.GetDiary(ctx)
+	resp, err := service.GetDiary(ctx, TEST_PIID)
 	assert.NoError(t, err)
 	assert.Len(t, resp.Diaries, 0)
 
-	eventResp, err := service.CreateConditionEvent(ctx)
+	eventResp, err := service.CreateConditionEvent(ctx, TEST_PIID)
 	require.NoError(t, err)
-	catResp, err := service.PostSymptomCategory(ctx, PostSymptomCategoryRequest{Name: "cat"})
+	catResp, err := service.PostSymptomCategory(ctx, TEST_PIID, PostSymptomCategoryRequest{Name: "cat"})
 	require.NoError(t, err)
 	var symptomName = "symptomName"
-	_, err = service.PostCondition(ctx, eventResp.ID, ConditionRequestParams{SymptomName: &symptomName, CategoryID: &catResp.ID})
+	_, err = service.PostCondition(ctx, TEST_PIID, eventResp.ID, ConditionRequestParams{SymptomName: &symptomName, CategoryID: &catResp.ID})
 	require.NoError(t, err)
 
 	// cleanupFood := service.createTestFood(ctx, t)
@@ -28,7 +28,7 @@ func TestGetDiary(t *testing.T) {
 	// cleanupNote := service.createTestNote(ctx, t)
 	// defer cleanupNote(t)
 
-	resp, err = service.GetDiary(ctx)
+	resp, err = service.GetDiary(ctx, TEST_PIID)
 	assert.NoError(t, err)
 	assert.Len(t, resp.Diaries, 1)
 }

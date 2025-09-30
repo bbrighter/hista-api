@@ -12,8 +12,8 @@ type LoginParams struct {
 }
 
 type PermissionResponse struct {
-	User        entity.User                `json:"user"`
-	Permissions []entity.UserAppPermission `json:"permissions"`
+	User        entity.User                  `json:"user"`
+	Permissions entity.UserAppPermissionList `json:"permissions"`
 }
 
 // encore:api private method=POST path=/internal/permissions

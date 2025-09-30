@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"encore.app/users"
-	"encore.dev/types/uuid"
 )
 
 type LoginParams struct {
@@ -25,12 +24,7 @@ func (service *Service) Login(ctx context.Context, params LoginParams) (*LoginRe
 	if err != nil {
 		return &LoginResponse{}, err
 	}
-	var appIds []string
-	var piid uuid.UUID
-	for _, perm := range resp.Permissions {
-		appIds = append(appIds, perm.App)
-		piid = perm.UserProductInstance.ProductInstanceId
-	}
-	signedToken, err := service.g.GenerateToken(params.UserName, resp.User.ID, appIds, piid)
+
+	signedToken, err := service.g.GenerateToken(params.UserName, resp.User.ID, resp.Permissions.ToMap())
 	return &LoginResponse{Token: signedToken}, err
 }

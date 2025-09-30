@@ -6,12 +6,21 @@ import (
 )
 
 type CustomClaims struct {
-	Name   string    `json:"name"`
-	AppIds []string  `json:"appIds"`
-	PIID   uuid.UUID `json:"piid"`
+	UserName         string                 `json:"userName"`
+	ProductInstances []ProductInstanceClaim `json:"productInstances"`
 	jwt.RegisteredClaims
 }
+
+type ProductInstanceClaim struct {
+	PIID   uuid.UUID `json:"piid"`
+	AppIds []string  `json:"appIds"`
+}
+
 type AuthData struct {
+	Instances []AuthProductInstance
+}
+
+type AuthProductInstance struct {
 	AppMapping map[string]bool
 	PIID       uuid.UUID
 }
