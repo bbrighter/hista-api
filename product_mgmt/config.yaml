@@ -1,0 +1,19 @@
+apps:
+  - id: user-management
+    name: User Management
+  - id: headache-diary
+    name: Headache Diary
+  - id: food-diary
+    name: Food Diary
+  - id: symptom-diary
+    name: Symptom Diary
+  - id: pollen
+    name: Pollen
+  - id: daily-status
+    name: Daily status
+
+products:
+  - id: hista-complete
+    name: Hista (Complete)
+    apps: [user-management, headache-diary, food-diary, symptom-diary, pollen, daily-status]
+
