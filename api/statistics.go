@@ -16,7 +16,7 @@ type StatisticParams struct {
 	ToDate   time.Time `json:"toDate"`
 }
 
-// encore:api auth method=GET path=/piid/:piid/statistics/symptoms
+// encore:api auth method=GET path=/piid/:piid/statistics/symptoms tag:external
 func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, piid uuid.UUID, params StatisticParams) (resp entity.FoodStatisticsResponse, err error) {
 	if params.FromDate.IsZero() {
 		return resp, errors.ErrorAttributeMustBeSet("fromDate")
@@ -34,7 +34,7 @@ func (service *Service) GetStatisticsBySymptomIds(ctx context.Context, piid uuid
 	return stats.ToResponse(), err
 }
 
-// encore:api auth method=GET path=/piid/:piid/statistics/ingredients
+// encore:api auth method=GET path=/piid/:piid/statistics/ingredients tag:external
 func (service *Service) GetStatisticsByIngredientsIds(ctx context.Context, piid uuid.UUID, params StatisticParams) (resp entity.SymptomStatisticsResponse, err error) {
 	if params.FromDate.IsZero() {
 		return resp, errors.ErrorAttributeMustBeSet("fromDate")
