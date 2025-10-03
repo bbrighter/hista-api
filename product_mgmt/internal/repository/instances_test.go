@@ -5,8 +5,9 @@ import (
 	"testing"
 
 	"encore.app/product_mgmt/entity"
+	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
+
 	"gorm.io/gorm"
 )
 

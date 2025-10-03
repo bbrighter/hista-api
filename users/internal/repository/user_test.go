@@ -6,10 +6,10 @@ import (
 
 	"encore.app/users/entity"
 	"encore.dev/types/uuid"
+	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
