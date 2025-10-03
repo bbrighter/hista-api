@@ -3,15 +3,22 @@ package entity
 import (
 	"sort"
 	"time"
+
+	"encore.dev/types/uuid"
 )
 
 type Note struct {
 	ID   uint
 	Date time.Time
 	Text string
+	PIID uuid.UUID `gorm:"type:uuid;index"`
 }
 
-type Notes []Note
+func (n *Note) SetPiid(id uuid.UUID) {
+	n.PIID = id
+}
+
+type Notes []*Note
 
 type NotesResp struct {
 	Notes []NoteResp `json:"notes"`
@@ -36,5 +43,9 @@ func (notes Notes) ToResp() NotesResp {
 }
 
 func (note Note) ToResp() NoteResp {
-	return NoteResp(note)
+	return NoteResp{
+		ID:   note.ID,
+		Date: note.Date,
+		Text: note.Text,
+	}
 }

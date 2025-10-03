@@ -4,37 +4,41 @@ import (
 	"testing"
 
 	"encore.app/entity"
+	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func TestGetFood(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	var foods entity.Foods
-	foods = repo.ListFoods(10)
+	foods, err := repo.ListFoods(ctx, 10)
+	assert.NoError(t, err)
 	assert.Len(t, foods, 0)
 
-	repo.db.Create(&entity.Food{ID: 1, MealID: 10})
+	repo.db.Create(&entity.Food{ID: 1, MealID: 10, PIID: uuid.FromStringOrNil(GUID_STR)})
 
-	foods = repo.ListFoods(10)
+	foods, err = repo.ListFoods(ctx, 10)
+	assert.NoError(t, err)
 	assert.Len(t, foods, 1)
 }
 
 func TestCreateFoodByName(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	var err error
-	var meal = entity.Meal{ID: 1}
-	var food = &entity.Food{MealID: 1}
+	var meal = entity.Meal{ID: 1, PIID: uuid.FromStringOrNil(GUID_STR)}
+	var food = &entity.Food{MealID: 1, PIID: uuid.FromStringOrNil(GUID_STR)}
 	repo.db.Create(&meal)
-	err = repo.CreateFoodByName(food, "New name")
+	err = repo.CreateFoodByName(ctx, food, "New name")
 	assert.NoError(t, err)
 	assert.EqualValues(t, 1, food.ID)
 	assert.EqualValues(t, 1, food.Ingredient.ID)
 }
 
 func TestCreateFoodById(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	var err error
 	var food = &entity.Food{
@@ -42,42 +46,60 @@ func TestCreateFoodById(t *testing.T) {
 		IngredientID: 10,
 		Condition:    entity.Cooked,
 	}
-	err = repo.CreateFoodByID(food)
+	err = repo.CreateFoodByID(ctx, food)
 	assert.Error(t, err)
 
 	var meal = entity.Meal{ID: 1}
 	repo.db.Create(&meal)
 	repo.db.Create(&entity.Ingredient{ID: 2})
 	food.IngredientID = 2
-	err = repo.CreateFoodByID(food)
+	err = repo.CreateFoodByID(ctx, food)
 	assert.NoError(t, err)
 	assert.EqualValues(t, 1, food.ID)
 }
 
 func TestDeleteFood(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	var err error
-	err = repo.DeleteFood(1)
+	err = repo.DeleteFood(ctx, 1)
 	assert.Error(t, err)
 
-	var food = entity.Food{ID: 1, Ingredient: entity.Ingredient{ID: 10}}
+	var food = entity.Food{ID: 1, Ingredient: entity.Ingredient{ID: 10, PIID: uuid.FromStringOrNil(GUID_STR)}, PIID: uuid.FromStringOrNil(GUID_STR)}
 	repo.db.Create(&food)
-	err = repo.DeleteFood(1)
+	err = repo.DeleteFood(ctx, 1)
 	assert.NoError(t, err)
+
+	count, _ := gorm.G[entity.Ingredient](repo.db).Count(ctx, "*")
+	assert.EqualValues(t, 0, count)
+}
+
+func TestDeleteFoodKeepsUsedIngredients(t *testing.T) {
+	repo, ctx := initTest(t)
+
+	var food1 = entity.Food{ID: 1, Ingredient: entity.Ingredient{ID: 10, PIID: uuid.FromStringOrNil(GUID_STR)}, PIID: uuid.FromStringOrNil(GUID_STR)}
+	var food2 = entity.Food{ID: 2, Ingredient: entity.Ingredient{ID: 10, PIID: uuid.FromStringOrNil(GUID_STR)}, PIID: uuid.FromStringOrNil(GUID_STR)}
+	err := gorm.G[[]entity.Food](repo.db).Create(ctx, &[]entity.Food{food1, food2})
+	require.NoError(t, err)
+
+	err = repo.DeleteFood(ctx, 1)
+
+	assert.NoError(t, err)
+	count, _ := gorm.G[entity.Ingredient](repo.db).Where("id = 10").Count(ctx, "*")
+	assert.EqualValues(t, 1, count)
 }
 
 func TestChangeFoodCondition(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	var err error
 	var condition = entity.Raw
-	err = repo.ChangeCondition(1, condition)
+	err = repo.ChangeCondition(ctx, 1, condition)
 	assert.Error(t, err)
 
-	var food = entity.Food{ID: 1, Condition: entity.Cooked}
+	var food = entity.Food{ID: 1, Condition: entity.Cooked, PIID: uuid.FromStringOrNil(GUID_STR)}
 	repo.db.Create(&food)
-	err = repo.ChangeCondition(1, condition)
+	err = repo.ChangeCondition(ctx, 1, condition)
 	assert.NoError(t, err)
 }
 

@@ -1,9 +1,24 @@
 package internal
 
 import (
+	"context"
 	"time"
 
 	"encore.app/entity"
+)
+
+type (
+	IStatisticsRepo interface {
+		FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error)
+		FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error)
+		CountFoods(ctx context.Context, symptomIds []uint) ([]entity.CountResult, error)
+		CountSymptoms(ctx context.Context, ingredientIds []uint) ([]entity.CountResult, error)
+	}
+
+	IStatisticsUseCase interface {
+		FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error)
+		FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error)
+	}
 )
 
 type StatisticsUseCase struct {
@@ -14,16 +29,19 @@ func NewStatisticsUseCase(repo IStatisticsRepo) StatisticsUseCase {
 	return StatisticsUseCase{repo: repo}
 }
 
-func (uc StatisticsUseCase) FindSymptomsForFoods(fromDate time.Time, toDate time.Time, ingredientIds []uint) (results entity.FoodResults, err error) {
-	results, err = uc.repo.FindSymptomsForFoods(fromDate, toDate, ingredientIds)
+func (uc StatisticsUseCase) FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (results entity.FoodResults, err error) {
+	results, err = uc.repo.FindSymptomsForFoods(ctx, fromDate, toDate, ingredientIds)
 	if err != nil {
-		return results, err
+		return results, errorMapper(err)
 	}
 	var ids []uint
 	for _, r := range results {
 		ids = append(ids, r.SymptomID)
 	}
-	counts := uc.repo.CountSymptoms(ids)
+	counts, err := uc.repo.CountSymptoms(ctx, ids)
+	if err != nil {
+		return entity.FoodResults{}, errorMapper(err)
+	}
 	for i, r := range results {
 		for _, count := range counts {
 			if count.ID == r.SymptomID {
@@ -31,18 +49,21 @@ func (uc StatisticsUseCase) FindSymptomsForFoods(fromDate time.Time, toDate time
 			}
 		}
 	}
-	return results, err
+	return results, errorMapper(err)
 }
-func (uc StatisticsUseCase) FindFoodForSymptoms(fromDate time.Time, toDate time.Time, symptomIds []uint) (results entity.SymptomResults, err error) {
-	results, err = uc.repo.FindFoodForSymptoms(fromDate, toDate, symptomIds)
+func (uc StatisticsUseCase) FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (results entity.SymptomResults, err error) {
+	results, err = uc.repo.FindFoodForSymptoms(ctx, fromDate, toDate, symptomIds)
 	if err != nil {
-		return results, err
+		return results, errorMapper(err)
 	}
 	var ids []uint
 	for _, r := range results {
 		ids = append(ids, r.IngredientID)
 	}
-	counts := uc.repo.CountFoods(ids)
+	counts, err := uc.repo.CountFoods(ctx, ids)
+	if err != nil {
+		return entity.SymptomResults{}, errorMapper(err)
+	}
 	for i, r := range results {
 		for _, count := range counts {
 			if count.ID == r.IngredientID {
@@ -50,5 +71,5 @@ func (uc StatisticsUseCase) FindFoodForSymptoms(fromDate time.Time, toDate time.
 			}
 		}
 	}
-	return results, err
+	return results, errorMapper(err)
 }

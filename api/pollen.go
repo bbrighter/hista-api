@@ -5,10 +5,11 @@ import (
 
 	entity "encore.app/entity"
 	"encore.dev/cron"
+	"encore.dev/types/uuid"
 )
 
-// encore:api auth method=GET path=/pollen
-func (service *Service) GetPollens(ctx context.Context) (entity.PollenEventsResponse, error) {
+// encore:api auth method=GET path=/piid/:piid/pollen tag:external
+func (service *Service) ListPollens(ctx context.Context, piid uuid.UUID) (entity.PollenEventsResponse, error) {
 	events := service.pollens.List()
 	return events.ToResponse(), nil
 }

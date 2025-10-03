@@ -4,33 +4,106 @@
 		{
 			"type": "shell",
 			"label": "OpenApi Spec",
-			"command": "encore gen client -l typescript -e local -o C:\\Users\\Test\\Documents\\Code\\hista-ui\\src\\api\\generatedApi.ts",
+			"command": "encore",
+			"args": [
+				"gen",
+				"client",
+				"-l",
+				"typescript",
+				"-e",
+				"local",
+				"-o",
+				"C:\\Users\\Test\\Documents\\Code\\hista-ui\\src\\api\\generatedApi.ts",
+			],
+			"icon": {
+				"id": "broadcast"
+			},
+			"group": "build",
 		},
 		{
 			"type": "shell",
 			"label": "Run in debug mode",
-			"command": "encore run --debug",
+			"command": "encore",
+			"args": [
+				"run",
+				"--debug"
+			],
+			"icon": {
+				"id": "debug-alt"
+			},
 		},
 		{
 			"type": "shell",
 			"label": "Test",
-			"command": "encore test ./...",
+			"command": "encore",
+			"args": [
+				"test",
+				"./...",
+			],
 			"group": "test",
+			"icon": {
+				"id": "beaker"
+			}
 		},
 		{
 			"type": "shell",
-			"label": "Atlas migration",
-			"command": "sh C:/Users/Test/go/src/github.com/bbrighter/hista-api/scripts/generate-migration ${input:migrationName}",
+			"label": "Atlas: migrate api",
+			"command": "sh",
+			"args": [
+				"${workspaceFolder}/api/scripts/generate-migration",
+				" ${input:migrationName}",
+			],
+			"icon": {
+				"id": "arrow-circle-up"
+			}
 		},
 		{
 			"type": "shell",
-			"label": "Atlas inspect",
-			"command": "atlas schema inspect -w --env local --url 'env://src' --dev-url 'postgresql://hista-api-dpc2:shadow-coglfj3nlv8jiu6322e0@127.0.0.1:9500/hista_db?sslmode=disable&search_path=public'"
+			"label": "Atlas: migrate users",
+			"command": "sh",
+			"args": [
+				"${workspaceFolder}/users/scripts/generate-migration",
+				"${input:migrationName}",
+			],
+			"icon": {
+				"id": "arrow-circle-up"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "Atlas: migrate product mgmt",
+			"command": "sh",
+			"args": [
+				"${workspaceFolder}/product_mgmt/scripts/generate-migration",
+				"${input:migrationName}",
+			],
+			"icon": {
+				"id": "arrow-circle-up"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "Atlas: inspect",
+			"command": "atlas",
+			"args": [
+				"schema",
+				"inspect",
+				"-w",
+				"--env",
+				"local",
+				"--url",
+				"'env://src'",
+				"--dev-url",
+				"'postgresql://hista-api-dpc2:shadow-coglfj3nlv8jiu6322e0@127.0.0.1:9500/hista_db?sslmode=disable&search_path=public'"
+			]
 		},
 		{
 			"type": "shell",
 			"label": "Run",
 			"command": "encore run",
+			"icon": {
+				"id": "run"
+			}
 		},
 		{
 			"type": "shell",
@@ -39,17 +112,47 @@
 		},
 		{
 			"type": "shell",
-			"label": "Update hash for migrations",
+			"label": "Update hash for migrations (hista)",
 			"command": "atlas migrate hash",
 			"options": {
 				"cwd": "${workspaceFolder}/api",
+			},
+		},
+		{
+			"type": "shell",
+			"label": "Update hash for migrations (users)",
+			"command": "atlas migrate hash",
+			"options": {
+				"cwd": "${workspaceFolder}/users",
+			}
+		},
+		{
+			"type": "shell",
+			"label": "Update hash for migrations (product_mgmt)",
+			"command": "atlas migrate hash",
+			"options": {
+				"cwd": "${workspaceFolder}/product_mgmt",
+			},
+		},
+		{
+			"label": "Update hash for all migrations",
+			"dependsOn": [
+				"Update hash for migrations (hista)",
+				"Update hash for migrations (product_mgmt)",
+				"Update hash for migrations (users)"
+			],
+			"dependsOrder": "parallel", // run one after another (default is parallel)
+			"icon": {
+				"id": "discard"
 			}
 		},
 		{
 			"type": "shell",
 			"label": "Detect deadcode",
 			"command": "deadcode .",
-			"icon": {"id": "broadcast"}
+			"icon": {
+				"id": "code"
+			}
 		}
 	],
 	"inputs": [

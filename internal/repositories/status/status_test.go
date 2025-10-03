@@ -1,37 +1,39 @@
 package status
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"encore.app/entity"
+	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
-func initTest(t *testing.T) *StatusRepo {
+var GUID = uuid.FromStringOrNil("cf0d4408-8db5-4572-b5d9-4ed873d1341f")
+
+func initTest(t *testing.T) (*StatusRepo, context.Context) {
 	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	assert.NoError(t, err)
 	db.Exec("PRAGMA foreign_keys = ON")
 	err = db.AutoMigrate(
 		&entity.Status{},
-		&entity.MorningStatus{},
-		&entity.EveningStatus{},
 	)
 	assert.NoError(t, err)
-	return NewStatusRepo(db)
+	ctx := context.WithValue(t.Context(), "piid", GUID)
+	return NewStatusRepo(db), ctx
 }
 
 func TestFirst(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	morningFitness := 3
-	repo.db.Create(&entity.Status{Date: time.Now(), MorningFitness: &morningFitness})
-	var status = &entity.Status{ID: 1}
-	err := repo.First(status)
+	repo.db.Create(&entity.Status{Date: time.Now(), MorningFitness: &morningFitness, PIID: GUID})
+	status, err := repo.First(ctx, 1)
 	assert.NoError(t, err)
-	assert.Equal(t, &morningFitness, status.MorningFitness)
+	assert.EqualValues(t, &morningFitness, status.MorningFitness)
 }
 
 func TestCreate(t *testing.T) {
@@ -46,10 +48,10 @@ func TestCreate(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			repo := initTest(t)
-			var status = &entity.Status{Date: time.Now(), MorningFitness: &test.morningFitness, EveningFitness: &test.eveningFitness}
+			repo, ctx := initTest(t)
+			var status = &entity.Status{Date: time.Now(), MorningFitness: &test.morningFitness, EveningFitness: &test.eveningFitness, PIID: GUID}
 
-			err := repo.Create(status)
+			err := repo.Create(ctx, status)
 			assert.NoError(t, err)
 			var result entity.Status
 			repo.db.First(&result)
@@ -78,16 +80,16 @@ func TestUpdateStatus(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			repo := initTest(t)
+			repo, ctx := initTest(t)
 			morningFitness := 1
 			eveningFitness := 5
-			var status = &entity.Status{Date: initDate, MorningFitness: &morningFitness, EveningFitness: &eveningFitness}
-			repo.Create(status)
+			var status = &entity.Status{Date: initDate, MorningFitness: &morningFitness, EveningFitness: &eveningFitness, PIID: GUID}
+			repo.Create(ctx, status)
 
 			status.MorningFitness = test.morningFitness
 			status.EveningFitness = test.eveningFitness
 			status.Date = test.date
-			err := repo.Update(status)
+			err := repo.Update(ctx, status)
 			assert.NoError(t, err)
 
 			var result entity.Status
@@ -112,26 +114,27 @@ func TestUpdateStatus(t *testing.T) {
 }
 
 func TestFind(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	var statuses []entity.Status
-	statuses = repo.Find()
+	statuses, err := repo.Find(ctx)
+	assert.NoError(t, err)
 	assert.Len(t, statuses, 0)
 
-	status := entity.Status{Date: time.Now()}
+	status := entity.Status{Date: time.Now(), PIID: GUID}
 	repo.db.Create(&status)
-	statuses = repo.Find()
+	statuses, err = repo.Find(ctx)
+	assert.NoError(t, err)
 	assert.Len(t, statuses, 1)
 }
 
 func TestDelete(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
 	morningFitness := 1
-	status := &entity.Status{Date: time.Now(), MorningFitness: &morningFitness}
+	status := &entity.Status{Date: time.Now(), MorningFitness: &morningFitness, PIID: GUID}
 	err := repo.db.Create(status).Error
 	assert.NoError(t, err)
-	err = repo.Delete(status)
+	err = repo.Delete(ctx, status.ID)
 	assert.NoError(t, err)
 
 	var rows int64
@@ -142,19 +145,18 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteNotFound(t *testing.T) {
-	repo := initTest(t)
-	status := &entity.Status{ID: 1}
-	err := repo.Delete(status)
-	assert.EqualError(t, err, "not_found: not found")
+	repo, ctx := initTest(t)
+	err := repo.Delete(ctx, 1)
+	assert.ErrorIs(t, err, gorm.ErrRecordNotFound)
 }
 
 func TestFindForDate(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	status := &entity.Status{ID: 1, Date: time.Now()}
+	status := &entity.Status{ID: 1, Date: time.Now(), PIID: GUID}
 	repo.db.Create(status)
 
-	found, exists := repo.FindForDate(time.Now())
+	found, exists := repo.FindForDate(ctx, time.Now())
 	assert.True(t, exists)
 	assert.EqualValues(t, 1, found.ID)
 }

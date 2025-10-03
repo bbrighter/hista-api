@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestGetStatisticsBySymptomIds(t *testing.T) {
@@ -14,16 +15,14 @@ func TestGetStatisticsBySymptomIds(t *testing.T) {
 	to := time.Now().Add(time.Hour)
 
 	ids := []uint{1}
-	_, err := service.GetStatisticsBySymptomIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
+	_, err := service.GetStatisticsBySymptomIds(ctx, TEST_PIID, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)
 
-	cleanupFood := service.createTestFood(t)
-	defer cleanupFood(t)
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
-	ids = append(ids, testSymptom.ID)
+	service.createTestFood(ctx, t)
+	_, symptomId, _ := service.createTestSymptom(ctx, t)
+	ids = append(ids, symptomId)
 
-	resp, err := service.GetStatisticsBySymptomIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
+	resp, err := service.GetStatisticsBySymptomIds(ctx, TEST_PIID, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)
 	assert.Len(t, resp.Statistics, 1)
 	stat := resp.Statistics[0]
@@ -40,18 +39,16 @@ func TestGetStatisticsByIngredientsIds(t *testing.T) {
 	to := time.Now().Add(time.Hour)
 
 	ids := []uint{1}
-	_, err := service.GetStatisticsByIngredientsIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
+	_, err := service.GetStatisticsByIngredientsIds(ctx, TEST_PIID, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)
 
-	cleanupFood := service.createTestFood(t)
-	defer cleanupFood(t)
-	cleanup := service.createTestSymptom(t)
-	defer cleanup(t)
-	ids = append(ids, testFood.IngredientID)
+	_, ingredientId := service.createTestFood(ctx, t)
+	service.createTestSymptom(ctx, t)
+	ids = append(ids, ingredientId)
 
-	resp, err := service.GetStatisticsByIngredientsIds(ctx, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
+	resp, err := service.GetStatisticsByIngredientsIds(ctx, TEST_PIID, StatisticParams{IDs: ids, FromDate: from, ToDate: to})
 	assert.NoError(t, err)
-	assert.Len(t, resp.Statistics, 1)
+	require.Len(t, resp.Statistics, 1)
 	stat := resp.Statistics[0]
 	assert.EqualValues(t, 1, stat.Count)
 	assert.EqualValues(t, 1, stat.Hours1)

@@ -3,6 +3,8 @@ package entity
 import (
 	"sort"
 	"time"
+
+	"encore.dev/types/uuid"
 )
 
 type Freshness uint8
@@ -19,10 +21,15 @@ type Meal struct {
 	Freshness   Freshness
 	StressLevel uint8
 	IsAlone     bool
-	Foods       []Food `gorm:"constraint:OnDelete:CASCADE"`
+	Foods       []Food    `gorm:"constraint:OnDelete:CASCADE"`
+	PIID        uuid.UUID `gorm:"type:uuid;index"`
 }
 
-type Meals []Meal
+func (m *Meal) SetPiid(id uuid.UUID) {
+	m.PIID = id
+}
+
+type Meals []*Meal
 
 type Food struct {
 	ID           uint
@@ -30,8 +37,15 @@ type Food struct {
 	IngredientID uint
 	Condition    FoodCondition
 	MealID       uint
+	PIID         uuid.UUID `gorm:"type:uuid;index"`
 }
-type Foods []Food
+
+func (f *Food) SetPiid(id uuid.UUID) {
+	f.PIID = id
+}
+
+type Foods []*Food
+type NonPtFoods []Food
 
 type FoodCondition string
 
@@ -42,10 +56,15 @@ const (
 
 type Ingredient struct {
 	ID   uint
-	Name string `gorm:"uniqueIndex"`
+	Name string    `gorm:"uniqueIndex"`
+	PIID uuid.UUID `gorm:"type:uuid;index"`
 }
 
-type Ingredients []Ingredient
+func (i *Ingredient) SetPiid(id uuid.UUID) {
+	i.PIID = id
+}
+
+type Ingredients []*Ingredient
 
 type MealMetaResponse struct {
 	ID   uint      `json:"id"`
@@ -88,8 +107,11 @@ type IngredientsResponse struct {
 	Ingredients []IngredientResponse `json:"ingredients"`
 }
 
-func (ingredient Ingredient) ToIngredientResponse() IngredientResponse {
-	return IngredientResponse(ingredient)
+func (i Ingredient) ToIngredientResponse() IngredientResponse {
+	return IngredientResponse{
+		ID:   i.ID,
+		Name: i.Name,
+	}
 }
 
 func (ingredients Ingredients) ToIngredientsResponse() IngredientsResponse {
@@ -106,6 +128,14 @@ func (food Food) ToFoodResponse() FoodResponse {
 		Ingredient: food.Ingredient.ToIngredientResponse(),
 		Condition:  food.Condition,
 	}
+}
+
+func (foods NonPtFoods) ToFoodsResponse() []FoodResponse {
+	var foodsResponse = []FoodResponse{}
+	for _, f := range foods {
+		foodsResponse = append(foodsResponse, f.ToFoodResponse())
+	}
+	return foodsResponse
 }
 
 func (foods Foods) ToFoodsResponse() []FoodResponse {
@@ -127,7 +157,7 @@ func (meal Meal) ToMealResponse() MealResponse {
 	var resp = MealResponse{
 		ID:          meal.ID,
 		Date:        meal.Date,
-		Foods:       Foods(meal.Foods).ToFoodsResponse(),
+		Foods:       NonPtFoods(meal.Foods).ToFoodsResponse(),
 		Freshness:   meal.Freshness,
 		StressLevel: meal.StressLevel,
 		IsAlone:     meal.IsAlone,

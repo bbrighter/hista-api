@@ -8,18 +8,21 @@ import (
 )
 
 func TestListCategories(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	cats := repo.ListCategories()
+	cats, err := repo.ListCategories(ctx)
+	assert.NoError(t, err)
 	assert.Len(t, cats, 0)
 
 	repo.db.Create(&entity.SymptomCategory{
 		Name: "cat",
+		PIID: GUID,
 		Symptoms: []entity.Symptom{
-			{Name: "symptom"},
+			{Name: "symptom", PIID: GUID},
 		},
 	})
-	cats = repo.ListCategories()
+	cats, err = repo.ListCategories(ctx)
+	assert.NoError(t, err)
 	assert.Len(t, cats, 1)
 	assert.Equal(t, "cat", cats[0].Name)
 	assert.Len(t, cats[0].Symptoms, 1)
@@ -27,27 +30,43 @@ func TestListCategories(t *testing.T) {
 }
 
 func TestCreateCategory(t *testing.T) {
-	repo := initTest(t)
-
-	var cat = &entity.SymptomCategory{Name: "cat"}
-	err := repo.CreateCategory(cat)
-	assert.NoError(t, err)
-	assert.EqualValues(t, 1, cat.ID)
+	tests := map[string]struct {
+		catNameExistsAlready bool
+		expectError          bool
+	}{
+		"ok":           {},
+		"ok and exits": {catNameExistsAlready: true},
+	}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			repo, ctx := initTest(t)
+			if test.catNameExistsAlready {
+				repo.CreateCategory(ctx, "cat")
+			}
+			id, err := repo.CreateCategory(ctx, "cat")
+			if test.expectError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Greater(t, id, uint(0))
+			}
+		})
+	}
 }
 
 func TestRenameCategory(t *testing.T) {
-	repo := initTest(t)
+	repo, ctx := initTest(t)
 
-	var cat = &entity.SymptomCategory{ID: 1, Name: "cat"}
+	var cat = &entity.SymptomCategory{ID: 1, Name: "cat", PIID: GUID}
 	err := repo.db.Create(cat).Error
 	assert.NoError(t, err)
 
-	err = repo.RenameCategory(cat, "new name")
+	err = repo.RenameCategory(ctx, cat, "new name")
 	assert.NoError(t, err)
 	assert.Equal(t, "new name", cat.Name)
 
-	var nonExistingCat = &entity.SymptomCategory{ID: 100, Name: "cat"}
-	err = repo.RenameCategory(nonExistingCat, "new name")
+	var nonExistingCat = &entity.SymptomCategory{ID: 100, Name: "cat", PIID: GUID}
+	err = repo.RenameCategory(ctx, nonExistingCat, "new name")
 	assert.Error(t, err)
 }
 
@@ -58,20 +77,21 @@ func TestDeleteCategory(t *testing.T) {
 		expectedError string
 	}{
 		"ok":                      {catId: 1},
-		"not found":               {catId: 100, expectedError: "not_found: not found"},
-		"symptoms block deleting": {catId: 1, symptoms: []entity.Symptom{{Name: "symptom"}}, expectedError: "failed_precondition: cannot delete category with symptoms"},
+		"not found":               {catId: 100, expectedError: "record not found"},
+		"symptoms block deleting": {catId: 1, symptoms: []entity.Symptom{{Name: "symptom", PIID: GUID}}, expectedError: "cannot delete category with symptoms"},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			repo := initTest(t)
+			repo, ctx := initTest(t)
 			err := repo.db.Create(&entity.SymptomCategory{
 				ID:       1,
 				Symptoms: test.symptoms,
+				PIID:     GUID,
 			}).Error
 			assert.NoError(t, err)
 
-			err = repo.DeleteCategory(test.catId)
+			err = repo.DeleteCategory(ctx, test.catId)
 			if test.expectedError != "" {
 				assert.Error(t, err)
 				assert.EqualError(t, err, test.expectedError)

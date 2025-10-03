@@ -6,6 +6,7 @@ import (
 	"encore.app/internal"
 	"encore.app/internal/repositories/headaches"
 	"encore.app/internal/repositories/meals"
+	"encore.app/internal/repositories/move"
 	"encore.app/internal/repositories/notes"
 	"encore.app/internal/repositories/pollen"
 	"encore.app/internal/repositories/statistics"
@@ -31,6 +32,7 @@ type Service struct {
 	pollens         internal.IPollenUseCase
 	status          internal.IStatusUseCase
 	headaches       internal.IHeadacheUseCase
+	move            internal.PiidMover
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -57,6 +59,10 @@ func initService() (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
+	return initServiceWithDb(db), nil
+}
+
+func initServiceWithDb(db *gorm.DB) *Service {
 	mealRepo := meals.NewMealRepository(db)
 	symptomRepo := symptoms.NewSymptomsRepo(db)
 	noteRepo := notes.NewNotesRepository(db)
@@ -65,6 +71,7 @@ func initService() (*Service, error) {
 	dwdRepo := pollen.NewDWDRepo()
 	statusRepo := status.NewStatusRepo(db)
 	headacheRepo := headaches.NewHeadacheRepository(db)
+	moveRepo := move.NewMoveRepo(db)
 
 	return &Service{
 		DB:              db,
@@ -80,5 +87,6 @@ func initService() (*Service, error) {
 		pollens:         internal.NewPollenUseCase(pollenRepo, dwdRepo),
 		status:          internal.NewStatusUseCase(statusRepo),
 		headaches:       internal.NewHeadacheUseCase(headacheRepo),
-	}, nil
+		move:            internal.NewPiidMoveUseCase(moveRepo),
+	}
 }

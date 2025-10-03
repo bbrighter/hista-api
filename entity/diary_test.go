@@ -12,14 +12,14 @@ func TestCreateRawDiary(t *testing.T) {
 
 	now := time.Now()
 
-	meals := Meals{Meal{
+	meals := Meals{&Meal{
 		Date: now,
 		Foods: []Food{{
 			Condition: Cooked,
 			Ingredient: Ingredient{
 				Name: "Ingredient",
 			}}}}}
-	events := ConditionEvents{ConditionEvent{
+	events := ConditionEvents{&ConditionEvent{
 		ID:   1,
 		Date: now.Add(-time.Second),
 		Conditions: []Condition{{
@@ -28,11 +28,11 @@ func TestCreateRawDiary(t *testing.T) {
 				Name:              "Symptom",
 				SymptomCategoryID: 1,
 			}}}}}
-	cats := SymptomCategories{SymptomCategory{
+	cats := SymptomCategories{&SymptomCategory{
 		ID:   1,
 		Name: "Category",
 	}}
-	notes := Notes{Note{
+	notes := Notes{&Note{
 		Text: "Note",
 		Date: now.Add(-2 * time.Second)}}
 	pollens := PollenEvents{PollenEvent{

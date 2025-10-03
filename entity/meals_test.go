@@ -20,8 +20,8 @@ func TestToIngredientResponse(t *testing.T) {
 
 func TestToIngredientsResponse(t *testing.T) {
 	t.Parallel()
-	var ingredient1 = Ingredient{ID: 1, Name: "Name"}
-	var ingredient2 = Ingredient{ID: 2, Name: "Name 2"}
+	var ingredient1 = &Ingredient{ID: 1, Name: "Name"}
+	var ingredient2 = &Ingredient{ID: 2, Name: "Name 2"}
 	var ingredients = Ingredients{ingredient1, ingredient2}
 	var resp IngredientsResponse = ingredients.ToIngredientsResponse()
 	assert.Len(t, resp.Ingredients, 2)
@@ -48,7 +48,7 @@ func TestFoodToFoodResponse(t *testing.T) {
 
 func TestFoodsToFoodsResponse(t *testing.T) {
 	t.Parallel()
-	var food1 = Food{
+	var food1 = &Food{
 		ID:           1,
 		Ingredient:   Ingredient{ID: 10, Name: "Name"},
 		IngredientID: 10,

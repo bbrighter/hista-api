@@ -1,44 +1,67 @@
 package meals
 
 import (
+	"context"
 	"time"
 
 	"encore.app/entity"
 	"encore.app/errors"
-	"encore.dev/beta/errs"
+	"encore.app/generic_queries"
 	"gorm.io/gorm"
 )
 
-func (repo *MealRepository) ListMeals() entity.Meals {
-	var meals entity.Meals
-	repo.db.Find(&meals)
-	return meals
+func (repo *MealRepository) ListMeals(ctx context.Context) ([]*entity.Meal, error) {
+	return generic_queries.List[*entity.Meal](ctx, repo.db)
 }
 
-func (repo *MealRepository) CreateMeal(meal *entity.Meal) error {
-	err := repo.db.Create(meal).Error
-	return err
+func (repo *MealRepository) CreateMeal(ctx context.Context, meal *entity.Meal) error {
+	return generic_queries.Create(ctx, repo.db, meal)
 }
 
-func (repo *MealRepository) GetMeal(id uint) (entity.Meal, error) {
-	var meal = entity.Meal{ID: id}
-	if repo.db.Preload("Foods.Ingredient").Preload("Foods").Find(&meal).RowsAffected == 0 {
-		return meal, &errs.Error{Code: errs.NotFound}
+func (repo *MealRepository) GetMeal(ctx context.Context, id uint) (entity.Meal, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return entity.Meal{}, err
 	}
-	return meal, nil
+	meal, err := gorm.G[entity.Meal](repo.db).Where("pi_id = ?", piid).Preload("Foods.Ingredient", nil).Preload("Foods", nil).First(ctx)
+	return meal, err
 }
 
-func (repo *MealRepository) DeleteMeal(id uint) error {
-	var meal = entity.Meal{ID: id}
-	tx := repo.db.Delete(&meal)
-	if tx.RowsAffected == 0 {
-		return errors.ErrorNotFound
+func (repo *MealRepository) DeleteMeal(ctx context.Context, id uint) error {
+	meal, err := repo.GetMeal(ctx, id)
+	if err != nil {
+		return err
 	}
-	return tx.Error
+	repo.db.Transaction(func(tx *gorm.DB) error {
+		var foodIds []uint
+		for _, f := range meal.Foods {
+			foodIds = append(foodIds, f.ID)
+		}
+		_, err := gorm.G[entity.Food](tx).Where("id IN ?", foodIds).Delete(ctx)
+		if err != nil {
+			return err
+		}
+
+		unusedIngredients, err := gorm.G[entity.Ingredient](tx).
+			Where("pi_id = ?", meal.PIID).
+			Where("NOT EXISTS (SELECT 1 FROM foods WHERE foods.ingredient_id = ingredients.id)").
+			Find(ctx)
+
+		var ingredientIds []uint
+		for _, i := range unusedIngredients {
+			ingredientIds = append(ingredientIds, i.ID)
+		}
+		_, err = gorm.G[entity.Ingredient](tx).Where("id IN ? ", ingredientIds).Delete(ctx)
+
+		return err
+	})
+
+	return generic_queries.Delete[*entity.Meal](ctx, repo.db, id)
 }
 
 // PatchMeal a meal with parameters. Only given parameters are patched.
 func (repo *MealRepository) PatchMeal(
+	ctx context.Context,
 	id uint,
 	date *time.Time,
 	freshness *entity.Freshness,
@@ -46,7 +69,11 @@ func (repo *MealRepository) PatchMeal(
 	isAlone *bool,
 ) error {
 	var meal entity.Meal
-	if rows := repo.db.First(&meal, &entity.Meal{ID: id}).RowsAffected; rows == 0 {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	if rows := repo.db.Where("pi_id = ?", piid).First(&meal, &entity.Meal{ID: id}).RowsAffected; rows == 0 {
 		return errors.ErrorNotFound
 	}
 	tx := repo.db.Model(&entity.Meal{ID: meal.ID})
@@ -70,18 +97,23 @@ func (repo *MealRepository) PatchMeal(
 	return tx.Updates(updates).Error
 }
 
-func GetMealsAndDependencies(db *gorm.DB) (entity.Meals, error) {
-	var meals entity.Meals
-	var err error = db.Preload("Foods.Ingredient").
-		Preload("Foods").
-		Find(&meals).Error
-	return meals, err
-}
+// func GetMealsAndDependencies(db *gorm.DB) (entity.Meals, error) {
+// 	var meals entity.Meals
+// 	var err error = db.Preload("Foods.Ingredient").
+// 		Preload("Foods").
+// 		Find(&meals).Error
+// 	return meals, err
+// }
 
-func (repo *MealRepository) ListMealsWithDependencies() entity.Meals {
+func (repo *MealRepository) ListMealsWithDependencies(ctx context.Context) (entity.Meals, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return entity.Meals{}, err
+	}
 	var meals entity.Meals
-	repo.db.Preload("Foods.Ingredient").
+	tx := repo.db.Preload("Foods.Ingredient").
+		Where("pi_id = ?", piid).
 		Preload("Foods").
 		Find(&meals)
-	return meals
+	return meals, tx.Error
 }

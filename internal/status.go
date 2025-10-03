@@ -1,26 +1,26 @@
 package internal
 
 import (
-	"errors"
+	"context"
 	"time"
 
 	"encore.app/entity"
+	"encore.dev/beta/errs"
 )
 
 type IStatusRepo interface {
-	Find() entity.Statuses
-	First(*entity.Status) error
-	Create(*entity.Status) error
-	Update(*entity.Status) error
-	Delete(*entity.Status) error
-	FindForDate(time.Time) (entity.Status, bool)
+	Find(ctx context.Context) ([]*entity.Status, error)
+	Create(ctx context.Context, status *entity.Status) error
+	Update(ctx context.Context, status *entity.Status) error
+	Delete(ctx context.Context, id uint) error
+	FindForDate(ctx context.Context, date time.Time) (entity.Status, bool)
 }
 
 type IStatusUseCase interface {
-	Find() entity.Statuses
-	Create(time.Time) (entity.Status, error)
-	Delete(id uint) error
-	Update(statusId uint, date time.Time, morning entity.MorningStatus, evening entity.EveningStatus) error
+	Find(ctx context.Context) (entity.Statuses, error)
+	Create(ctx context.Context, date time.Time) (entity.Status, error)
+	Delete(ctx context.Context, id uint) error
+	Update(ctx context.Context, statusId uint, date time.Time, morning entity.MorningStatus, evening entity.EveningStatus) error
 }
 
 type StatusUseCase struct {
@@ -31,21 +31,23 @@ func NewStatusUseCase(repo IStatusRepo) StatusUseCase {
 	return StatusUseCase{repo: repo}
 }
 
-func (uc StatusUseCase) Find() entity.Statuses {
-	return uc.repo.Find()
+func (uc StatusUseCase) Find(ctx context.Context) (entity.Statuses, error) {
+	statuses, err := uc.repo.Find(ctx)
+	return statuses, errorMapper(err)
 }
 
-func (uc StatusUseCase) Create(date time.Time) (entity.Status, error) {
-	_, exists := uc.repo.FindForDate(date)
+func (uc StatusUseCase) Create(ctx context.Context, date time.Time) (entity.Status, error) {
+	_, exists := uc.repo.FindForDate(ctx, date)
 	if exists {
-		return entity.Status{}, errors.New("status for date already exists")
+		return entity.Status{}, &errs.Error{Code: errs.AlreadyExists, Message: "already exists"}
 	}
 	status := entity.Status{Date: date}
-	uc.repo.Create(&status)
-	return status, nil
+	err := uc.repo.Create(ctx, &status)
+	return status, errorMapper(err)
 }
 
 func (uc StatusUseCase) Update(
+	ctx context.Context,
 	statusId uint,
 	date time.Time,
 	morning entity.MorningStatus,
@@ -58,11 +60,10 @@ func (uc StatusUseCase) Update(
 		EveningFitness: evening.Fitness,
 		MorningSleep:   morning.Sleep,
 	}
-	return uc.repo.Update(status)
+	return errorMapper(uc.repo.Update(ctx, status))
 
 }
 
-func (uc StatusUseCase) Delete(id uint) error {
-	var status = entity.Status{ID: id}
-	return uc.repo.Delete(&status)
+func (uc StatusUseCase) Delete(ctx context.Context, id uint) error {
+	return errorMapper(uc.repo.Delete(ctx, id))
 }
