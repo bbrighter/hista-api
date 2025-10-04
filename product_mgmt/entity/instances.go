@@ -11,17 +11,6 @@ type ProductInstance struct {
 
 type ProductInstances []ProductInstance
 
-type Product struct {
-	ID   string `yaml:"id" json:"id"`
-	Name string `yaml:"name" json:"name"`
-	Apps []App  `yaml:"apps" json:"apps"`
-}
-
-type App struct {
-	ID   string `yaml:"id" json:"id"`
-	Name string `yaml:"name" json:"name"`
-}
-
 type ProductInstanceResponse struct {
 	ID      uuid.UUID `json:"id"`
 	Name    string    `json:"name"`

@@ -7,7 +7,6 @@ require (
 	ariga.io/atlas-provider-gorm v0.5.6
 	encore.dev v1.48.13
 	github.com/glebarez/sqlite v1.11.0
-	github.com/goccy/go-yaml v1.18.0
 	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/crypto v0.42.0

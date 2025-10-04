@@ -12,8 +12,8 @@ type ProductRepo struct {
 	products []entity.Product
 }
 
-func NewProductRepo(config Config) *ProductRepo {
-	return &ProductRepo{apps: config.Apps, products: config.Products}
+func NewProductRepo(products []entity.Product, apps []entity.App) *ProductRepo {
+	return &ProductRepo{apps: apps, products: products}
 }
 
 func (r ProductRepo) ListProducts() []entity.Product {
