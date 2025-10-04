@@ -23,11 +23,10 @@ func initTestService(t *testing.T) *Service {
 	}))
 
 	app1 := entity.App{ID: "app1", Name: "App 1"}
-	config := repository.Config{
-		Products: []entity.Product{{ID: "product-id", Name: "Product Name", Apps: []entity.App{app1}}},
-		Apps:     []entity.App{app1},
-	}
-	p := repository.NewProductRepo(config)
+	products := []entity.Product{{ID: "product-id", Name: "Product Name", Apps: []entity.App{app1}}}
+	apps := []entity.App{app1}
+
+	p := repository.NewProductRepo(products, apps)
 	i := repository.NewInstanceRepo(db)
 
 	instance := internal.NewInstanceUseCase(i, p)

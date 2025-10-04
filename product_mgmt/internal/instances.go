@@ -35,22 +35,22 @@ func NewInstanceUseCase(is ProductInstanceStoreRepo, pf ProductFinderRepo) Insta
 
 func (uc InstanceUseCase) Create(ctx context.Context, name string, productId string) (uuid.UUID, error) {
 	if _, err := uc.pf.Find(productId); err != nil {
-		return uuid.UUID{}, err
+		return uuid.UUID{}, errors.MapError(err)
 	}
 
 	instance, err := uc.is.Create(ctx, name, productId)
-	return instance.ID, err
+	return instance.ID, errors.MapError(err)
 }
 
 func (uc InstanceUseCase) Find(ctx context.Context, id uuid.UUID) (entity.ProductInstance, error) {
 	instance, err := uc.is.Find(ctx, id)
 	if err != nil {
-		return entity.ProductInstance{}, err
+		return entity.ProductInstance{}, errors.MapError(err)
 	}
 
 	product, err := uc.pf.Find(instance.ProductId)
 	if err != nil {
-		return entity.ProductInstance{}, err
+		return entity.ProductInstance{}, errors.MapError(err)
 	}
 	instance.Product = product
 	return instance, nil
@@ -58,5 +58,13 @@ func (uc InstanceUseCase) Find(ctx context.Context, id uuid.UUID) (entity.Produc
 
 func (uc InstanceUseCase) List(ctx context.Context) (entity.ProductInstances, error) {
 	instances, err := uc.is.List(ctx)
+	for i, inst := range instances {
+		prod, err := uc.pf.Find(inst.ProductId)
+		if err != nil {
+			return entity.ProductInstances{}, errors.MapError(err)
+		}
+		instances[i].Product = prod
+
+	}
 	return entity.ProductInstances(instances), errors.MapError(err)
 }

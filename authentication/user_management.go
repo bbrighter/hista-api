@@ -17,7 +17,7 @@ func (s Service) CreateProductInstanceWithOwner(ctx context.Context, productId s
 	if err := users.Exists(ctx, userId); err != nil {
 		return UUIDResponse{}, err
 	}
-	if err := product_mgmt.FindProduct(ctx, productId); err != nil {
+	if _, err := product_mgmt.FindProduct(ctx, productId); err != nil {
 		return UUIDResponse{}, err
 	}
 	resp, err := product_mgmt.CreateInstance(ctx, product_mgmt.ProductInstanceParams{ProductId: productId, InstanceName: "name"})
