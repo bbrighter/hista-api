@@ -1,4 +1,4 @@
-h1:58XjBXqems2/XJIUIX1CajobmUXGn7mFeAMq/0WkWDE=
+h1:5h0UA6Pp6L0MRP0mifHTYuZEbl6vVh4oXqEuXT4qgFI=
 01_init.up.sql h1:UuB1tg/Zh6Togog9ZXVD2Hr27IhYXHrcWWsaBjrlVXs=
 02_symptoms.up.sql h1:0I1fxZMBpUbjU7V9zQA0tH6mCALxLy7I1lON+5vTw+Q=
 03_authentification.up.sql h1:OfOcfrFSlu1WBm7Z7Qq+Skqceg3/Ev2+QjbuT/aJauw=
@@ -10,4 +10,5 @@ h1:58XjBXqems2/XJIUIX1CajobmUXGn7mFeAMq/0WkWDE=
 09_status.up.sql h1:aDdrlKLAjR4swExCAM48AOgdyp/mQ08jpVXc0aljCp0=
 10_headache.up.sql h1:f2LFhhrApRnJa54YI6AkqPN0ssLmrbmIEcJj/rsqFA8=
 11_status_simplification.up.sql h1:lVfEpjyJqFvTouwbnsYnuHzD58lIwurWqypG76xNkGU=
-12_piid.up.sql h1:vuLG0XKB9X4NeKpOFNQTciewA/YK4TeDeq67KfGC+bU=
+12_piid.up.sql h1:ZifzTcmpL6toSw6b30bSC2Bi0PygKdjf1gycEnxRumk=
+13_piid_in_pk.up.sql h1:kf8LOSjuJJKyQpn+Dw6fAeDuuOde84evcFCCdaAthI0=

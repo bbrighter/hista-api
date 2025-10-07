@@ -15,7 +15,7 @@ func (repo *MealRepository) ListMeals(ctx context.Context) ([]*entity.Meal, erro
 }
 
 func (repo *MealRepository) CreateMeal(ctx context.Context, meal *entity.Meal) error {
-	return generic_queries.Create(ctx, repo.db, meal)
+	return generic_queries.Create(ctx, repo.db.Debug(), meal)
 }
 
 func (repo *MealRepository) GetMeal(ctx context.Context, id uint) (entity.Meal, error) {

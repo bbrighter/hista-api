@@ -24,7 +24,7 @@ func (repo *SymptomsRepo) CreateOrReplace(ctx context.Context, symptomName strin
 	if err == nil {
 		return symptom.ID, err
 	}
-	newSymptom := &entity.Symptom{Name: trimmedName, SymptomCategoryID: symptomCategoryId}
+	newSymptom := &entity.Symptom{Name: trimmedName, SymptomCategoryID: symptomCategoryId, SymptomCategoryPIID: piid}
 	err = generic_queries.Create(ctx, repo.db, newSymptom)
 	return newSymptom.ID, err
 }

@@ -8,10 +8,10 @@ import (
 )
 
 type ConditionEvent struct {
-	ID         uint
+	ID         uint      `gorm:"primaryKey"`
+	PIID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Date       time.Time
 	Conditions []Condition
-	PIID       uuid.UUID `gorm:"type:uuid;index"`
 }
 
 func (c *ConditionEvent) SetPiid(id uuid.UUID) {
@@ -19,34 +19,41 @@ func (c *ConditionEvent) SetPiid(id uuid.UUID) {
 }
 
 type Condition struct {
-	ID               uint
-	Symptom          Symptom
-	SymptomID        uint
-	Severity         Severity
-	ConditionEventID uint
-	PIID             uuid.UUID `gorm:"type:uuid;index"`
+	ID                 uint      `gorm:"primaryKey;autoIncrement"`
+	PIID               uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Severity           Severity
+	Symptom            Symptom `gorm:"foreignKey:SymptomID,SymptomPIID;references:ID,PIID"`
+	SymptomID          uint
+	SymptomPIID        uuid.UUID
+	ConditionEventID   uint
+	ConditionEventPIID uuid.UUID
 }
 
 func (c *Condition) SetPiid(id uuid.UUID) {
 	c.PIID = id
+	c.ConditionEventPIID = id
+	c.SymptomPIID = id
 }
 
 type Symptom struct {
-	ID                uint
-	Name              string
-	SymptomCategoryID uint
-	PIID              uuid.UUID `gorm:"type:uuid;index"`
+	ID                  uint      `gorm:"primaryKey;autoIncrement"`
+	PIID                uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Name                string
+	SymptomCategory     SymptomCategory `gorm:"foreignKey:SymptomCategoryID,SymptomCategoryPIID;references:ID,PIID"`
+	SymptomCategoryID   uint
+	SymptomCategoryPIID uuid.UUID
 }
 
 func (c *Symptom) SetPiid(id uuid.UUID) {
 	c.PIID = id
+	c.SymptomCategoryPIID = id
 }
 
 type SymptomCategory struct {
-	ID       uint
+	ID       uint      `gorm:"primaryKey;autoIncrement"`
+	PIID     uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name     string
 	Symptoms []Symptom
-	PIID     uuid.UUID `gorm:"type:uuid;index"`
 }
 
 func (c *SymptomCategory) SetPiid(id uuid.UUID) {

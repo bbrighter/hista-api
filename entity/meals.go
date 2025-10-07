@@ -16,13 +16,13 @@ const (
 )
 
 type Meal struct {
-	ID          uint
+	ID          uint      `gorm:"primaryKey;autoIncrement"`
+	PIID        uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Date        time.Time
 	Freshness   Freshness
 	StressLevel uint8
 	IsAlone     bool
-	Foods       []Food    `gorm:"constraint:OnDelete:CASCADE"`
-	PIID        uuid.UUID `gorm:"type:uuid;index"`
+	Foods       []Food `gorm:"constraint:OnDelete:CASCADE"`
 }
 
 func (m *Meal) SetPiid(id uuid.UUID) {
@@ -32,16 +32,21 @@ func (m *Meal) SetPiid(id uuid.UUID) {
 type Meals []*Meal
 
 type Food struct {
-	ID           uint
-	Ingredient   Ingredient
-	IngredientID uint
-	Condition    FoodCondition
-	MealID       uint
-	PIID         uuid.UUID `gorm:"type:uuid;index"`
+	ID             uint      `gorm:"primaryKey;autoIncrement"`
+	PIID           uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Condition      FoodCondition
+	Ingredient     Ingredient `gorm:"foreignKey:IngredientID,IngredientPIID;references:ID,PIID"`
+	IngredientID   uint
+	IngredientPIID uuid.UUID
+	Meal           Meal `gorm:"foreignKey:MealID,MealPIID;references:ID,PIID"`
+	MealID         uint
+	MealPIID       uuid.UUID
 }
 
 func (f *Food) SetPiid(id uuid.UUID) {
 	f.PIID = id
+	f.IngredientPIID = id
+	f.MealPIID = id
 }
 
 type Foods []*Food
@@ -55,9 +60,9 @@ const (
 )
 
 type Ingredient struct {
-	ID   uint
+	ID   uint      `gorm:"primaryKey"`
+	PIID uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name string    `gorm:"uniqueIndex"`
-	PIID uuid.UUID `gorm:"type:uuid;index"`
 }
 
 func (i *Ingredient) SetPiid(id uuid.UUID) {

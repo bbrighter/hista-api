@@ -32,13 +32,15 @@ func (repo *SymptomsRepo) createTestCondition(t *testing.T) (uint, uint, uint, u
 	require.NoError(t, err)
 	err = repo.db.Create(&entity.SymptomCategory{ID: catId, PIID: GUID}).Error
 	require.NoError(t, err)
-	err = repo.db.Create(&entity.Symptom{ID: symptomId, SymptomCategoryID: catId, PIID: GUID}).Error
+	err = repo.db.Create(&entity.Symptom{ID: symptomId, SymptomCategoryID: catId, PIID: GUID, SymptomCategoryPIID: GUID}).Error
 	require.NoError(t, err)
 	err = repo.db.Create(&entity.Condition{
-		ID:               conditionId,
-		SymptomID:        symptomId,
-		ConditionEventID: eventId,
-		PIID:             GUID,
+		ID:                 conditionId,
+		SymptomID:          symptomId,
+		ConditionEventID:   eventId,
+		PIID:               GUID,
+		SymptomPIID:        GUID,
+		ConditionEventPIID: GUID,
 	}).Error
 	require.NoError(t, err)
 
