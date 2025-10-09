@@ -2,10 +2,12 @@ package authentication
 
 import (
 	"context"
+	"net/http"
 	"strings"
 	"testing"
+	"time"
 
-	"encore.dev/types/uuid"
+	uuid "encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -30,7 +32,7 @@ func TestAuthHandler(t *testing.T) {
 
 			piidMap := make(map[uuid.UUID][]string)
 			piidMap[uuid.FromStringOrNil(piid_guid)] = []string{"app1"}
-			token, err := s.g.GenerateToken("name", uuid.FromStringOrNil(user_guid), piidMap)
+			token, err := s.g.GenerateToken("name", uuid.FromStringOrNil(user_guid), piidMap, time.Hour)
 			// token := initTestToken(t)
 			require.NoError(t, err)
 			require.NoError(t, err)
@@ -44,7 +46,7 @@ func TestAuthHandler(t *testing.T) {
 				token = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoibmFtZSIsInN1YiI6IjU0MjMxYTI4LWU4ZGMtNDZiOC1hYTdmLWQ3NWY4MDRiMjAwMyIsImV4cCI6MTc1Nzc5NDI1NCwiaWF0IjoxNzU3NzA3ODU0fQ.lTa19mAsVl0aHPgPbBl4kR0Q2rRdAZje0GA7vJ0LpVL1-HhJQLxiSN1x3gdD8KxC93dMxBzADeTp5nzFE8QWC7sBxG9nTu5KWxgCbb1g6DOAT1BMgPob2CdmGd3IBOwnN4q2GmmPTHIbiex_k4E71V3bfGNZON6Y7Zfb5RpxzqUM2B7YsXNaZHCpBNyHlUNCpuKcoglUkavySmDTdBBkgbmUG-e_cY6Z41fcM3-cJ6FITznQefIabaBzzJ4vdCC_E13LPjmR37v9wiz1IT0J6_DfMsdVh75WkBQmlfWTJimt-H04yZlnnGwb2zaXlQWVI7AB7rQfM_NRj1o989Cstg"
 			}
 
-			id, _, err := AuthHandler(ctx, &AuthParams{Token: token})
+			id, _, err := AuthHandler(ctx, &AuthParams{Cookie: &http.Cookie{Value: token}})
 			if test.expectError {
 				assert.Error(t, err)
 			} else {

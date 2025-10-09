@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/rsa"
 	"fmt"
+	"net/http"
 
 	"encore.app/entity"
 	"encore.app/errors"
@@ -12,12 +13,12 @@ import (
 )
 
 type AuthParams struct {
-	Token string `header:"Authorization"`
+	Cookie *http.Cookie `cookie:"access_token"`
 }
 
 //encore:authhandler
 func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, *entity.AuthData, error) {
-	claims, err := parseToken(params.Token)
+	claims, err := parseToken(params.Cookie.Value)
 	if err != nil {
 		return auth.UID(""), &entity.AuthData{}, errors.ErrorUnauthenticated
 	}
