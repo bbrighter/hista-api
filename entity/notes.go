@@ -8,10 +8,10 @@ import (
 )
 
 type Note struct {
-	ID   uint
+	ID   uint      `gorm:"primaryKey"`
+	PIID uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Date time.Time
 	Text string
-	PIID uuid.UUID `gorm:"type:uuid;index"`
 }
 
 func (n *Note) SetPiid(id uuid.UUID) {

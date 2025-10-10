@@ -17,10 +17,10 @@ type ProductInstanceClaim struct {
 }
 
 type AuthData struct {
-	Instances []AuthProductInstance
+	Instances []AuthProductInstance `json:"instances"`
 }
 
 type AuthProductInstance struct {
-	AppMapping map[string]bool
-	PIID       uuid.UUID
+	AppMapping map[string]bool `json:"appMapping"`
+	PIID       uuid.UUID       `json:"piid"`
 }

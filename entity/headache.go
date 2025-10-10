@@ -10,14 +10,14 @@ import (
 )
 
 type Headache struct {
-	ID          uint
+	ID          uint      `gorm:"primaryKey;autoIncrement"`
+	PIID        uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Date        time.Time
 	Severity    HeadacheSeverity
 	Types       HeadacheTypes     `gorm:"type:json"`
 	Positions   HeadachePositions `gorm:"type:json"`
 	Symptoms    HeadacheSymptoms  `gorm:"type:json"`
 	Description string
-	PIID        uuid.UUID `gorm:"type:uuid;index"`
 }
 
 func (h *Headache) GetPiid() uuid.UUID {

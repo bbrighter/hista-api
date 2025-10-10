@@ -8,12 +8,12 @@ import (
 )
 
 type Status struct {
-	ID             uint
+	ID             uint      `gorm:"primaryKey"`
+	PIID           uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Date           time.Time
 	MorningFitness *int
 	EveningFitness *int
 	MorningSleep   *int
-	PIID           uuid.UUID `gorm:"type:uuid;index"`
 }
 
 func (s *Status) SetPiid(id uuid.UUID) {

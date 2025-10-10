@@ -14,7 +14,7 @@ type (
 	}
 
 	ITokenGenerator interface {
-		GenerateToken(userName string, userId uuid.UUID, piidApps map[uuid.UUID][]string) (string, error)
+		GenerateToken(userName string, userId uuid.UUID, piidApps map[uuid.UUID][]string, expirationTime time.Duration) (string, error)
 	}
 )
 
@@ -26,8 +26,7 @@ func NewTokenGenerator(r ITokenRepo) TokenGenerator {
 	return TokenGenerator{r: r}
 }
 
-func (g TokenGenerator) GenerateToken(userName string, userId uuid.UUID, piidApps map[uuid.UUID][]string) (string, error) {
-	expirationTime := time.Hour * 24
+func (g TokenGenerator) GenerateToken(userName string, userId uuid.UUID, piidApps map[uuid.UUID][]string, expirationTime time.Duration) (string, error) {
 	token := g.r.GenerateToken(userName, userId, piidApps, expirationTime)
 	return g.r.TokenToSignedString(token)
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encore.app/entity"
+	"encore.app/generic_queries"
 	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -100,7 +101,6 @@ func TestDeleteConditionEvent(t *testing.T) {
 }
 
 func TestPostCondition(t *testing.T) {
-	// var symptomId uint = 1
 	tests := map[string]struct {
 		eventId               uint
 		symptomName           bool
@@ -108,9 +108,9 @@ func TestPostCondition(t *testing.T) {
 		expectErrorMsg        string
 		expectedSymptomLength int
 	}{
-		// "ok, symptom name": {symptomName: true},
-		"ok, use Ids": {symptomId: true},
-		// "not found":        {expectErrorMsg: "not_found: not found", eventId: 1000, symptomName: true},
+		"ok, symptom name": {symptomName: true},
+		"ok, use Ids":      {symptomId: true},
+		"not found":        {expectErrorMsg: "not_found: not found", eventId: 1000, symptomName: true},
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
@@ -139,7 +139,7 @@ func TestPostCondition(t *testing.T) {
 				params.CategoryID = &idResp.ID
 
 				var symptom = entity.Symptom{Name: "symptom", SymptomCategoryID: idResp.ID, PIID: uuid.FromStringOrNil(TEST_PIID_STR)}
-				service.DB.Create(&symptom)
+				generic_queries.Create(ctx, service.DB, &symptom)
 
 				defer service.DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&entity.Symptom{})
 				defer service.DB.Session(&gorm.Session{AllowGlobalUpdate: true}).Delete(&entity.SymptomCategories{})

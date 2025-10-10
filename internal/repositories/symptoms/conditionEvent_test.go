@@ -75,22 +75,19 @@ func TestDeleteConditionEventOfOTherPiid(t *testing.T) {
 func TestDeleteConditionEventWithChildren(t *testing.T) {
 	repo, ctx := initTest(t)
 
+	var err error
 	id := repo.createTestConditionEvent(t)
-	repo.db.Create(&entity.SymptomCategory{
-		ID:   1,
-		Name: "cat",
-		PIID: GUID,
-		Symptoms: []entity.Symptom{
-			{
-				ID:                10,
-				Name:              "symptom",
-				SymptomCategoryID: 1,
-				PIID:              GUID,
-			},
-		},
-	})
-	repo.db.Create(&entity.Condition{ID: 100, SymptomID: 10, ConditionEventID: id, PIID: GUID})
-	err := repo.DeleteConditionEvent(ctx, id)
+	var cat = entity.SymptomCategory{Name: "cat", PIID: GUID}
+	err = gorm.G[entity.SymptomCategory](repo.db).Create(ctx, &cat)
+	require.NoError(t, err)
+	var sym = entity.Symptom{Name: "symptom", PIID: GUID, SymptomCategoryID: cat.ID, SymptomCategoryPIID: GUID}
+	err = gorm.G[entity.Symptom](repo.db).Create(ctx, &sym)
+	require.NoError(t, err)
+	var cond = entity.Condition{PIID: GUID, SymptomID: sym.ID, SymptomPIID: GUID, ConditionEventID: id, ConditionEventPIID: GUID}
+	err = gorm.G[entity.Condition](repo.db).Create(ctx, &cond)
+	require.NoError(t, err)
+
+	err = repo.DeleteConditionEvent(ctx, id)
 	assert.NoError(t, err)
 
 	var symptoms entity.Symptoms

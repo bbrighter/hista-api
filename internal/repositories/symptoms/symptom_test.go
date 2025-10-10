@@ -5,6 +5,7 @@ import (
 
 	"encore.app/entity"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
@@ -42,15 +43,12 @@ func TestChangeCategory(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			repo, ctx := initTest(t)
-			err := repo.db.Create(&entity.SymptomCategory{
-				ID:       10,
-				Symptoms: []entity.Symptom{{ID: 1, PIID: GUID}},
-				PIID:     GUID,
-			},
-			).Error
-			assert.NoError(t, err)
-			err = repo.db.Create(&entity.SymptomCategory{ID: 1, PIID: GUID}).Error
-			assert.NoError(t, err)
+			var cat = entity.SymptomCategory{ID: 1, PIID: GUID}
+			err := gorm.G[entity.SymptomCategory](repo.db).Create(ctx, &cat)
+			require.NoError(t, err)
+			var sym = entity.Symptom{ID: 1, PIID: GUID, SymptomCategoryID: cat.ID, SymptomCategoryPIID: GUID}
+			err = gorm.G[entity.Symptom](repo.db).Create(ctx, &sym)
+			require.NoError(t, err)
 
 			err = repo.ChangeCategory(ctx, test.symptomId, test.targetCategoryId)
 

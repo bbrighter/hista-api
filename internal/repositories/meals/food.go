@@ -40,6 +40,8 @@ func (repo *MealRepository) CreateFoodByName(ctx context.Context, food *entity.F
 	}
 	food.Ingredient = ingredient
 	food.PIID = piid
+	food.IngredientPIID = piid
+	food.MealPIID = piid
 	return gorm.G[entity.Food](repo.db).Create(ctx, food)
 }
 
@@ -49,13 +51,19 @@ func (repo *MealRepository) CreateFoodByID(ctx context.Context, food *entity.Foo
 		return err
 	}
 	food.PIID = piid
+	food.IngredientPIID = piid
+	food.MealPIID = piid
 	if food.MealID == 0 || food.IngredientID == 0 || food.Condition == "" {
 		return errors.ErrorAttributeMustBeSet("MealID or IngredientID or Condition")
 	}
-	if rows := repo.db.Find(&entity.Meal{ID: food.MealID, PIID: piid}).RowsAffected; rows == 0 {
-		return errors.ErrorNotFound
+	rows, err := gorm.G[entity.Meal](repo.db).Where("pi_id = ?", piid).Where("id = ?", food.MealID).Count(ctx, "*")
+	if err != nil {
+		return err
 	}
-	return repo.db.Create(&food).Error
+	if rows == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return gorm.G[entity.Food](repo.db).Create(ctx, food)
 }
 
 func (repo *MealRepository) DeleteFood(ctx context.Context, foodId uint) error {

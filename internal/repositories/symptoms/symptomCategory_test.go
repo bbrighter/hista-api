@@ -5,6 +5,8 @@ import (
 
 	"encore.app/entity"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"gorm.io/gorm"
 )
 
 func TestListCategories(t *testing.T) {
@@ -14,13 +16,13 @@ func TestListCategories(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, cats, 0)
 
-	repo.db.Create(&entity.SymptomCategory{
-		Name: "cat",
-		PIID: GUID,
-		Symptoms: []entity.Symptom{
-			{Name: "symptom", PIID: GUID},
-		},
-	})
+	var cat = entity.SymptomCategory{Name: "cat", PIID: GUID}
+	err = gorm.G[entity.SymptomCategory](repo.db).Create(ctx, &cat)
+	require.NoError(t, err)
+	var sym = entity.Symptom{Name: "symptom", PIID: GUID, SymptomCategoryID: cat.ID, SymptomCategoryPIID: GUID}
+	err = gorm.G[entity.Symptom](repo.db).Create(ctx, &sym)
+	require.NoError(t, err)
+
 	cats, err = repo.ListCategories(ctx)
 	assert.NoError(t, err)
 	assert.Len(t, cats, 1)
@@ -78,18 +80,19 @@ func TestDeleteCategory(t *testing.T) {
 	}{
 		"ok":                      {catId: 1},
 		"not found":               {catId: 100, expectedError: "record not found"},
-		"symptoms block deleting": {catId: 1, symptoms: []entity.Symptom{{Name: "symptom", PIID: GUID}}, expectedError: "cannot delete category with symptoms"},
+		"symptoms block deleting": {catId: 1, symptoms: []entity.Symptom{{Name: "symptom", PIID: GUID, SymptomCategoryID: 1, SymptomCategoryPIID: GUID}}, expectedError: "cannot delete category with symptoms"},
 	}
 
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			repo, ctx := initTest(t)
-			err := repo.db.Create(&entity.SymptomCategory{
-				ID:       1,
-				Symptoms: test.symptoms,
-				PIID:     GUID,
-			}).Error
-			assert.NoError(t, err)
+			var cat = entity.SymptomCategory{ID: 1, PIID: GUID}
+			err := gorm.G[entity.SymptomCategory](repo.db).Create(ctx, &cat)
+			require.NoError(t, err)
+			if len(test.symptoms) > 0 {
+				err = gorm.G[entity.Symptom](repo.db).CreateInBatches(ctx, &test.symptoms, 10)
+				require.NoError(t, err)
+			}
 
 			err = repo.DeleteCategory(ctx, test.catId)
 			if test.expectedError != "" {

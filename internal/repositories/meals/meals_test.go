@@ -6,13 +6,17 @@ import (
 	"time"
 
 	"encore.app/entity"
+	"encore.app/generic_queries"
 	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/gorm"
 )
 
 const GUID_STR = "cf0d4408-8db5-4572-b5d9-4ed873d1341f"
+
+var GUID = uuid.FromStringOrNil(GUID_STR)
 
 func initTest(t *testing.T) (*MealRepository, context.Context) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
@@ -23,7 +27,7 @@ func initTest(t *testing.T) (*MealRepository, context.Context) {
 	)
 	assert.NoError(t, err)
 
-	ctx := context.WithValue(t.Context(), "piid", uuid.FromStringOrNil(GUID_STR))
+	ctx := context.WithValue(t.Context(), "piid", GUID)
 	return &MealRepository{db: db}, ctx
 }
 
@@ -55,21 +59,21 @@ func TestGetMeal(t *testing.T) {
 	repo, ctx := initTest(t)
 
 	var err error
-	var meal entity.Meal
 
-	meal, err = repo.GetMeal(ctx, 1000)
+	_, err = repo.GetMeal(ctx, 1000)
 	assert.Error(t, err)
 
-	repo.db.Create(&entity.Meal{
-		ID:        100,
-		Freshness: entity.Fresh,
-		PIID:      uuid.FromStringOrNil(GUID_STR),
-		Foods: []entity.Food{
-			{ID: 1},
-		},
-	})
+	var meal = entity.Meal{Freshness: entity.Fresh}
+	err = generic_queries.Create(ctx, repo.db, &meal)
+	require.NoError(t, err)
+	var ing = entity.Ingredient{Name: "name"}
+	err = generic_queries.Create(ctx, repo.db, &ing)
+	require.NoError(t, err)
+	var food = entity.Food{MealID: meal.ID, IngredientID: ing.ID}
+	err = generic_queries.Create(ctx, repo.db, &food)
+	require.NoError(t, err)
 
-	meal, err = repo.GetMeal(ctx, 100)
+	meal, err = repo.GetMeal(ctx, meal.ID)
 	assert.NoError(t, err)
 	assert.Equal(t, entity.Fresh, meal.Freshness)
 	assert.Equal(t, len(meal.Foods), 1)
@@ -79,21 +83,20 @@ func TestDeleteMeal(t *testing.T) {
 	repo, ctx := initTest(t)
 
 	var err error
-	var mealId uint = 100
-	err = repo.DeleteMeal(ctx, mealId)
+	err = repo.DeleteMeal(ctx, 100)
 	assert.Error(t, err)
 
-	repo.db.Create(&entity.Meal{
-		ID:        mealId,
-		Freshness: entity.Fresh,
-		PIID:      uuid.FromStringOrNil(GUID_STR),
-		Foods: []entity.Food{
-			{ID: 1, PIID: uuid.FromStringOrNil(GUID_STR),
-				Ingredient: entity.Ingredient{ID: 1, PIID: uuid.FromStringOrNil(GUID_STR)}},
-		},
-	})
+	var meal = entity.Meal{Freshness: entity.Fresh}
+	err = generic_queries.Create(ctx, repo.db, &meal)
+	require.NoError(t, err)
+	var ing = entity.Ingredient{PIID: GUID, Name: "name"}
+	err = generic_queries.Create(ctx, repo.db, &ing)
+	require.NoError(t, err)
+	var food = entity.Food{PIID: GUID, MealID: meal.ID, MealPIID: GUID, IngredientID: ing.ID, IngredientPIID: GUID}
+	err = generic_queries.Create(ctx, repo.db, &food)
+	require.NoError(t, err)
 
-	err = repo.DeleteMeal(ctx, mealId)
+	err = repo.DeleteMeal(ctx, meal.ID)
 	assert.NoError(t, err)
 
 	foods := repo.db.Find(&entity.Food{}).RowsAffected
@@ -105,25 +108,26 @@ func TestDeleteMeal(t *testing.T) {
 func TestPatchMeal(t *testing.T) {
 	repo, ctx := initTest(t)
 
-	repo.db.Create(&entity.Meal{
-		ID:          100,
-		Freshness:   entity.Fresh,
-		StressLevel: 1,
-		PIID:        uuid.FromStringOrNil(GUID_STR),
-		Foods: []entity.Food{
-			{ID: 1},
-		},
-	})
+	var err error
+
+	var meal = entity.Meal{Freshness: entity.Fresh, PIID: GUID, StressLevel: 1}
+	err = gorm.G[entity.Meal](repo.db).Create(ctx, &meal)
+	require.NoError(t, err)
+	var ing = entity.Ingredient{PIID: GUID, Name: "name"}
+	err = gorm.G[entity.Ingredient](repo.db).Create(ctx, &ing)
+	require.NoError(t, err)
+	var food = entity.Food{PIID: GUID, MealID: meal.ID, MealPIID: GUID, IngredientID: ing.ID, IngredientPIID: GUID}
+	err = gorm.G[entity.Food](repo.db).Create(ctx, &food)
+	require.NoError(t, err)
 
 	var patchDate time.Time = time.Date(1700, 0, 0, 0, 0, 0, 0, time.Local)
 	var patchFreshness entity.Freshness = entity.Older
 
-	var err error
-	err = repo.PatchMeal(ctx, 100, &patchDate, &patchFreshness, nil, nil)
+	err = repo.PatchMeal(ctx, meal.ID, &patchDate, &patchFreshness, nil, nil)
 	assert.NoError(t, err)
 
-	var mealInDb entity.Meal
-	repo.db.Find(&mealInDb, &entity.Meal{ID: 100})
+	mealInDb, err := gorm.G[entity.Meal](repo.db).Where("id = ?", meal.ID).First(ctx)
+	assert.NoError(t, err)
 	assert.True(t, mealInDb.Date.Equal(patchDate))
 	assert.Equal(t, mealInDb.Freshness, patchFreshness)
 	assert.EqualValues(t, mealInDb.StressLevel, 1)

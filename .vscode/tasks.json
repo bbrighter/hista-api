@@ -117,6 +117,11 @@
 			"options": {
 				"cwd": "${workspaceFolder}/api",
 			},
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"close": true,
+			}
 		},
 		{
 			"type": "shell",
@@ -124,6 +129,11 @@
 			"command": "atlas migrate hash",
 			"options": {
 				"cwd": "${workspaceFolder}/users",
+			},
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"close": true,
 			}
 		},
 		{
@@ -132,6 +142,11 @@
 			"command": "atlas migrate hash",
 			"options": {
 				"cwd": "${workspaceFolder}/product_mgmt",
+			},
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"close": true,
 			},
 		},
 		{
