@@ -34,9 +34,10 @@ func (service *Service) Login(ctx context.Context, params LoginParams) (*LoginRe
 		Name:     "access_token",
 		Value:    signedToken,
 		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		SameSite: http.SameSiteNoneMode,
 		Expires:  time.Now().Add(expirationTime),
 		HttpOnly: true,
+		Path:     "/",
 	}
 
 	return &LoginResponse{Cookie: cookie.String()}, err
