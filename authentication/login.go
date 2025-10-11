@@ -2,7 +2,6 @@ package authentication
 
 import (
 	"context"
-	"net/http"
 	"time"
 
 	"encore.app/users"
@@ -14,7 +13,7 @@ type LoginParams struct {
 }
 
 type LoginResponse struct {
-	Cookie string `header:"Set-Cookie"`
+	Token string `json:"token"`
 }
 
 // encore:api public method=POST path=/login
@@ -30,15 +29,5 @@ func (service *Service) Login(ctx context.Context, params LoginParams) (*LoginRe
 	expirationTime := time.Hour * 24 * 7
 	signedToken, err := service.g.GenerateToken(params.UserName, resp.User.ID, resp.Permissions.ToMap(), expirationTime)
 
-	cookie := &http.Cookie{
-		Name:     "access_token",
-		Value:    signedToken,
-		Secure:   true,
-		SameSite: http.SameSiteNoneMode,
-		Expires:  time.Now().Add(expirationTime),
-		HttpOnly: true,
-		Path:     "/",
-	}
-
-	return &LoginResponse{Cookie: cookie.String()}, err
+	return &LoginResponse{Token: signedToken}, err
 }
