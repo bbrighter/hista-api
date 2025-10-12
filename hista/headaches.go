@@ -1,0 +1,91 @@
+package hista
+
+import (
+	"context"
+	"time"
+
+	"encore.app/hista/entity"
+	"encore.dev/types/uuid"
+)
+
+// encore:api auth method=GET path=/piid/:piid/headaches tag:external
+func (service *Service) ListHeadaches(ctx context.Context, piid uuid.UUID) (entity.HeadachesResponse, error) {
+	headaches, err := service.headaches.List(ctx)
+	return headaches.ToResp(), err
+}
+
+// encore:api auth method=GET path=/piid/:piid/headaches/:id tag:external
+func (service *Service) GetHeadache(ctx context.Context, piid uuid.UUID, id uint) (entity.HeadacheResponse, error) {
+	headache, err := service.headaches.Get(ctx, id)
+	return headache.ToResp(), err
+}
+
+// encore:api auth method=DELETE path=/piid/:piid/headaches/:id tag:external
+func (service *Service) DeleteHeadache(ctx context.Context, piid uuid.UUID, id uint) error {
+	return service.headaches.Delete(ctx, id)
+}
+
+type PostHeadacheParams struct {
+	Date     time.Time               `json:"date"`
+	Severity entity.HeadacheSeverity `json:"severity"`
+}
+
+// encore:api auth method=POST path=/piid/:piid/headaches tag:external
+func (service *Service) PostHeadache(ctx context.Context, piid uuid.UUID, params PostHeadacheParams) (entity.IDResponse, error) {
+	id, err := service.headaches.Create(ctx, params.Date, params.Severity)
+	return entity.IDResponse{ID: id}, err
+}
+
+type PatchHeadacheDateParams struct {
+	Date time.Time `json:"date"`
+}
+
+// encore:api auth method=PATCH path=/piid/:piid/headaches/:id/date tag:external
+func (service *Service) PatchHeadacheDate(ctx context.Context, piid uuid.UUID, id uint, params PatchHeadacheDateParams) error {
+	return service.headaches.PatchDate(ctx, id, params.Date)
+}
+
+type PatchHeadacheSeverityParams struct {
+	Severity entity.HeadacheSeverity `json:"severity"`
+}
+
+// encore:api auth method=PATCH path=/piid/:piid/headaches/:id/severity tag:external
+func (service *Service) PatchHeadacheSeverity(ctx context.Context, piid uuid.UUID, id uint, params PatchHeadacheSeverityParams) error {
+	return service.headaches.PatchSeverity(ctx, id, params.Severity)
+}
+
+type PatchHeadachePositionsParams struct {
+	Positions entity.HeadachePositions `json:"positions"`
+}
+
+// encore:api auth method=PATCH path=/piid/:piid/headaches/:id/positions tag:external
+func (service *Service) PatchHeadachePositions(ctx context.Context, piid uuid.UUID, id uint, params PatchHeadachePositionsParams) error {
+	return service.headaches.PatchPositions(ctx, id, params.Positions)
+}
+
+type PatchHeadacheSymptomsParams struct {
+	Symptoms entity.HeadacheSymptoms `json:"symptoms"`
+}
+
+// encore:api auth method=PATCH path=/piid/:piid/headaches/:id/symptoms tag:external
+func (service *Service) PatchHeadacheSymptoms(ctx context.Context, piid uuid.UUID, id uint, params PatchHeadacheSymptomsParams) error {
+	return service.headaches.PatchSymptoms(ctx, id, params.Symptoms)
+}
+
+type PatchHeadacheTypesParams struct {
+	Types entity.HeadacheTypes `json:"types"`
+}
+
+// encore:api auth method=PATCH path=/piid/:piid/headaches/:id/types tag:external
+func (service *Service) PatchHeadacheTypes(ctx context.Context, piid uuid.UUID, id uint, params PatchHeadacheTypesParams) error {
+	return service.headaches.PatchTypes(ctx, id, params.Types)
+}
+
+type PatchHeadacheDescriptionParams struct {
+	Description string `json:"description"`
+}
+
+// encore:api auth method=PATCH path=/piid/:piid/headaches/:id/description tag:external
+func (service *Service) PatchHeadacheDescription(ctx context.Context, piid uuid.UUID, id uint, params PatchHeadacheDescriptionParams) error {
+	return service.headaches.PatchDescription(ctx, id, params.Description)
+}

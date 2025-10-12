@@ -4,7 +4,7 @@ import (
 	"crypto/rsa"
 	"time"
 
-	"encore.app/entity"
+	"encore.app/authentication/entity"
 	"encore.dev/types/uuid"
 	"github.com/golang-jwt/jwt/v5"
 )

@@ -3,8 +3,8 @@ package authentication
 import (
 	"context"
 
-	"encore.app/entity"
 	"encore.app/errors"
+	"encore.app/shared/entity"
 	"encore.dev/beta/auth"
 )
 
