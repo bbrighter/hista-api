@@ -5,8 +5,9 @@ import (
 	"crypto/rsa"
 	"fmt"
 
-	"encore.app/entity"
+	"encore.app/authentication/entity"
 	"encore.app/errors"
+	shared "encore.app/shared/entity"
 	"encore.dev/beta/auth"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -16,22 +17,22 @@ type AuthParams struct {
 }
 
 //encore:authhandler
-func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, *entity.AuthData, error) {
+func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, *shared.AuthData, error) {
 	claims, err := parseToken(params.Token)
 	if err != nil {
-		return auth.UID(""), &entity.AuthData{}, errors.ErrorUnauthenticated
+		return auth.UID(""), &shared.AuthData{}, errors.ErrorUnauthenticated
 	}
 
-	var instances []entity.AuthProductInstance
+	var instances []shared.AuthProductInstance
 	for _, c := range claims.ProductInstances {
 		var appMapping = make(map[string]bool)
 		for _, a := range c.AppIds {
 			appMapping[a] = true
 		}
-		inst := entity.AuthProductInstance{PIID: c.PIID, AppMapping: appMapping}
+		inst := shared.AuthProductInstance{PIID: c.PIID, AppMapping: appMapping}
 		instances = append(instances, inst)
 	}
-	return auth.UID(claims.Subject), &entity.AuthData{Instances: instances}, nil
+	return auth.UID(claims.Subject), &shared.AuthData{Instances: instances}, nil
 }
 
 func parseToken(token string) (*entity.CustomClaims, error) {

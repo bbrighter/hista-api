@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"encore.app/entity"
+	"encore.app/authentication/entity"
 	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

@@ -1,8 +1,8 @@
 package authentication
 
 import (
-	"encore.app/entity"
 	"encore.app/errors"
+	"encore.app/shared/entity"
 	"encore.dev/beta/auth"
 	"encore.dev/middleware"
 	"encore.dev/types/uuid"
