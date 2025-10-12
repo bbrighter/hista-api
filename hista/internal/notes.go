@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -33,19 +34,19 @@ func NewNoteUseCase(repo INotesRepository) NoteUseCase {
 
 func (uc NoteUseCase) List(ctx context.Context) (entity.Notes, error) {
 	notes, err := uc.repo.List(ctx)
-	return notes, errorMapper(err)
+	return notes, errors.MapError(err)
 }
 
 func (uc NoteUseCase) Create(ctx context.Context) (entity.Note, error) {
 	var note = &entity.Note{Date: time.Now(), Text: ""}
 	err := uc.repo.Create(ctx, note)
-	return *note, errorMapper(err)
+	return *note, errors.MapError(err)
 }
 
 func (uc NoteUseCase) Patch(ctx context.Context, id uint, date *time.Time, text *string) error {
-	return errorMapper(uc.repo.Patch(ctx, id, date, text))
+	return errors.MapError(uc.repo.Patch(ctx, id, date, text))
 }
 
 func (uc NoteUseCase) Delete(ctx context.Context, id uint) error {
-	return errorMapper(uc.repo.Delete(ctx, id))
+	return errors.MapError(uc.repo.Delete(ctx, id))
 }

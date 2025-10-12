@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -37,12 +38,12 @@ func NewMealUseCase(repo IMealsRepository, ings IIngredientRepository) MealUseCa
 
 func (uc MealUseCase) List(ctx context.Context) (entity.Meals, error) {
 	meals, err := uc.meals.ListMeals(ctx)
-	return meals, errorMapper(err)
+	return meals, errors.MapError(err)
 }
 
 func (uc MealUseCase) Get(ctx context.Context, id uint) (entity.Meal, error) {
 	meal, err := uc.meals.GetMeal(ctx, id)
-	return meal, errorMapper(err)
+	return meal, errors.MapError(err)
 }
 
 func (uc MealUseCase) Create(ctx context.Context, date *time.Time) (entity.Meal, error) {
@@ -58,18 +59,18 @@ func (uc MealUseCase) Create(ctx context.Context, date *time.Time) (entity.Meal,
 	}
 
 	err := uc.meals.CreateMeal(ctx, meal)
-	return *meal, errorMapper(err)
+	return *meal, errors.MapError(err)
 }
 
 func (uc MealUseCase) Delete(ctx context.Context, id uint) (ings entity.Ingredients, err error) {
 	err = uc.meals.DeleteMeal(ctx, id)
 	if err == nil {
 		ings, err := uc.ingredients.ListIngredients(ctx)
-		return ings, errorMapper(err)
+		return ings, errors.MapError(err)
 	}
-	return ings, errorMapper(err)
+	return ings, errors.MapError(err)
 }
 
 func (uc MealUseCase) Patch(ctx context.Context, id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error {
-	return errorMapper(uc.meals.PatchMeal(ctx, id, date, freshness, stressLevel, isAlone))
+	return errors.MapError(uc.meals.PatchMeal(ctx, id, date, freshness, stressLevel, isAlone))
 }

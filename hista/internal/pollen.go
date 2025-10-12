@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -42,13 +43,13 @@ func (uc PollenUseCase) List() entity.PollenEvents {
 func (uc PollenUseCase) Create() error {
 	pollen, err := uc.dwd.GetKarlsruheData()
 	if err != nil {
-		return errorMapper(err)
+		return errors.MapError(err)
 	}
 	updatedAt, err := uc.dwd.DwdStringToDate()
 	if err != nil {
-		return errorMapper(err)
+		return errors.MapError(err)
 	}
-	return errorMapper(uc.repo.Create(pollen.ToPollen(), updatedAt))
+	return errors.MapError(uc.repo.Create(pollen.ToPollen(), updatedAt))
 }
 
 func (uc PollenUseCase) UseTestQuery(t *testing.T) {

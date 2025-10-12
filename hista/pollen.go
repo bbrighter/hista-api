@@ -8,7 +8,7 @@ import (
 	"encore.dev/types/uuid"
 )
 
-// encore:api auth method=GET path=/piid/:piid/pollen tag:external
+// encore:api auth method=GET path=/piid/:piid/pollen
 func (service *Service) ListPollens(ctx context.Context, piid uuid.UUID) (entity.PollenEventsResponse, error) {
 	events := service.pollens.List()
 	return events.ToResponse(), nil

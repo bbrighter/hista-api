@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 	"encore.dev/beta/errs"
 )
@@ -33,7 +34,7 @@ func NewStatusUseCase(repo IStatusRepo) StatusUseCase {
 
 func (uc StatusUseCase) Find(ctx context.Context) (entity.Statuses, error) {
 	statuses, err := uc.repo.Find(ctx)
-	return statuses, errorMapper(err)
+	return statuses, errors.MapError(err)
 }
 
 func (uc StatusUseCase) Create(ctx context.Context, date time.Time) (entity.Status, error) {
@@ -43,7 +44,7 @@ func (uc StatusUseCase) Create(ctx context.Context, date time.Time) (entity.Stat
 	}
 	status := entity.Status{Date: date}
 	err := uc.repo.Create(ctx, &status)
-	return status, errorMapper(err)
+	return status, errors.MapError(err)
 }
 
 func (uc StatusUseCase) Update(
@@ -60,10 +61,10 @@ func (uc StatusUseCase) Update(
 		EveningFitness: evening.Fitness,
 		MorningSleep:   morning.Sleep,
 	}
-	return errorMapper(uc.repo.Update(ctx, status))
+	return errors.MapError(uc.repo.Update(ctx, status))
 
 }
 
 func (uc StatusUseCase) Delete(ctx context.Context, id uint) error {
-	return errorMapper(uc.repo.Delete(ctx, id))
+	return errors.MapError(uc.repo.Delete(ctx, id))
 }

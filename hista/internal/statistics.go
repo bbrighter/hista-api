@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -32,7 +33,7 @@ func NewStatisticsUseCase(repo IStatisticsRepo) StatisticsUseCase {
 func (uc StatisticsUseCase) FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (results entity.FoodResults, err error) {
 	results, err = uc.repo.FindSymptomsForFoods(ctx, fromDate, toDate, ingredientIds)
 	if err != nil {
-		return results, errorMapper(err)
+		return results, errors.MapError(err)
 	}
 	var ids []uint
 	for _, r := range results {
@@ -40,7 +41,7 @@ func (uc StatisticsUseCase) FindSymptomsForFoods(ctx context.Context, fromDate t
 	}
 	counts, err := uc.repo.CountSymptoms(ctx, ids)
 	if err != nil {
-		return entity.FoodResults{}, errorMapper(err)
+		return entity.FoodResults{}, errors.MapError(err)
 	}
 	for i, r := range results {
 		for _, count := range counts {
@@ -49,12 +50,12 @@ func (uc StatisticsUseCase) FindSymptomsForFoods(ctx context.Context, fromDate t
 			}
 		}
 	}
-	return results, errorMapper(err)
+	return results, errors.MapError(err)
 }
 func (uc StatisticsUseCase) FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (results entity.SymptomResults, err error) {
 	results, err = uc.repo.FindFoodForSymptoms(ctx, fromDate, toDate, symptomIds)
 	if err != nil {
-		return results, errorMapper(err)
+		return results, errors.MapError(err)
 	}
 	var ids []uint
 	for _, r := range results {
@@ -62,7 +63,7 @@ func (uc StatisticsUseCase) FindFoodForSymptoms(ctx context.Context, fromDate ti
 	}
 	counts, err := uc.repo.CountFoods(ctx, ids)
 	if err != nil {
-		return entity.SymptomResults{}, errorMapper(err)
+		return entity.SymptomResults{}, errors.MapError(err)
 	}
 	for i, r := range results {
 		for _, count := range counts {
@@ -71,5 +72,5 @@ func (uc StatisticsUseCase) FindFoodForSymptoms(ctx context.Context, fromDate ti
 			}
 		}
 	}
-	return results, errorMapper(err)
+	return results, errors.MapError(err)
 }

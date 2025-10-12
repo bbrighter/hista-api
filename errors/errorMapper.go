@@ -20,6 +20,8 @@ func MapError(err error) error {
 		return ErrorNotFound
 	case errors.Is(err, bcrypt.ErrMismatchedHashAndPassword):
 		return ErrorUnauthenticated
+	case errors.Is(err, PiidMissing):
+		return PiidMissing
 	default:
 		return &errs.Error{Code: errs.Internal, Message: "internal error", Details: errs.Details(err)}
 	}

@@ -25,7 +25,7 @@ type PatchStatusParams struct {
 	EveningFitness *int      `json:"eveningFitness" encore:"optional"`
 }
 
-// encore:api auth method=PATCH path=/piid/:piid/status/:id tag:external
+// encore:api auth method=PATCH path=/piid/:piid/status/:id
 func (service *Service) PatchStatus(ctx context.Context, piid uuid.UUID, id uint, params PatchStatusParams) error {
 	morningStatus := entity.MorningStatus{Fitness: params.MorningFitness, Sleep: params.MorningSleep}
 	eveningStatus := entity.EveningStatus{Fitness: params.EveningFitness}
@@ -33,13 +33,13 @@ func (service *Service) PatchStatus(ctx context.Context, piid uuid.UUID, id uint
 	return err
 }
 
-// encore:api auth method=GET path=/piid/:piid/status tag:external
+// encore:api auth method=GET path=/piid/:piid/status
 func (service *Service) ListStatus(ctx context.Context, piid uuid.UUID) (entity.StatusesResponse, error) {
 	statuses, err := service.status.Find(ctx)
 	return statuses.ToResp(), err
 }
 
-// encore:api auth method=DELETE path=/piid/:piid/status/:id tag:external
+// encore:api auth method=DELETE path=/piid/:piid/status/:id
 func (service *Service) DeleteStatus(ctx context.Context, piid uuid.UUID, id uint) error {
 	return service.status.Delete(ctx, id)
 }

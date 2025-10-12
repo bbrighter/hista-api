@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -47,30 +48,30 @@ func (uc HeadacheUseCase) Create(ctx context.Context, date time.Time, severity e
 		Severity: severity,
 	}
 	err := uc.hRepo.CreateHeadache(ctx, &headache)
-	return headache.ID, errorMapper(err)
+	return headache.ID, errors.MapError(err)
 }
 func (uc HeadacheUseCase) Delete(ctx context.Context, haId uint) error {
-	return errorMapper(uc.hRepo.DeleteHeadache(ctx, haId))
+	return errors.MapError(uc.hRepo.DeleteHeadache(ctx, haId))
 }
 func (uc HeadacheUseCase) Get(ctx context.Context, haId uint) (*entity.Headache, error) {
 	h, err := uc.hRepo.GetHeadache(ctx, haId)
-	return h, errorMapper(err)
+	return h, errors.MapError(err)
 }
 func (uc HeadacheUseCase) PatchDate(ctx context.Context, haId uint, date time.Time) error {
-	return errorMapper(uc.hRepo.PatchHeadache(ctx, haId, &date, nil, nil, nil, nil, nil))
+	return errors.MapError(uc.hRepo.PatchHeadache(ctx, haId, &date, nil, nil, nil, nil, nil))
 }
 func (uc HeadacheUseCase) PatchSeverity(ctx context.Context, haId uint, severity entity.HeadacheSeverity) error {
-	return errorMapper(uc.hRepo.PatchHeadache(ctx, haId, nil, &severity, nil, nil, nil, nil))
+	return errors.MapError(uc.hRepo.PatchHeadache(ctx, haId, nil, &severity, nil, nil, nil, nil))
 }
 func (uc HeadacheUseCase) PatchTypes(ctx context.Context, haId uint, types entity.HeadacheTypes) error {
-	return errorMapper(uc.hRepo.PatchHeadache(ctx, haId, nil, nil, &types, nil, nil, nil))
+	return errors.MapError(uc.hRepo.PatchHeadache(ctx, haId, nil, nil, &types, nil, nil, nil))
 }
 func (uc HeadacheUseCase) PatchPositions(ctx context.Context, haId uint, positions entity.HeadachePositions) error {
-	return errorMapper(uc.hRepo.PatchHeadache(ctx, haId, nil, nil, nil, &positions, nil, nil))
+	return errors.MapError(uc.hRepo.PatchHeadache(ctx, haId, nil, nil, nil, &positions, nil, nil))
 }
 func (uc HeadacheUseCase) PatchSymptoms(ctx context.Context, haId uint, symptoms entity.HeadacheSymptoms) error {
-	return errorMapper(uc.hRepo.PatchHeadache(ctx, haId, nil, nil, nil, nil, &symptoms, nil))
+	return errors.MapError(uc.hRepo.PatchHeadache(ctx, haId, nil, nil, nil, nil, &symptoms, nil))
 }
 func (uc HeadacheUseCase) PatchDescription(ctx context.Context, haId uint, description string) error {
-	return errorMapper(uc.hRepo.PatchHeadache(ctx, haId, nil, nil, nil, nil, nil, &description))
+	return errors.MapError(uc.hRepo.PatchHeadache(ctx, haId, nil, nil, nil, nil, nil, &description))
 }

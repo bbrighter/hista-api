@@ -10,7 +10,7 @@ import (
 	uuid "encore.dev/types/uuid"
 )
 
-// encore:middleware target=tag:external
+// encore:middleware target=all
 func AddPiidMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
 	params := req.Data().PathParams
 	piidStr := params.Get("piid")

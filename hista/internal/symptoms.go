@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -46,24 +47,24 @@ func (uc SymptomsUseCase) List(ctx context.Context) (entity.SymptomCategories, e
 
 func (uc SymptomsUseCase) CreateCategory(ctx context.Context, name string) (uint, error) {
 	id, err := uc.cat.CreateCategory(ctx, name)
-	return id, errorMapper(err)
+	return id, errors.MapError(err)
 }
 
 func (uc SymptomsUseCase) PutSymptom(ctx context.Context, symptomName string, symtpomCategoryId uint) (uint, error) {
 	id, err := uc.sym.CreateOrReplace(ctx, symptomName, symtpomCategoryId)
-	return id, errorMapper(err)
+	return id, errors.MapError(err)
 }
 
 func (uc SymptomsUseCase) ChangeCategory(ctx context.Context, symptomId, newCategoryId uint) error {
-	return errorMapper(uc.sym.ChangeCategory(ctx, symptomId, newCategoryId))
+	return errors.MapError(uc.sym.ChangeCategory(ctx, symptomId, newCategoryId))
 }
 func (uc SymptomsUseCase) RenameSymptom(ctx context.Context, symptomId uint, newName string) error {
-	return errorMapper(uc.sym.RenameSymptom(ctx, symptomId, newName))
+	return errors.MapError(uc.sym.RenameSymptom(ctx, symptomId, newName))
 }
 func (uc SymptomsUseCase) RenameCategory(ctx context.Context, catId uint, newName string) error {
 	var cat = &entity.SymptomCategory{ID: catId}
-	return errorMapper(uc.cat.RenameCategory(ctx, cat, newName))
+	return errors.MapError(uc.cat.RenameCategory(ctx, cat, newName))
 }
 func (uc SymptomsUseCase) DeleteCategory(ctx context.Context, catId uint) error {
-	return errorMapper(uc.cat.DeleteCategory(ctx, catId))
+	return errors.MapError(uc.cat.DeleteCategory(ctx, catId))
 }

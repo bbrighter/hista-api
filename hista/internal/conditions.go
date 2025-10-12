@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -38,7 +39,7 @@ func NewConditionsUseCase(conditions IConditionRepo, symptoms ISymptomCategories
 
 func (uc ConditionUseCase) List(ctx context.Context, eventId uint) (entity.Conditions, error) {
 	conds, err := uc.Conditions.ListConditions(ctx, eventId)
-	return conds, errorMapper(err)
+	return conds, errors.MapError(err)
 }
 
 func (uc ConditionUseCase) Create(ctx context.Context, eventId uint, symptomName *string, symptomId *uint, symptomCategoryId *uint) (entity.Condition, entity.SymptomCategories, error) {
@@ -50,26 +51,26 @@ func (uc ConditionUseCase) Create(ctx context.Context, eventId uint, symptomName
 		conditionId, err = uc.Conditions.CreateConditionBySymptomName(ctx, eventId, *symptomName, *symptomCategoryId)
 	}
 	if err != nil {
-		return entity.Condition{}, entity.SymptomCategories{}, errorMapper(err)
+		return entity.Condition{}, entity.SymptomCategories{}, errors.MapError(err)
 	}
 
 	symptoms, err := uc.Symptoms.ListCategories(ctx)
 	if err != nil {
-		return entity.Condition{}, entity.SymptomCategories{}, errorMapper(err)
+		return entity.Condition{}, entity.SymptomCategories{}, errors.MapError(err)
 	}
 	condition, err := uc.Conditions.GetCondition(ctx, conditionId)
-	return condition, symptoms, errorMapper(err)
+	return condition, symptoms, errors.MapError(err)
 }
 
 func (uc ConditionUseCase) Delete(ctx context.Context, id uint) (entity.SymptomCategories, error) {
 	err := uc.Conditions.DeleteCondition(ctx, id)
 	if err != nil {
-		return entity.SymptomCategories{}, errorMapper(err)
+		return entity.SymptomCategories{}, errors.MapError(err)
 	}
 	cats, err := uc.Symptoms.ListCategories(ctx)
-	return cats, errorMapper(err)
+	return cats, errors.MapError(err)
 }
 
 func (uc ConditionUseCase) PatchSeverity(ctx context.Context, id uint, newSeverity entity.Severity) error {
-	return errorMapper(uc.Conditions.ChangeSeverity(ctx, id, newSeverity))
+	return errors.MapError(uc.Conditions.ChangeSeverity(ctx, id, newSeverity))
 }

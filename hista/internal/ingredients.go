@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -26,5 +27,5 @@ func NewIngredientUseCase(repo IIngredientRepository) IngredientUseCase {
 
 func (uc IngredientUseCase) List(ctx context.Context) (entity.Ingredients, error) {
 	ings, err := uc.repo.ListIngredients(ctx)
-	return ings, errorMapper(err)
+	return ings, errors.MapError(err)
 }

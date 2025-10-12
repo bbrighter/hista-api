@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -42,23 +43,23 @@ func (uc ConditionEventUseCase) List(ctx context.Context) (entity.ConditionEvent
 func (uc ConditionEventUseCase) Create(ctx context.Context) (entity.ConditionEvent, error) {
 	var event = &entity.ConditionEvent{Date: time.Now()}
 	err := uc.events.CreateConditionEvent(ctx, event)
-	return *event, errorMapper(err)
+	return *event, errors.MapError(err)
 
 }
 func (uc ConditionEventUseCase) Get(ctx context.Context, id uint) (entity.ConditionEvent, error) {
 	event, err := uc.events.GetConditionEvent(ctx, id)
-	return event, errorMapper(err)
+	return event, errors.MapError(err)
 
 }
 func (uc ConditionEventUseCase) Patch(ctx context.Context, id uint, date time.Time) error {
-	return errorMapper(uc.events.PatchConditionEvent(ctx, id, date))
+	return errors.MapError(uc.events.PatchConditionEvent(ctx, id, date))
 
 }
 func (uc ConditionEventUseCase) Delete(ctx context.Context, id uint) (cats entity.SymptomCategories, err error) {
 	err = uc.events.DeleteConditionEvent(ctx, id)
 	if err == nil {
 		cats, err = uc.cats.ListCategories(ctx)
-		return cats, errorMapper(err)
+		return cats, errors.MapError(err)
 	}
-	return cats, errorMapper(err)
+	return cats, errors.MapError(err)
 }

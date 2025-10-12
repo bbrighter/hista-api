@@ -36,7 +36,7 @@ func NewFoodUseCase(foodRepo IFoodRepository, ingRepo IIngredientRepository) Foo
 
 func (uc FoodUseCase) List(ctx context.Context, mealId uint) (entity.Foods, error) {
 	foods, err := uc.food.ListFoods(ctx, mealId)
-	return foods, errorMapper(err)
+	return foods, errors.MapError(err)
 }
 
 func (uc FoodUseCase) Create(ctx context.Context, mealId uint, ingredientName string, ingredientId uint) (entity.Food, entity.Ingredients, error) {
@@ -58,18 +58,18 @@ func (uc FoodUseCase) Create(ctx context.Context, mealId uint, ingredientName st
 	if err == nil {
 		ingredients, err = uc.ingredients.ListIngredients(ctx)
 	}
-	return *food, ingredients, errorMapper(err)
+	return *food, ingredients, errors.MapError(err)
 }
 
 func (uc FoodUseCase) Delete(ctx context.Context, foodId uint) (ingredients entity.Ingredients, err error) {
 	err = uc.food.DeleteFood(ctx, foodId)
 	if err == nil {
 		ingredients, err := uc.ingredients.ListIngredients(ctx)
-		return ingredients, errorMapper(err)
+		return ingredients, errors.MapError(err)
 	}
-	return ingredients, errorMapper(err)
+	return ingredients, errors.MapError(err)
 }
 
 func (uc FoodUseCase) ChangeCondition(ctx context.Context, foodId uint, newCond entity.FoodCondition) error {
-	return errorMapper(uc.food.ChangeCondition(ctx, foodId, newCond))
+	return errors.MapError(uc.food.ChangeCondition(ctx, foodId, newCond))
 }
