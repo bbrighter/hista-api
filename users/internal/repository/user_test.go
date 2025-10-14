@@ -181,15 +181,6 @@ func TestFindUser(t *testing.T) {
 }
 
 func TestAddUser(t *testing.T) {
-	r, ctx := initTest(t)
-
-	userId, err := uuid.NewV4()
-	assert.NoError(t, err)
-
-	var user = entity.User{ID: userId, Name: "name", Password: "pw"}
-	err = gorm.G[entity.User](r.db).Create(ctx, &user)
-	assert.NoError(t, err)
-
 	tests := map[string]struct {
 		useExistingUser bool
 		expectedError   bool
@@ -199,7 +190,13 @@ func TestAddUser(t *testing.T) {
 	}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.NoError(t, err)
+			r, ctx := initTest(t)
+			userId, err := uuid.NewV4()
+			require.NoError(t, err)
+			var user = entity.User{ID: userId, Name: "name", Password: "pw"}
+			err = gorm.G[entity.User](r.db).Create(ctx, &user)
+			require.NoError(t, err)
+
 			if !test.useExistingUser {
 				otherGuid, err := uuid.NewV4()
 				assert.NoError(t, err)
