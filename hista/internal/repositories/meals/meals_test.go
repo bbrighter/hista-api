@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encore.app/hista/entity"
+	"encore.app/shared/contextKeys"
 	"encore.app/shared/generic_queries"
 	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
@@ -27,7 +28,7 @@ func initTest(t *testing.T) (*MealRepository, context.Context) {
 	)
 	assert.NoError(t, err)
 
-	ctx := context.WithValue(t.Context(), "piid", GUID)
+	ctx := context.WithValue(t.Context(), contextKeys.Piid, GUID)
 	return &MealRepository{db: db}, ctx
 }
 
@@ -77,6 +78,17 @@ func TestGetMeal(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, entity.Fresh, meal.Freshness)
 	assert.Equal(t, len(meal.Foods), 1)
+
+	var newMeal = entity.Meal{}
+	err = generic_queries.Create(ctx, repo.db, &newMeal)
+	require.NoError(t, err)
+	meal, err = repo.GetMeal(ctx, meal.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, len(meal.Foods), 1)
+	newMealResp, err := repo.GetMeal(ctx, newMeal.ID)
+	assert.NoError(t, err)
+	assert.Equal(t, len(newMealResp.Foods), 0)
+
 }
 
 func TestDeleteMeal(t *testing.T) {

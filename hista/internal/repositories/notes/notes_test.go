@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encore.app/hista/entity"
+	"encore.app/shared/contextKeys"
 	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ func initTest(t *testing.T) (*NotesRepository, context.Context) {
 	err := db.AutoMigrate(&entity.Note{})
 	assert.NoError(t, err)
 
-	ctx := context.WithValue(t.Context(), "piid", GUID)
+	ctx := context.WithValue(t.Context(), contextKeys.Piid, GUID)
 	return &NotesRepository{db: db}, ctx
 }
 func TestCreateNote(t *testing.T) {

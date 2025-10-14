@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"encore.app/hista/entity"
+	"encore.app/shared/contextKeys"
 	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
@@ -19,7 +20,7 @@ func initTest(t *testing.T) (*SymptomsRepo, context.Context) {
 	err := db.AutoMigrate(&entity.Symptom{}, &entity.ConditionEvent{}, &entity.Condition{}, &entity.SymptomCategory{})
 	assert.NoError(t, err)
 
-	ctx := context.WithValue(t.Context(), "piid", GUID)
+	ctx := context.WithValue(t.Context(), contextKeys.Piid, GUID)
 	return &SymptomsRepo{db: db}, ctx
 }
 
