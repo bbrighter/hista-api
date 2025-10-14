@@ -4,10 +4,11 @@ import (
 	"context"
 
 	"encore.app/errors"
+	"encore.app/shared/contextKeys"
 	"encore.app/shared/entity"
 	"encore.dev/beta/auth"
 	"encore.dev/middleware"
-	uuid "encore.dev/types/uuid"
+	"encore.dev/types/uuid"
 )
 
 // encore:middleware target=all
@@ -25,7 +26,7 @@ func AddPiidMiddleware(req middleware.Request, next middleware.Next) middleware.
 	ctx := req.Context()
 	for _, i := range data.Instances {
 		if i.PIID == url_piid {
-			ctx = context.WithValue(req.Context(), "piid", i.PIID)
+			ctx = context.WithValue(req.Context(), contextKeys.Piid, i.PIID)
 			break
 		}
 	}

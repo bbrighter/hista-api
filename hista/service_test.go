@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"encore.app/shared/contextKeys"
 	"encore.dev/et"
 	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
@@ -31,7 +32,7 @@ func TestInitService(t *testing.T) {
 
 func initAPITest(t *testing.T) (*Service, context.Context) {
 	ctx := t.Context()
-	ctxWithVal := context.WithValue(ctx, "piid", TEST_PIID)
+	ctxWithVal := context.WithValue(ctx, contextKeys.Piid, TEST_PIID)
 	sqlDb, err := et.NewTestDatabase(ctx, "hista_db")
 	assert.NoError(t, err)
 	db, err := gorm.Open(postgres.New(postgres.Config{

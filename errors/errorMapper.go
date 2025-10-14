@@ -10,11 +10,8 @@ import (
 
 func MapError(err error) error {
 	if err == nil {
-		print("error is nil")
 		return nil
 	}
-
-	print("error is not nil")
 	switch {
 	case errors.Is(err, gorm.ErrRecordNotFound):
 		return ErrorNotFound

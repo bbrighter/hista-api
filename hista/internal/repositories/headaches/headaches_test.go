@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"encore.app/hista/entity"
+	"encore.app/shared/contextKeys"
 	"encore.dev/types/uuid"
 	"github.com/glebarez/sqlite"
 	"github.com/stretchr/testify/assert"
@@ -37,7 +38,7 @@ func initTest(t *testing.T, addHeadache bool) (*HeadacheRepository, context.Cont
 	}
 
 	ctx := t.Context()
-	ctx = context.WithValue(ctx, "piid", uuid.FromStringOrNil(TEST_GUID))
+	ctx = context.WithValue(ctx, contextKeys.Piid, uuid.FromStringOrNil(TEST_GUID))
 
 	return NewHeadacheRepository(db), ctx, headache
 }

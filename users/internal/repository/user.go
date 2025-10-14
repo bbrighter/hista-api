@@ -49,7 +49,6 @@ func (r UserRepo) Delete(ctx context.Context, id uuid.UUID) error {
 }
 
 func (r UserRepo) ChangePassword(ctx context.Context, id uuid.UUID, password string) error {
-	err := r.validatePassword(ctx, id, password)
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), r.bcryptCost)
 	if err != nil {
 		return err

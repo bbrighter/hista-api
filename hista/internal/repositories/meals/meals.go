@@ -23,7 +23,12 @@ func (repo *MealRepository) GetMeal(ctx context.Context, id uint) (entity.Meal, 
 	if err != nil {
 		return entity.Meal{}, err
 	}
-	meal, err := gorm.G[entity.Meal](repo.db).Where("pi_id = ?", piid).Preload("Foods.Ingredient", nil).Preload("Foods", nil).First(ctx)
+	meal, err := gorm.G[entity.Meal](repo.db).
+		Where("id = ?", id).
+		Where("pi_id = ?", piid).
+		Preload("Foods.Ingredient", nil).
+		Preload("Foods", nil).
+		First(ctx)
 	return meal, err
 }
 
