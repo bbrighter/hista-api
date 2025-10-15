@@ -2,13 +2,15 @@ package meals
 
 import (
 	"context"
+	"errors"
 	"time"
 
-	"encore.app/errors"
 	"encore.app/hista/entity"
 	"encore.app/shared/generic_queries"
 	"gorm.io/gorm"
 )
+
+var ErrNoParameters = errors.New("no parameters provided")
 
 func (repo *MealRepository) ListMeals(ctx context.Context) ([]*entity.Meal, error) {
 	return generic_queries.List[*entity.Meal](ctx, repo.db)
@@ -73,42 +75,36 @@ func (repo *MealRepository) PatchMeal(
 	stressLevel *uint8,
 	isAlone *bool,
 ) error {
-	var meal entity.Meal
 	piid, err := generic_queries.PiidFromCtx(ctx)
 	if err != nil {
 		return err
 	}
-	if rows := repo.db.Where("pi_id = ?", piid).First(&meal, &entity.Meal{ID: id}).RowsAffected; rows == 0 {
-		return errors.ErrorNotFound
-	}
-	tx := repo.db.Model(&entity.Meal{ID: meal.ID})
-	var updates = make(map[string]interface{})
+	var updates = make(map[string]any)
 	if date != nil {
-		meal.Date = *date
 		updates["date"] = *date
 	}
 	if freshness != nil {
-		meal.Freshness = *freshness
 		updates["freshness"] = *freshness
 	}
 	if stressLevel != nil {
-		meal.StressLevel = *stressLevel
 		updates["stress_level"] = *stressLevel
 	}
 	if isAlone != nil {
-		meal.IsAlone = *isAlone
 		updates["is_alone"] = *isAlone
 	}
-	return tx.Updates(updates).Error
-}
+	if len(updates) == 0 {
+		return ErrNoParameters
+	}
+	tx := repo.db.Model(&entity.Meal{}).
+		Where("id = ?", id).
+		Where("pi_id = ?", piid).
+		Updates(updates)
+	if tx.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return tx.Error
 
-// func GetMealsAndDependencies(db *gorm.DB) (entity.Meals, error) {
-// 	var meals entity.Meals
-// 	var err error = db.Preload("Foods.Ingredient").
-// 		Preload("Foods").
-// 		Find(&meals).Error
-// 	return meals, err
-// }
+}
 
 func (repo *MealRepository) ListMealsWithDependencies(ctx context.Context) (entity.Meals, error) {
 	piid, err := generic_queries.PiidFromCtx(ctx)
