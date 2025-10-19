@@ -29,9 +29,13 @@ func BadRequest(msg string) *errs.Error {
 	return NewError(msg, errs.InvalidArgument)
 }
 
-func BadRequestf(format string, args ...interface{}) *errs.Error {
+func BadRequestf(format string, args ...any) *errs.Error {
 	msg := fmt.Sprintf(format, args...)
 	return NewError(msg, errs.InvalidArgument)
 }
 
 var PiidMissing = NewError("piid missing", errs.InvalidArgument)
+
+func ErrorReferenceNotFound(err error) *errs.Error {
+	return NewError("reference not found: "+err.Error(), errs.NotFound)
+}

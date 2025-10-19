@@ -88,6 +88,18 @@
 		},
 		{
 			"type": "shell",
+			"label": "Atlas: migrate shopping list",
+			"command": "sh",
+			"args": [
+				"${workspaceFolder}/shoppingList/scripts/generate-migration",
+				" ${input:migrationName}",
+			],
+			"icon": {
+				"id": "arrow-circle-up"
+			}
+		},
+		{
+			"type": "shell",
 			"label": "Atlas: inspect",
 			"command": "atlas",
 			"args": [
