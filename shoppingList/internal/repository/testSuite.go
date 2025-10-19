@@ -6,43 +6,16 @@ import (
 	"encore.app/shared/contextKeys"
 	"encore.app/shared/generic_queries"
 	"encore.app/shoppingList/entity"
+	"encore.dev/et"
 	"encore.dev/types/uuid"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/stretchr/testify/suite"
-	postgresContainer "github.com/testcontainers/testcontainers-go/modules/postgres"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type PostgresContainer struct {
-	*postgresContainer.PostgresContainer
-	ConnectionString string
-}
-
-func NewPostgresContainer() *PostgresContainer {
-	ctx := context.Background()
-	pgContainer, err := postgresContainer.Run(ctx,
-		"postgres:15.3-alpine",
-		postgresContainer.BasicWaitStrategies(),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	connString, err := pgContainer.ConnectionString(ctx)
-	if err != nil {
-		panic(err)
-	}
-
-	return &PostgresContainer{
-		PostgresContainer: pgContainer,
-		ConnectionString:  connString,
-	}
-}
-
 type ShoppingListTestSuite struct {
 	suite.Suite
-	pgContainer *PostgresContainer
 	ctx         context.Context
 	ListRepo    ListRepo
 	ItemRepo    ItemRepo
@@ -55,37 +28,27 @@ var GUID = uuid.FromStringOrNil(GUID_STR)
 
 func (suite *ShoppingListTestSuite) SetupSuite() {
 	suite.ctx = context.WithValue(context.Background(), contextKeys.Piid, GUID)
-
-	suite.pgContainer = NewPostgresContainer()
-
-	db, err := gorm.Open(postgres.Open(suite.pgContainer.ConnectionString))
-	if err != nil {
-		panic(err)
-	}
-
-	suite.ListRepo = NewListRepo(db)
-	suite.ItemRepo = NewItemRepo(db)
-	suite.ProductRepo = NewProductRepo(db)
 }
 
 func (suite *ShoppingListTestSuite) SetupSubTest() {
-	if err := suite.ItemRepo.db.Migrator().AutoMigrate(
+	sqlDb, err := et.NewTestDatabase(suite.ctx, "shopping_list")
+	if err != nil {
+		panic(err)
+	}
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: sqlDb.Stdlib(),
+	}))
+	if err != nil {
+		panic(err)
+	}
+	suite.ListRepo = NewListRepo(db)
+	suite.ItemRepo = NewItemRepo(db)
+	suite.ProductRepo = NewProductRepo(db)
+	if err := suite.ItemRepo.db.Debug().Migrator().AutoMigrate(
 		&entity.Item{},
 		&entity.List{},
 		&entity.Product{},
 	); err != nil {
-		panic(err)
-	}
-}
-
-func (suite *ShoppingListTestSuite) TearDownSubTest() {
-	if err := suite.ItemRepo.db.Exec("DROP SCHEMA public CASCADE; CREATE SCHEMA public;").Error; err != nil {
-		panic(err)
-	}
-}
-
-func (suite *ShoppingListTestSuite) TearDownSuite() {
-	if err := suite.pgContainer.Terminate(suite.ctx); err != nil {
 		panic(err)
 	}
 }
