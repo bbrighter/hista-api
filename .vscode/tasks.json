@@ -3,7 +3,33 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "OpenApi Spec",
+			"label": "OpenApi Spec Hista",
+			"command": "encore",
+			"args": [
+				"gen",
+				"client",
+				"-l",
+				"typescript",
+				"--services",
+				"hista,authentication",
+				"-e",
+				"local",
+				"-o",
+				"C:\\Users\\Test\\Documents\\Code\\hista-ui\\src\\api\\generatedApi.ts",
+			],
+			"icon": {
+				"id": "broadcast"
+			},
+			"group": "build",
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"close": true,
+			},
+		},
+		{
+			"type": "shell",
+			"label": "OpenApi Spec ShoppingList",
 			"command": "encore",
 			"args": [
 				"gen",
@@ -12,8 +38,10 @@
 				"typescript",
 				"-e",
 				"local",
+				"--services",
+				"shoppinglist,authentication",
 				"-o",
-				"C:\\Users\\Test\\Documents\\Code\\hista-ui\\src\\api\\generatedApi.ts",
+				"./test.ts",
 			],
 			"icon": {
 				"id": "broadcast"

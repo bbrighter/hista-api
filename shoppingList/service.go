@@ -46,7 +46,6 @@ func initService() (*Service, error) {
 }
 
 func initServiceWithDb(db *gorm.DB) *Service {
-	// unitOfWork := repository.NewUnitOfWork(db)
 	uow := unitofwork.NewUnitOfWork(db)
 	itemRepo := repository.NewItemRepo(db)
 	productRepo := repository.NewProductRepo(db)

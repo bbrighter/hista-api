@@ -24,12 +24,21 @@ func AddPiidMiddleware(req middleware.Request, next middleware.Next) middleware.
 		return middleware.Response{Err: errors.ErrorUnauthenticated}
 	}
 	ctx := req.Context()
-	for _, i := range data.Instances {
-		if i.PIID == url_piid {
-			ctx = context.WithValue(req.Context(), contextKeys.Piid, i.PIID)
+	for _, inst := range data.Instances {
+		if inst.PIID == url_piid {
+			ctx = context.WithValue(req.Context(), contextKeys.Piid, inst.PIID)
+			if !validateApp(inst.AppMapping) {
+				return middleware.Response{Err: errors.ErrorUnauthenticated}
+			}
 			break
 		}
 	}
+
 	reqWithCtx := req.WithContext(ctx)
 	return next(reqWithCtx)
+}
+
+func validateApp(appMapping map[string]bool) bool {
+	return appMapping["shopping-list"]
+
 }

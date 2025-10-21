@@ -9,8 +9,8 @@ import (
 )
 
 type IItemUseCase interface {
-	AddItemByProductId(ctx context.Context, productId uint) (uint, error)
-	AddItemByName(ctx context.Context, name string) (*entity.Item, error)
+	AddItemByProductId(ctx context.Context, listId uint, productId uint) (uint, error)
+	AddItemByName(ctx context.Context, listId uint, name string) (*entity.Item, error)
 	CheckItem(ctx context.Context, itemId uint) error
 	DeleteItem(ctx context.Context, itemId uint) error
 }
@@ -25,11 +25,11 @@ func NewItemUseCase(i ItemRepo, p ProductRepo, uow UnitOfWork) ItemUseCase {
 	return ItemUseCase{i: i, p: p, uow: uow}
 }
 
-func (uc ItemUseCase) AddItemByProductId(ctx context.Context, productId uint) (uint, error) {
-	id, err := uc.i.Create(ctx, productId, 1)
+func (uc ItemUseCase) AddItemByProductId(ctx context.Context, listId uint, productId uint) (uint, error) {
+	id, err := uc.i.Create(ctx, productId, listId)
 	return id, errors.MapError(err)
 }
-func (uc ItemUseCase) AddItemByName(ctx context.Context, name string) (*entity.Item, error) {
+func (uc ItemUseCase) AddItemByName(ctx context.Context, listId uint, name string) (*entity.Item, error) {
 	var returnItem = new(entity.Item)
 	err := uc.uow.WithTransaction(ctx, func(tx UnitOfWork) error {
 		trimmedName := strings.TrimSpace(name)
@@ -37,7 +37,7 @@ func (uc ItemUseCase) AddItemByName(ctx context.Context, name string) (*entity.I
 		if err != nil {
 			return err
 		}
-		itemId, err := uc.i.Create(ctx, prodId, 1)
+		itemId, err := uc.i.Create(ctx, prodId, listId)
 		if err != nil {
 			return err
 		}

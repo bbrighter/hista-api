@@ -23,6 +23,10 @@ Apps: [
     ID:   "daily-status"
     Name: "Daily status"
   },
+  {
+    ID: "shopping-list"
+    Name: "Shopping list"
+  },
 ]
 
 Products: [
@@ -36,6 +40,13 @@ Products: [
       "symptom-diary",
       "pollen",
       "daily-status",
+    ]
+  },
+  {
+    ID: "shopping-list"
+    Name: "Shopping list"
+    Apps: [
+      "shopping-list",
     ]
   },
 ]

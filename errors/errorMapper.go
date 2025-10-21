@@ -30,9 +30,11 @@ func MapError(err error) error {
 	if ok {
 		switch pgErr.Code {
 		case "25505":
-			return NewEncoreError("duplicate key", errs.AlreadyExists)
+			return NewEncoreError(pgErr.Error(), errs.AlreadyExists)
+		case "23505":
+			return NewEncoreError(pgErr.Error(), errs.AlreadyExists)
 		case "23503":
-			return NewEncoreError("foreign key missing", errs.NotFound)
+			return NewEncoreError(pgErr.Error(), errs.NotFound)
 		}
 	}
 

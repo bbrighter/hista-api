@@ -1,41 +1,99 @@
 package shoppinglist
 
 import (
-	"context"
-	"testing"
-
-	"encore.app/shared/contextKeys"
-	"encore.dev/et"
-	"encore.dev/types/uuid"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"encore.dev/beta/errs"
 )
 
-const GUID_STR = "2012b8a8-df7f-407c-bda1-9567b5b8f06d"
+func (s *ApiTestSuite) TestPostItem() {
+	tests := map[string]struct {
+		useWrongProductId bool
+		useWrongListId    bool
+		expectedErrorCode errs.ErrCode
+		useWrongPiid      bool
+	}{
+		"ok":         {},
+		"no product": {useWrongProductId: true, expectedErrorCode: errs.NotFound},
+		"not list":   {useWrongListId: true, expectedErrorCode: errs.NotFound},
+		"wrong piid": {useWrongPiid: true, expectedErrorCode: errs.NotFound},
+	}
 
-var GUID = uuid.FromStringOrNil(GUID_STR)
+	for name, test := range tests {
+		s.Run(name, func() {
+			var productId uint = 1000
+			if !test.useWrongProductId {
+				productId = s.createProduct()
+			}
+			var listId uint = 1000
+			if !test.useWrongListId {
+				listId = s.createList()
+			}
+			ctx := s.GetCtx(test.useWrongPiid)
 
-func initTestService(t *testing.T) (*Service, context.Context) {
-	ctx := t.Context()
-	ctx = context.WithValue(ctx, contextKeys.Piid, GUID)
-
-	sqlDb, err := et.NewTestDatabase(ctx, "shopping_list")
-	require.NoError(t, err)
-	db, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: sqlDb.Stdlib(),
-	}))
-	require.NoError(t, err)
-	return initServiceWithDb(db), ctx
+			resp, err := s.service.PostItem(ctx, s.piid, listId, productId)
+			s.assertErrCode(err, test.expectedErrorCode)
+			if test.expectedErrorCode == 0 {
+				s.Greater(resp.ID, uint(0))
+			}
+		})
+	}
 }
 
-func TestItems(t *testing.T) {
-	t.Skip()
-	service, ctx := initTestService(t)
+func (s *ApiTestSuite) TestPostItemByName() {
+	tests := map[string]struct {
+		nameAlreadyExists bool
+		useWrongListId    bool
+		expectedErrorCode errs.ErrCode
+		useWrongPiid      bool
+	}{
+		"ok":              {},
+		"list not found":  {useWrongListId: true, expectedErrorCode: errs.NotFound},
+		"name not exists": {nameAlreadyExists: true, expectedErrorCode: errs.AlreadyExists},
+		"use wrong piid":  {useWrongPiid: true, expectedErrorCode: errs.NotFound},
+	}
 
-	resp, err := service.PostItemByName(ctx, ItemNameParams{Name: "name"})
-	assert.NoError(t, err)
-	assert.EqualValues(t, 1, resp.ID)
-	assert.EqualValues(t, 1, resp.ProductId)
+	for name, test := range tests {
+		s.Run(name, func() {
+			if test.nameAlreadyExists {
+				s.createProduct()
+			}
+			var listId uint = 1000
+			if !test.useWrongListId {
+				listId = s.createList()
+			}
+
+			ctx := s.GetCtx(test.useWrongPiid)
+
+			resp, err := s.service.PostItemByName(ctx, s.piid, listId, ItemNameParams{Name: "name"})
+			s.assertErrCode(err, test.expectedErrorCode)
+			if test.expectedErrorCode == 0 {
+				s.Greater(resp.ID, uint(0))
+			}
+		})
+	}
+}
+
+func (s *ApiTestSuite) TestCheckItem() {
+	tests := map[string]struct {
+		useWrongItemId  bool
+		expectedErrCode errs.ErrCode
+		useWrongPiid    bool
+	}{
+		"ok":         {},
+		"not found":  {useWrongItemId: true, expectedErrCode: errs.NotFound},
+		"wrong piid": {useWrongPiid: true, expectedErrCode: errs.NotFound},
+	}
+
+	for name, test := range tests {
+		s.Run(name, func() {
+			var itemId uint = 1000
+			if !test.useWrongItemId {
+				listId := s.createList()
+				itemId = s.createItem(listId)
+			}
+			ctx := s.GetCtx(test.useWrongPiid)
+			err := s.service.CheckItem(ctx, s.piid, itemId)
+
+			s.assertErrCode(err, test.expectedErrCode)
+		})
+	}
 }
