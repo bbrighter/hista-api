@@ -1,41 +1,49 @@
 package repository
 
 import (
-	"testing"
+	"context"
 
+	"encore.app/shared/contextKeys"
 	"encore.app/shoppingList/entity"
-	"github.com/stretchr/testify/suite"
+	"encore.dev/types/uuid"
 	"gorm.io/gorm"
 )
 
-func TestCustomerRepoTestSuite(t *testing.T) {
-	suite.Run(t, new(ShoppingListTestSuite))
-}
-
-func (s *ShoppingListTestSuite) TestFirstOrCreateList() {
+func (s *RepoTestSuite) TestFirstList() {
 	tests := map[string]struct {
-		expectedError error
+		useWrongId   bool
+		useWrongPiid bool
+		deleteBefore bool
+		expectError  error
 	}{
-		"ok": {},
+		"ok":              {},
+		"wrong piid":      {useWrongPiid: true, expectError: gorm.ErrRecordNotFound},
+		"already deleted": {deleteBefore: true, expectError: gorm.ErrRecordNotFound},
 	}
-
 	for name, test := range tests {
 		s.Run(name, func() {
-			list, err := s.ListRepo.FirstOrCreate(s.ctx)
-			if test.expectedError != nil {
-				s.ErrorIs(err, test.expectedError)
+			initList, _, _ := s.createItem()
+			listId := initList.ID
+			if test.useWrongId {
+				listId = 1000
+			}
+			ctx := s.ctx
+			if test.useWrongPiid {
+				piid, _ := uuid.NewV4()
+				ctx = context.WithValue(ctx, contextKeys.Piid, piid)
+			}
+			if test.deleteBefore {
+				_, err := gorm.G[entity.List](s.db).Where("id = ?", listId).Delete(s.ctx)
+				s.Require().NoError(err)
+			}
+
+			list, err := s.ListRepo.First(ctx)
+			if test.expectError != nil {
+				s.ErrorIs(err, test.expectError)
 				return
 			}
-			s.NoError(err)
-			s.EqualValues(1, list.ID)
-			sameList, err := s.ListRepo.FirstOrCreate(s.ctx)
-			rows, _ := gorm.G[entity.List](s.ListRepo.db).Count(s.ctx, "*")
-			s.EqualValues(rows, 1)
-			s.NoError(err)
-			s.Equal(list, sameList)
-
-			rows, _ = gorm.G[entity.List](s.ListRepo.db).Count(s.ctx, "*")
-			s.EqualValues(rows, 1)
+			s.Greater(list.ID, uint(0))
+			s.Len(list.Items, 1)
 		})
 	}
 }

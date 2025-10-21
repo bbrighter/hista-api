@@ -20,7 +20,7 @@ type Item struct {
 	List     List      `gorm:"foreignKey:ListId,ListPiid;references:ID,PIID"`
 
 	Checked  bool
-	Quantity uint8
+	Quantity *uint8
 
 	CreatedAt time.Time
 	DeletedAt gorm.DeletedAt
@@ -30,4 +30,22 @@ func (i *Item) SetPiid(piid uuid.UUID) {
 	i.PIID = piid
 	i.ProductPiid = piid
 	i.ListPiid = piid
+}
+
+type ItemResponse struct {
+	ID        uint   `json:"id"`
+	ProductId uint   `json:"productId"`
+	ListId    uint   `json:"listId"`
+	Checked   bool   `json:"checked"`
+	Quantity  *uint8 `json:"quantity,omitempty"`
+}
+
+func (item Item) ToResponse() ItemResponse {
+	return ItemResponse{
+		ID:        item.ID,
+		ListId:    item.ListId,
+		ProductId: item.ProductId,
+		Checked:   item.Checked,
+		Quantity:  item.Quantity,
+	}
 }

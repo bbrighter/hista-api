@@ -5,6 +5,7 @@ import (
 
 	"encore.app/shoppingList/internal"
 	"encore.app/shoppingList/internal/repository"
+	unitofwork "encore.app/shoppingList/internal/unitOfWork"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -12,7 +13,9 @@ import (
 
 // encore:service
 type Service struct {
-	uc internal.IItemUseCase
+	item internal.IItemUseCase
+	list internal.IListUseCase
+	prod internal.IProductUseCase
 }
 
 var shoppingListDb *sqldb.Database = sqldb.NewDatabase("shopping_list", sqldb.DatabaseConfig{
@@ -43,8 +46,13 @@ func initService() (*Service, error) {
 }
 
 func initServiceWithDb(db *gorm.DB) *Service {
+	// unitOfWork := repository.NewUnitOfWork(db)
+	uow := unitofwork.NewUnitOfWork(db)
 	itemRepo := repository.NewItemRepo(db)
 	productRepo := repository.NewProductRepo(db)
-	uc := internal.NewItemUseCase(itemRepo, productRepo)
-	return &Service{uc: uc}
+	listRepo := repository.NewListRepo(db)
+	uc := internal.NewItemUseCase(itemRepo, productRepo, uow)
+	list := internal.NewListUseCase(listRepo, itemRepo, uow)
+	products := internal.NewProductUseCase(productRepo)
+	return &Service{item: uc, list: list, prod: products}
 }

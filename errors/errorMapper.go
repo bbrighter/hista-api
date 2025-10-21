@@ -22,7 +22,7 @@ func MapError(err error) error {
 	case errors.Is(err, PiidMissing):
 		return PiidMissing
 	case errors.Is(err, gorm.ErrDuplicatedKey):
-		return NewError("duplicate key", errs.AlreadyExists)
+		return NewEncoreError("duplicate key", errs.AlreadyExists)
 
 	}
 
@@ -30,11 +30,23 @@ func MapError(err error) error {
 	if ok {
 		switch pgErr.Code {
 		case "25505":
-			return NewError("duplicate key", errs.AlreadyExists)
+			return NewEncoreError("duplicate key", errs.AlreadyExists)
 		case "23503":
-			return NewError("foreign key missing", errs.NotFound)
+			return NewEncoreError("foreign key missing", errs.NotFound)
 		}
+	}
 
+	customerErr, ok := err.(*CustomError)
+	if ok {
+		switch customerErr.Kind {
+		case ErrBadRequest:
+			return NewEncoreError(customerErr.Error(), errs.InvalidArgument)
+		}
+	}
+
+	encoreErr, ok := err.(*errs.Error)
+	if ok {
+		return encoreErr
 	}
 
 	return &errs.Error{Code: errs.Internal, Message: "internal error", Details: errs.Details(err)}

@@ -1,28 +1,29 @@
 package shoppinglist
 
-import "context"
+import (
+	"context"
 
-type IdResponse struct {
-	ID uint `json:"id"`
-}
+	"encore.app/errors"
+	entity "encore.app/shoppingList/entity"
+)
 
-// encore:api method=POST path=/item/:productId
-func (s *Service) PostItem(ctx context.Context, productId uint) (IdResponse, error) {
-	id, err := s.uc.AddItemByProductId(ctx, productId)
-	return IdResponse{ID: id}, err
+// encore:api auth method=POST path=/item/:productId
+func (s *Service) PostItem(ctx context.Context, productId uint) (entity.IdResponse, error) {
+	id, err := s.item.AddItemByProductId(ctx, productId)
+	return entity.ToIdResponse(id), errors.MapError(err)
 }
 
 type ItemNameParams struct {
 	Name string `json:"name"`
 }
 
-type ItemResponse struct {
-	ID        uint `json:"id"`
-	ProductId uint `json:"productId"`
+// encore:api auth method=POST path=/item
+func (s *Service) PostItemByName(ctx context.Context, params ItemNameParams) (entity.ItemResponse, error) {
+	item, err := s.item.AddItemByName(ctx, params.Name)
+	return item.ToResponse(), errors.MapError(err)
 }
 
-// encore:api method=POST path=/item
-func (s *Service) PostItemByName(ctx context.Context, params ItemNameParams) (ItemResponse, error) {
-	item, err := s.uc.AddItemByName(ctx, params.Name)
-	return ItemResponse{ID: item.ID, ProductId: item.ProductId}, err
+// encore:api auth method=PATCH path=/item/:itemId/check
+func (s *Service) CheckItem(ctx context.Context, itemId uint) error {
+	return errors.MapError(s.item.CheckItem(ctx, itemId))
 }

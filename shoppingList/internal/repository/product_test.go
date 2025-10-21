@@ -7,7 +7,7 @@ import (
 	"encore.dev/types/uuid"
 )
 
-func (s *ShoppingListTestSuite) TestCreate() {
+func (s *RepoTestSuite) TestCreate() {
 	tests := map[string]struct {
 		useExistingName       bool
 		createInDifferentPiid bool

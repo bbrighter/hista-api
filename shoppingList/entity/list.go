@@ -15,3 +15,19 @@ type List struct {
 func (l *List) SetPiid(piid uuid.UUID) {
 	l.PIID = piid
 }
+
+type ListResponse struct {
+	ID    uint           `json:"id"`
+	Items []ItemResponse `json:"items"`
+}
+
+func (list List) ToResponse() ListResponse {
+	var itemsResp = []ItemResponse{}
+	for _, item := range list.Items {
+		itemsResp = append(itemsResp, item.ToResponse())
+	}
+	return ListResponse{
+		ID:    list.ID,
+		Items: itemsResp,
+	}
+}

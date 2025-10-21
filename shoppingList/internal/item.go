@@ -2,21 +2,11 @@ package internal
 
 import (
 	"context"
+	"strings"
 
+	"encore.app/errors"
 	"encore.app/shoppingList/entity"
 )
-
-type IItemRepo interface {
-	List(ctx context.Context) ([]*entity.Item, error)
-	Create(ctx context.Context, productId uint, listId uint) (uint, error)
-	Delete(ctx context.Context, itemId uint) error
-	Check(ctx context.Context, itemId uint) error
-	Find(ctx context.Context, id uint) (*entity.Item, error)
-}
-
-type IProductRepo interface {
-	Create(ctx context.Context, name string) (uint, error)
-}
 
 type IItemUseCase interface {
 	AddItemByProductId(ctx context.Context, productId uint) (uint, error)
@@ -26,28 +16,40 @@ type IItemUseCase interface {
 }
 
 type ItemUseCase struct {
-	i IItemRepo
-	p IProductRepo
+	i   ItemRepo
+	p   ProductRepo
+	uow UnitOfWork
 }
 
-func NewItemUseCase(i IItemRepo, p IProductRepo) ItemUseCase {
-	return ItemUseCase{i: i, p: p}
+func NewItemUseCase(i ItemRepo, p ProductRepo, uow UnitOfWork) ItemUseCase {
+	return ItemUseCase{i: i, p: p, uow: uow}
 }
 
 func (uc ItemUseCase) AddItemByProductId(ctx context.Context, productId uint) (uint, error) {
-	return uc.i.Create(ctx, productId, 1)
+	id, err := uc.i.Create(ctx, productId, 1)
+	return id, errors.MapError(err)
 }
 func (uc ItemUseCase) AddItemByName(ctx context.Context, name string) (*entity.Item, error) {
-	// TODO: Or move this into one transaction?
-	prodId, err := uc.p.Create(ctx, name)
-	if err != nil {
-		return &entity.Item{}, err
-	}
-	itemId, err := uc.i.Create(ctx, prodId, 1)
-	if err != nil {
-		return &entity.Item{}, err
-	}
-	return uc.i.Find(ctx, itemId)
+	var returnItem = new(entity.Item)
+	err := uc.uow.WithTransaction(ctx, func(tx UnitOfWork) error {
+		trimmedName := strings.TrimSpace(name)
+		prodId, err := uc.p.Create(ctx, trimmedName)
+		if err != nil {
+			return err
+		}
+		itemId, err := uc.i.Create(ctx, prodId, 1)
+		if err != nil {
+			return err
+		}
+		item, err := uc.i.Find(ctx, itemId)
+		if err != nil {
+			return err
+		}
+		returnItem = item
+		return nil
+	})
+
+	return returnItem, err
 }
 func (uc ItemUseCase) CheckItem(ctx context.Context, itemId uint) error {
 	return uc.i.Check(ctx, itemId)

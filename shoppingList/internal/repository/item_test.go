@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *ShoppingListTestSuite) TestCreateItem() {
+func (s *RepoTestSuite) TestCreateItem() {
 	tests := map[string]struct {
 		useNonExistingId bool
 		useWrongPiid     bool
@@ -23,7 +23,6 @@ func (s *ShoppingListTestSuite) TestCreateItem() {
 
 	for name, test := range tests {
 		s.Run(name, func() {
-			// _, repo, _, ctx := initTest(t)
 			var prod entity.Product = s.createProduct(s.ctx)
 			var list entity.List = s.createList()
 			prodId := prod.ID
@@ -38,21 +37,49 @@ func (s *ShoppingListTestSuite) TestCreateItem() {
 			itemId, err := s.ItemRepo.Create(createCtx, prodId, list.ID)
 			if test.expectError != "" {
 				s.AssertPostgresError(err, test.expectError)
-				// pgErr, ok := err.(*pgconn.PgError)
-				// s.True(ok, "expected Postgres error")
-				// s.Equal(test.expectError, pgErr.Code)
 			} else {
-				s.EqualValues(itemId, 1)
+				s.Greater(itemId, uint(0))
 			}
 		})
 	}
 }
 
-// func TestDeleteItem(t *testing.T) {
+func (s *RepoTestSuite) TestDeleteItem() {
+	tests := map[string]struct {
+		useNonExistingId bool
+		useWrongPiid     bool
+		expectError      error
+	}{
+		"ok":             {},
+		"id not found":   {useNonExistingId: true, expectError: gorm.ErrRecordNotFound},
+		"piid not found": {useWrongPiid: true, expectError: gorm.ErrRecordNotFound},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			list, _, item := s.createItem()
+			var id uint = item.ID
+			if test.useNonExistingId {
+				id = 1000
+			}
+			ctx := s.ctx
+			if test.useWrongPiid {
+				guid, _ := uuid.NewV4()
+				ctx = context.WithValue(ctx, contextKeys.Piid, guid)
+			}
 
-// }
+			err := s.ItemRepo.Delete(ctx, id)
+			if test.expectError != nil {
+				s.ErrorIs(err, test.expectError)
+				return
+			}
+			s.NoError(err)
+			items, _ := s.ItemRepo.List(ctx, list.ID)
+			s.Len(items, 0)
+		})
+	}
+}
 
-func (s *ShoppingListTestSuite) TestCheckItem() {
+func (s *RepoTestSuite) TestCheckItem() {
 	tests := map[string]struct {
 		numberOfChecks   int
 		useNonExistingId bool
@@ -68,7 +95,7 @@ func (s *ShoppingListTestSuite) TestCheckItem() {
 
 	for name, test := range tests {
 		s.Run(name, func() {
-			_, item := s.createItem()
+			_, _, item := s.createItem()
 
 			itemId := item.ID
 			if test.useNonExistingId {
@@ -88,33 +115,39 @@ func (s *ShoppingListTestSuite) TestCheckItem() {
 				}
 				s.NoError(err)
 			}
-			respItem, err := generic_queries.First[*entity.Item](ctx, s.ItemRepo.db, itemId)
+			respItem, err := generic_queries.First[*entity.Item](ctx, s.db, itemId)
 			s.Require().NoError(err)
 			s.Equal(test.expectedValue, respItem.Checked)
 		})
 	}
 }
 
-func (s *ShoppingListTestSuite) TestListItems() {
+func (s *RepoTestSuite) TestListItems() {
 	tests := map[string]struct {
 		useWrongPiid bool
+		useWrongList bool
 		expectedLen  int
 	}{
 		"ok":         {expectedLen: 1},
 		"wrong piid": {useWrongPiid: true, expectedLen: 0},
+		"wrong list": {useWrongList: true, expectedLen: 0},
 	}
 
 	for name, test := range tests {
 		s.Run(name, func() {
-			s.createItem()
+			list, _, _ := s.createItem()
 
 			ctx := s.ctx
 			if test.useWrongPiid {
 				guid, _ := uuid.NewV4()
 				ctx = context.WithValue(ctx, contextKeys.Piid, guid)
 			}
+			listId := list.ID
+			if test.useWrongList {
+				listId = 1000
+			}
 
-			items, err := s.ItemRepo.List(ctx)
+			items, err := s.ItemRepo.List(ctx, listId)
 			s.NoError(err)
 			s.Len(items, test.expectedLen)
 		})

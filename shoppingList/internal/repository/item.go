@@ -5,6 +5,7 @@ import (
 
 	"encore.app/shared/generic_queries"
 	"encore.app/shoppingList/entity"
+	"encore.app/shoppingList/internal"
 	"gorm.io/gorm"
 )
 
@@ -12,7 +13,7 @@ type ItemRepo struct {
 	db *gorm.DB
 }
 
-func NewItemRepo(db *gorm.DB) ItemRepo {
+func NewItemRepo(db *gorm.DB) internal.ItemRepo {
 	return ItemRepo{db: db}
 }
 
@@ -44,8 +45,16 @@ func (r ItemRepo) Check(ctx context.Context, id uint) error {
 	return nil
 }
 
-func (r ItemRepo) List(ctx context.Context) ([]*entity.Item, error) {
-	return generic_queries.List[*entity.Item](ctx, r.db)
+func (r ItemRepo) List(ctx context.Context, listId uint) ([]entity.Item, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return gorm.G[entity.Item](r.db).
+		Where("pi_id = ?", piid).
+		Where("list_id = ?", listId).
+		Preload("Product", nil).
+		Find(ctx)
 }
 
 func (r ItemRepo) Find(ctx context.Context, id uint) (*entity.Item, error) {
@@ -58,5 +67,4 @@ func (r ItemRepo) Find(ctx context.Context, id uint) (*entity.Item, error) {
 		Where("id = ?", id).
 		Preload("Product", nil).
 		First(ctx)
-
 }
