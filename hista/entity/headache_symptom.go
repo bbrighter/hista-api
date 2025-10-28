@@ -9,18 +9,19 @@ import (
 type HeadacheSymptom string
 
 const (
-	ShortTermMemory   HeadacheSymptom = "short-term memory"
-	Tinnitus          HeadacheSymptom = "tinnitus"
-	LightSensitive    HeadacheSymptom = "light-sensitive"
-	NoiseSensitive    HeadacheSymptom = "noise-sensitive"
-	OdorSensitive     HeadacheSymptom = "odor-sensitive"
-	Dizziness         HeadacheSymptom = "dizziness"
-	ConcentrationLack HeadacheSymptom = "lack of concentration"
-	Tired             HeadacheSymptom = "tired"
-	Exhausted         HeadacheSymptom = "exhausted"
-	PhysicalActivity  HeadacheSymptom = "physical activity"
-	MindActivity      HeadacheSymptom = "mind activity"
-	Nausea            HeadacheSymptom = "nausea"
+	ShortTermMemory    HeadacheSymptom = "short-term memory"
+	Tinnitus           HeadacheSymptom = "tinnitus"
+	LightSensitive     HeadacheSymptom = "light-sensitive"
+	NoiseSensitive     HeadacheSymptom = "noise-sensitive"
+	OdorSensitive      HeadacheSymptom = "odor-sensitive"
+	Dizziness          HeadacheSymptom = "dizziness"
+	ConcentrationLack  HeadacheSymptom = "lack of concentration"
+	Tired              HeadacheSymptom = "tired"
+	Exhausted          HeadacheSymptom = "exhausted"
+	PhysicalActivity   HeadacheSymptom = "physical activity"
+	MindActivity       HeadacheSymptom = "mind activity"
+	Nausea             HeadacheSymptom = "nausea"
+	NoPhysicalActivity HeadacheSymptom = "no physical activity"
 )
 
 var validHeadacheSymptoms = map[HeadacheSymptom]struct{}{
@@ -28,6 +29,7 @@ var validHeadacheSymptoms = map[HeadacheSymptom]struct{}{
 	NoiseSensitive: {}, OdorSensitive: {}, Dizziness: {},
 	ConcentrationLack: {}, Tired: {}, Exhausted: {},
 	PhysicalActivity: {}, MindActivity: {}, Nausea: {},
+	NoPhysicalActivity: {},
 }
 
 type HeadacheSymptoms []HeadacheSymptom

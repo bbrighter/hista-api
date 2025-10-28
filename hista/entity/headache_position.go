@@ -18,12 +18,14 @@ const (
 	Ear    HeadachePosition = "ear"
 	Temple HeadachePosition = "temple"
 	Side   HeadachePosition = "side"
+	Eye    HeadachePosition = "eye"
 )
 
 var validHeadachePositions = map[HeadachePosition]struct{}{
 	Front: {}, Back: {}, Top: {},
 	Left: {}, Right: {}, Neck: {},
 	Ear: {}, Temple: {}, Side: {},
+	Eye: {},
 }
 
 type HeadachePositions []HeadachePosition
