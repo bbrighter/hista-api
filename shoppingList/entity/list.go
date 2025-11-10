@@ -1,6 +1,8 @@
 package entity
 
 import (
+	"sort"
+
 	"encore.dev/types/uuid"
 	"gorm.io/gorm"
 )
@@ -26,6 +28,9 @@ func (list List) ToResponse() ListResponse {
 	for _, item := range list.Items {
 		itemsResp = append(itemsResp, item.ToResponse())
 	}
+	sort.Slice(itemsResp, func(i, j int) bool {
+		return itemsResp[i].CreatedAt.Before(itemsResp[j].CreatedAt)
+	})
 	return ListResponse{
 		ID:    list.ID,
 		Items: itemsResp,

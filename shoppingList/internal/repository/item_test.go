@@ -14,11 +14,13 @@ func (s *RepoTestSuite) TestCreateItem() {
 	tests := map[string]struct {
 		useNonExistingId bool
 		useWrongPiid     bool
+		createTwice      bool
 		expectError      string
 	}{
 		"ok":            {},
 		"wrong prod id": {useNonExistingId: true, expectError: "23503"},
 		"wrong piid":    {useWrongPiid: true, expectError: "23503"},
+		"create twice":  {createTwice: true, expectError: "23505"},
 	}
 
 	for name, test := range tests {
@@ -33,6 +35,9 @@ func (s *RepoTestSuite) TestCreateItem() {
 			if test.useWrongPiid {
 				newGuid, _ := uuid.NewV4()
 				createCtx = context.WithValue(s.ctx, contextKeys.Piid, newGuid)
+			}
+			if test.createTwice {
+				s.ItemRepo.Create(createCtx, prodId, list.ID)
 			}
 			itemId, err := s.ItemRepo.Create(createCtx, prodId, list.ID)
 			if test.expectError != "" {

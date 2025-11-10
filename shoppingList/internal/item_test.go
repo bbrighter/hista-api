@@ -8,12 +8,14 @@ import (
 func (s *internalTestSuite) TestAddItemByName() {
 	ctx := s.ctx
 	tests := map[string]struct {
-		prodName      string
-		prodCreateErr error
+		prodName        string
+		prodCreateErr   error
+		uniquenessError error
 	}{
-		"ok":       {prodName: "name"},
-		"trimming": {prodName: "  name  "},
-		"prod err": {prodName: "name", prodCreateErr: gorm.ErrInvalidDB},
+		"ok":             {prodName: "name"},
+		"trimming":       {prodName: "  name  "},
+		"prod err":       {prodName: "name", prodCreateErr: gorm.ErrInvalidDB},
+		"already exists": {prodName: "name", uniquenessError: gorm.ErrCheckConstraintViolated},
 	}
 
 	for name, test := range tests {
@@ -21,9 +23,14 @@ func (s *internalTestSuite) TestAddItemByName() {
 			s.prodRepo.On("Create", ctx, "name").Return(1, test.prodCreateErr)
 			s.itemRepo.On("Create", ctx, uint(1), uint(1)).Return(10, nil)
 			s.itemRepo.On("Find", ctx, uint(10)).Return(&entity.Item{ID: 10, ProductId: 1}, nil)
+			s.itemRepo.On("CheckUniqueness", ctx, uint(1), uint(1)).Return(test.uniquenessError)
 
 			item, err := s.itemUc.AddItemByName(ctx, 1, test.prodName)
 			if test.prodCreateErr != nil {
+				s.itemRepo.AssertNotCalled(s.T(), "Create")
+				return
+			}
+			if test.uniquenessError != nil {
 				s.itemRepo.AssertNotCalled(s.T(), "Create")
 				return
 			}

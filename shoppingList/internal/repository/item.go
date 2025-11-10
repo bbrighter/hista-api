@@ -17,6 +17,25 @@ func NewItemRepo(db *gorm.DB) internal.ItemRepo {
 	return ItemRepo{db: db}
 }
 
+func (r ItemRepo) CheckUniqueness(ctx context.Context, productId uint, listId uint) error {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	count, err := gorm.G[*entity.Item](r.db).
+		Where("pi_id = ?", piid).
+		Where("product_id = ?", productId).
+		Where("list_id = ?", listId).
+		Count(ctx, "*")
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return gorm.ErrCheckConstraintViolated
+	}
+	return nil
+}
+
 func (r ItemRepo) Create(ctx context.Context, productId uint, listId uint) (uint, error) {
 	var item = &entity.Item{ProductId: productId, ListId: listId}
 	err := generic_queries.Create(ctx, r.db, item)
@@ -24,7 +43,18 @@ func (r ItemRepo) Create(ctx context.Context, productId uint, listId uint) (uint
 }
 
 func (r ItemRepo) Delete(ctx context.Context, id uint) error {
-	return generic_queries.Delete[*entity.Item](ctx, r.db, id)
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	rows, err := gorm.G[*entity.Item](r.db.Unscoped()).Where("pi_id = ?", piid).Where("id = ?", id).Delete(ctx)
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
 
 func (r ItemRepo) Check(ctx context.Context, id uint) error {

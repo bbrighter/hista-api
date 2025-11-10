@@ -26,15 +26,22 @@ func NewItemUseCase(i ItemRepo, p ProductRepo, uow UnitOfWork) ItemUseCase {
 }
 
 func (uc ItemUseCase) AddItemByProductId(ctx context.Context, listId uint, productId uint) (uint, error) {
+	if err := uc.i.CheckUniqueness(ctx, productId, listId); err != nil {
+		return 0, err
+	}
 	id, err := uc.i.Create(ctx, productId, listId)
 	return id, errors.MapError(err)
 }
 func (uc ItemUseCase) AddItemByName(ctx context.Context, listId uint, name string) (*entity.Item, error) {
+
 	var returnItem = new(entity.Item)
 	err := uc.uow.WithTransaction(ctx, func(tx UnitOfWork) error {
 		trimmedName := strings.TrimSpace(name)
 		prodId, err := uc.p.Create(ctx, trimmedName)
 		if err != nil {
+			return err
+		}
+		if err := uc.i.CheckUniqueness(ctx, prodId, listId); err != nil {
 			return err
 		}
 		itemId, err := uc.i.Create(ctx, prodId, listId)

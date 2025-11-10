@@ -97,3 +97,26 @@ func (s *ApiTestSuite) TestCheckItem() {
 		})
 	}
 }
+
+func (s *ApiTestSuite) TestDeleteItem() {
+	tests := map[string]struct {
+		useWrongItemId  bool
+		expectedErrVode errs.ErrCode
+	}{
+		"ok":        {},
+		"not found": {useWrongItemId: true, expectedErrVode: errs.NotFound},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			var itemId uint = 1000
+			if !test.useWrongItemId {
+				listId := s.createList()
+				itemId = s.createItem(listId)
+			}
+			ctx := s.GetCtx(false)
+			err := s.service.DeleteItem(ctx, s.piid, itemId)
+
+			s.assertErrCode(err, test.expectedErrVode)
+		})
+	}
+}

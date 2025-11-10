@@ -26,6 +26,7 @@ type (
 		Check(ctx context.Context, itemId uint) error
 		Find(ctx context.Context, id uint) (*entity.Item, error)
 		List(ctx context.Context, listId uint) ([]entity.Item, error)
+		CheckUniqueness(ctx context.Context, productId uint, listId uint) error
 	}
 
 	ProductRepo interface {

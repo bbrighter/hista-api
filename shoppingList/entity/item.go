@@ -33,11 +33,12 @@ func (i *Item) SetPiid(piid uuid.UUID) {
 }
 
 type ItemResponse struct {
-	ID        uint   `json:"id"`
-	ProductId uint   `json:"productId"`
-	ListId    uint   `json:"listId"`
-	Checked   bool   `json:"checked"`
-	Quantity  *uint8 `json:"quantity,omitempty"`
+	ID        uint      `json:"id"`
+	ProductId uint      `json:"productId"`
+	ListId    uint      `json:"listId"`
+	Checked   bool      `json:"checked"`
+	Quantity  *uint8    `json:"quantity,omitempty" encore:"optional"`
+	CreatedAt time.Time `json:"-"`
 }
 
 func (item Item) ToResponse() ItemResponse {
@@ -47,5 +48,6 @@ func (item Item) ToResponse() ItemResponse {
 		ProductId: item.ProductId,
 		Checked:   item.Checked,
 		Quantity:  item.Quantity,
+		CreatedAt: item.CreatedAt,
 	}
 }

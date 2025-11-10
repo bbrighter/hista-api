@@ -36,6 +36,11 @@ func (m *MockItemRepo) List(ctx context.Context, listId uint) ([]entity.Item, er
 	return args.Get(0).([]entity.Item), args.Error(1)
 }
 
+func (m *MockItemRepo) CheckUniqueness(ctx context.Context, productId uint, listId uint) error {
+	args := m.Called(ctx, productId, listId)
+	return args.Error(0)
+}
+
 type MockListRepo struct{ mock.Mock }
 
 func (m *MockListRepo) First(ctx context.Context) (*entity.List, error) {
