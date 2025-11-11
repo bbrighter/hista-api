@@ -11,11 +11,11 @@ type Item struct {
 	ID   uint      `gorm:"primaryKey;autoIncrement"`
 	PIID uuid.UUID `gorm:"type:uuid;primaryKey"`
 
-	ProductId   uint
+	ProductId   uint      `gorm:"uniqueIndex:idx_product_list"`
 	ProductPiid uuid.UUID `gorm:"type:uuid"`
 	Product     Product   `gorm:"foreignKey:ProductId,ProductPiid;references:ID,PIID"`
 
-	ListId   uint
+	ListId   uint      `gorm:"uniqueIndex:idx_product_list"`
 	ListPiid uuid.UUID `gorm:"type:uuid"`
 	List     List      `gorm:"foreignKey:ListId,ListPiid;references:ID,PIID"`
 

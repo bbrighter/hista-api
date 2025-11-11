@@ -10,7 +10,7 @@ import (
 
 type IListUseCase interface {
 	FirstOrCreate(ctx context.Context) (*entity.List, error)
-	Delete(ctx context.Context, id uint) error
+	Delete(ctx context.Context, id uint, force bool) error
 }
 
 type ListUseCase struct {
@@ -38,17 +38,27 @@ func (l ListUseCase) FirstOrCreate(ctx context.Context) (*entity.List, error) {
 	return returnList, err
 }
 
-func (l ListUseCase) Delete(ctx context.Context, id uint) error {
+func (l ListUseCase) Delete(ctx context.Context, id uint, force bool) error {
 	err := l.uow.WithTransaction(ctx, func(tx UnitOfWork) error {
 		items, err := tx.Item().List(ctx, id)
 		if err != nil {
 			return err
 		}
+		var uncheckedIds []uint
 		for _, item := range items {
 			if !item.Checked {
-				return errors.NewErrBadRequest(fmt.Sprintf("item unchecked: id = %d", item.ID))
+				uncheckedIds = append(uncheckedIds, item.ID)
 			}
 		}
+		if len(uncheckedIds) > 0 && !force {
+			return fmt.Errorf("%w with item id %v", errors.ErrUncheckedItems, uncheckedIds)
+		}
+		if len(uncheckedIds) > 0 && force {
+			if err := tx.Item().Delete(ctx, uncheckedIds); err != nil {
+				return err
+			}
+		}
+
 		return tx.List().Delete(ctx, id)
 	})
 

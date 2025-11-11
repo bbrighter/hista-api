@@ -31,5 +31,5 @@ func (s *Service) CheckItem(ctx context.Context, piid uuid.UUID, itemId uint) er
 
 // encore:api auth method=DELETE path=/piid/:piid/item/:itemId
 func (s *Service) DeleteItem(ctx context.Context, piid uuid.UUID, itemId uint) error {
-	return errors.MapError(s.item.DeleteItem(ctx, itemId))
+	return errors.MapError(s.item.DeleteItem(ctx, []uint{itemId}))
 }

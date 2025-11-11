@@ -14,7 +14,11 @@ func (s *Service) GetOrCreateList(ctx context.Context, piid uuid.UUID) (entity.L
 	return list.ToResponse(), errors.MapError(err)
 }
 
+type DeleteListForceDeleteParam struct {
+	Force bool `query:"force"`
+}
+
 // encore:api auth method=DELETE path=/piid/:piid/list/:listId
-func (s *Service) DeleteList(ctx context.Context, piid uuid.UUID, listId uint) error {
-	return errors.MapError(s.list.Delete(ctx, listId))
+func (s *Service) DeleteList(ctx context.Context, piid uuid.UUID, listId uint, params DeleteListForceDeleteParam) error {
+	return errors.MapError(s.list.Delete(ctx, listId, params.Force))
 }

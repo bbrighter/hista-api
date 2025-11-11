@@ -12,15 +12,15 @@ import (
 
 func (s *RepoTestSuite) TestCreateItem() {
 	tests := map[string]struct {
-		useNonExistingId bool
-		useWrongPiid     bool
-		createTwice      bool
-		expectError      string
+		useNonExistingId    bool
+		useWrongPiid        bool
+		createTwice         bool
+		expectPostgresError string
 	}{
 		"ok":            {},
-		"wrong prod id": {useNonExistingId: true, expectError: "23503"},
-		"wrong piid":    {useWrongPiid: true, expectError: "23503"},
-		"create twice":  {createTwice: true, expectError: "23505"},
+		"wrong prod id": {useNonExistingId: true, expectPostgresError: "23503"},
+		"wrong piid":    {useWrongPiid: true, expectPostgresError: "23503"},
+		"create twice":  {createTwice: true, expectPostgresError: "23505"},
 	}
 
 	for name, test := range tests {
@@ -40,8 +40,8 @@ func (s *RepoTestSuite) TestCreateItem() {
 				s.ItemRepo.Create(createCtx, prodId, list.ID)
 			}
 			itemId, err := s.ItemRepo.Create(createCtx, prodId, list.ID)
-			if test.expectError != "" {
-				s.AssertPostgresError(err, test.expectError)
+			if test.expectPostgresError != "" {
+				s.AssertPostgresError(err, test.expectPostgresError)
 			} else {
 				s.Greater(itemId, uint(0))
 			}
@@ -61,10 +61,10 @@ func (s *RepoTestSuite) TestDeleteItem() {
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
-			list, _, item := s.createItem()
-			var id uint = item.ID
+			_, _, item := s.createItem()
+			var id []uint = []uint{item.ID}
 			if test.useNonExistingId {
-				id = 1000
+				id = []uint{1000}
 			}
 			ctx := s.ctx
 			if test.useWrongPiid {
@@ -78,8 +78,9 @@ func (s *RepoTestSuite) TestDeleteItem() {
 				return
 			}
 			s.NoError(err)
-			items, _ := s.ItemRepo.List(ctx, list.ID)
-			s.Len(items, 0)
+			var count int64
+			s.db.Unscoped().Debug().Model(&entity.Item{}).Count(&count)
+			s.EqualValues(count, 0)
 		})
 	}
 }

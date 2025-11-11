@@ -30,3 +30,5 @@ CREATE TABLE "items" (
   CONSTRAINT "fk_items_product" FOREIGN KEY ("product_id", "product_piid") REFERENCES "products" ("id", "pi_id") ON UPDATE NO ACTION ON DELETE NO ACTION,
   CONSTRAINT "fk_lists_items" FOREIGN KEY ("list_id", "list_piid") REFERENCES "lists" ("id", "pi_id") ON UPDATE NO ACTION ON DELETE NO ACTION
 );
+-- create index "idx_product_list" to table: "items"
+CREATE UNIQUE INDEX "idx_product_list" ON "items" ("product_id", "list_id");

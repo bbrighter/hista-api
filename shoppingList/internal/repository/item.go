@@ -42,16 +42,16 @@ func (r ItemRepo) Create(ctx context.Context, productId uint, listId uint) (uint
 	return item.ID, err
 }
 
-func (r ItemRepo) Delete(ctx context.Context, id uint) error {
+func (r ItemRepo) Delete(ctx context.Context, ids []uint) error {
 	piid, err := generic_queries.PiidFromCtx(ctx)
 	if err != nil {
 		return err
 	}
-	rows, err := gorm.G[*entity.Item](r.db.Unscoped()).Where("pi_id = ?", piid).Where("id = ?", id).Delete(ctx)
-	if err != nil {
+	tx := r.db.Unscoped().Where("pi_id = ?", piid).Where("id IN ?", ids).Delete(&entity.Item{})
+	if tx.Error != nil {
 		return err
 	}
-	if rows == 0 {
+	if tx.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
 	return nil

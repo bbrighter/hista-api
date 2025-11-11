@@ -8,30 +8,39 @@ import (
 func (s *internalTestSuite) TestDeleteList() {
 	ctx := s.ctx
 	tests := map[string]struct {
-		items           []entity.Item
-		listItemError   error
-		deleteListError error
-		expectedError   string
+		items            []entity.Item
+		listItemError    error
+		deleteListError  error
+		expectedError    string
+		forceDelete      bool
+		deleteItemCalled bool
 	}{
-		"ok":              {items: []entity.Item{{ID: 1, Checked: true}}},
-		"no items":        {items: []entity.Item{}},
-		"unchecked items": {items: []entity.Item{{ID: 1, Checked: false}, {ID: 2, Checked: true}}, expectedError: "item unchecked"},
-		"delete error":    {deleteListError: gorm.ErrRecordNotFound, expectedError: "not found"},
-		"list item error": {listItemError: gorm.ErrRecordNotFound, expectedError: "not found"},
+		"ok":                            {items: []entity.Item{{ID: 1, Checked: true}}},
+		"no items":                      {items: []entity.Item{}},
+		"unchecked items":               {items: []entity.Item{{ID: 1, Checked: false}, {ID: 2, Checked: true}}, expectedError: "with item id"},
+		"delete error":                  {deleteListError: gorm.ErrRecordNotFound, expectedError: "not found"},
+		"list item error":               {listItemError: gorm.ErrRecordNotFound, expectedError: "not found"},
+		"force with unchecked items":    {items: []entity.Item{{ID: 1, Checked: false}}, forceDelete: true, deleteItemCalled: true},
+		"force without unchecked items": {items: []entity.Item{{ID: 1, Checked: true}}, forceDelete: true},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
 			var listId uint = 1
+			var itemIds []uint = []uint{1}
 			s.itemRepo.On("List", ctx, listId).Return(test.items, test.listItemError)
+			s.itemRepo.On("Delete", ctx, itemIds).Return(nil)
 			s.listRepo.On("Delete", ctx, listId).Return(test.deleteListError)
 
-			err := s.listUc.Delete(ctx, listId)
+			err := s.listUc.Delete(ctx, listId, test.forceDelete)
 			if test.expectedError != "" {
 				s.Error(err)
 				s.ErrorContains(err, test.expectedError)
 			} else {
 				s.NoError(err)
 				s.listRepo.AssertCalled(s.T(), "Delete", ctx, listId)
+			}
+			if test.deleteItemCalled {
+				s.itemRepo.AssertCalled(s.T(), "Delete", ctx, itemIds)
 			}
 		})
 	}

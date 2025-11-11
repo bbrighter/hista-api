@@ -17,8 +17,8 @@ func (m *MockItemRepo) Create(ctx context.Context, productId uint, listId uint) 
 	return uint(args.Int(0)), args.Error(1)
 }
 
-func (m *MockItemRepo) Delete(ctx context.Context, itemId uint) error {
-	args := m.Called(ctx, itemId)
+func (m *MockItemRepo) Delete(ctx context.Context, itemIds []uint) error {
+	args := m.Called(ctx, itemIds)
 	return args.Error(0)
 }
 

@@ -38,11 +38,13 @@ func (s *ApiTestSuite) TestDeleteList() {
 		useWrongPiid      bool
 		statusCode        errs.ErrCode
 		hasUncheckedItems bool
+		forceDelete       bool
 	}{
 		"ok":             {},
 		"not found":      {useWrongId: true, statusCode: errs.NotFound},
 		"has items left": {hasUncheckedItems: true, statusCode: errs.InvalidArgument},
 		"wrong piid":     {useWrongPiid: true, statusCode: errs.NotFound},
+		"force delete":   {hasUncheckedItems: true, forceDelete: true},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
@@ -54,7 +56,7 @@ func (s *ApiTestSuite) TestDeleteList() {
 				s.createItem(listId)
 			}
 			ctx := s.GetCtx(test.useWrongPiid)
-			err := s.service.DeleteList(ctx, s.piid, listId)
+			err := s.service.DeleteList(ctx, s.piid, listId, DeleteListForceDeleteParam{Force: test.forceDelete})
 			if test.statusCode != 0 {
 				encoreErr, ok := err.(*errs.Error)
 				s.True(ok)

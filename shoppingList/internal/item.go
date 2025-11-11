@@ -12,7 +12,7 @@ type IItemUseCase interface {
 	AddItemByProductId(ctx context.Context, listId uint, productId uint) (uint, error)
 	AddItemByName(ctx context.Context, listId uint, name string) (*entity.Item, error)
 	CheckItem(ctx context.Context, itemId uint) error
-	DeleteItem(ctx context.Context, itemId uint) error
+	DeleteItem(ctx context.Context, itemIds []uint) error
 }
 
 type ItemUseCase struct {
@@ -61,6 +61,6 @@ func (uc ItemUseCase) AddItemByName(ctx context.Context, listId uint, name strin
 func (uc ItemUseCase) CheckItem(ctx context.Context, itemId uint) error {
 	return uc.i.Check(ctx, itemId)
 }
-func (uc ItemUseCase) DeleteItem(ctx context.Context, itemId uint) error {
-	return uc.i.Delete(ctx, itemId)
+func (uc ItemUseCase) DeleteItem(ctx context.Context, itemIds []uint) error {
+	return uc.i.Delete(ctx, itemIds)
 }

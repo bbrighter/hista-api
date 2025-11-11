@@ -38,6 +38,10 @@ func MapError(err error) error {
 		}
 	}
 
+	if errors.Is(err, ErrUncheckedItems) {
+		return NewEncoreError(err.Error(), errs.InvalidArgument)
+	}
+
 	customerErr, ok := err.(*CustomError)
 	if ok {
 		switch customerErr.Kind {

@@ -38,11 +38,15 @@ func Create[T Piider](ctx context.Context, db *gorm.DB, t T) error {
 }
 
 func Delete[T Piider](ctx context.Context, db *gorm.DB, id uint) error {
+	return BatchDelete[T](ctx, db, []uint{id})
+}
+
+func BatchDelete[T Piider](ctx context.Context, db *gorm.DB, ids []uint) error {
 	piid, err := PiidFromCtx(ctx)
 	if err != nil {
 		return err
 	}
-	rows, err := gorm.G[T](db).Where("id = ?", id).Where("pi_id = ?", piid).Delete(ctx)
+	rows, err := gorm.G[T](db).Where("id IN ?", ids).Where("pi_id = ?", piid).Delete(ctx)
 	if err != nil {
 		return err
 	}
