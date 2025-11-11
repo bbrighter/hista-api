@@ -6,32 +6,36 @@ import (
 	"encore.dev/beta/errs"
 )
 
-func NewError(msg string, code errs.ErrCode) *errs.Error {
+func NewEncoreError(msg string, code errs.ErrCode) *errs.Error {
 	return &errs.Error{
 		Code:    code,
 		Message: msg,
 	}
 }
 
-var ErrorNotFound = NewError("not found", errs.NotFound)
+var ErrorNotFound = NewEncoreError("not found", errs.NotFound)
 
-var ErrorNil = NewError("must not be nil", errs.InvalidArgument)
+var ErrorNil = NewEncoreError("must not be nil", errs.InvalidArgument)
 
-var ErrorIDMissing = NewError("id must be set", errs.InvalidArgument)
+var ErrorIDMissing = NewEncoreError("id must be set", errs.InvalidArgument)
 
 func ErrorAttributeMustBeSet(attribute string) *errs.Error {
-	return NewError(attribute+" must be set", errs.InvalidArgument)
+	return NewEncoreError(attribute+" must be set", errs.InvalidArgument)
 }
 
-var ErrorUnauthenticated = NewError("unauthenticated", errs.Unauthenticated)
+var ErrorUnauthenticated = NewEncoreError("unauthenticated", errs.Unauthenticated)
 
 func BadRequest(msg string) *errs.Error {
-	return NewError(msg, errs.InvalidArgument)
+	return NewEncoreError(msg, errs.InvalidArgument)
 }
 
-func BadRequestf(format string, args ...interface{}) *errs.Error {
+func BadRequestf(format string, args ...any) *errs.Error {
 	msg := fmt.Sprintf(format, args...)
-	return NewError(msg, errs.InvalidArgument)
+	return NewEncoreError(msg, errs.InvalidArgument)
 }
 
-var PiidMissing = NewError("piid missing", errs.InvalidArgument)
+var PiidMissing = NewEncoreError("piid missing", errs.InvalidArgument)
+
+func ErrorReferenceNotFound(err error) *errs.Error {
+	return NewEncoreError("reference not found: "+err.Error(), errs.NotFound)
+}

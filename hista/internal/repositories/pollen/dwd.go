@@ -33,7 +33,7 @@ func (repo *DWDRepo) GetKarlsruheData() (pollen entity.DWDPollen, err error) {
 
 func (repo *DWDRepo) DwdStringToDate() (t time.Time, err error) {
 	if repo.response == nil {
-		return t, errors.NewError("Response is nil", errs.Internal)
+		return t, errors.NewEncoreError("Response is nil", errs.Internal)
 	}
 	var loc *time.Location
 	loc, err = time.LoadLocation("Europe/Berlin")

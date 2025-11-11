@@ -3,7 +3,33 @@
 	"tasks": [
 		{
 			"type": "shell",
-			"label": "OpenApi Spec",
+			"label": "OpenApi Spec Hista",
+			"command": "encore",
+			"args": [
+				"gen",
+				"client",
+				"-l",
+				"typescript",
+				"--services",
+				"hista,authentication",
+				"-e",
+				"local",
+				"-o",
+				"C:\\Users\\Test\\Documents\\Code\\hista-ui\\src\\api\\generatedApi.ts",
+			],
+			"icon": {
+				"id": "broadcast"
+			},
+			"group": "build",
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"close": true,
+			},
+		},
+		{
+			"type": "shell",
+			"label": "OpenApi Spec ShoppingList",
 			"command": "encore",
 			"args": [
 				"gen",
@@ -12,8 +38,10 @@
 				"typescript",
 				"-e",
 				"local",
+				"--services",
+				"shoppinglist,authentication",
 				"-o",
-				"C:\\Users\\Test\\Documents\\Code\\hista-ui\\src\\api\\generatedApi.ts",
+				"C:\\Users\\Test\\Documents\\Code\\shopping-list-ui\\src\\api\\generatedApi.ts",
 			],
 			"icon": {
 				"id": "broadcast"
@@ -81,6 +109,18 @@
 			"args": [
 				"${workspaceFolder}/product_mgmt/scripts/generate-migration",
 				"${input:migrationName}",
+			],
+			"icon": {
+				"id": "arrow-circle-up"
+			}
+		},
+		{
+			"type": "shell",
+			"label": "Atlas: migrate shopping list",
+			"command": "sh",
+			"args": [
+				"${workspaceFolder}/shoppingList/scripts/generate-migration",
+				" ${input:migrationName}",
 			],
 			"icon": {
 				"id": "arrow-circle-up"

@@ -57,3 +57,22 @@ env "api" {
 	}
 }
   
+data "external_schema" "shopping_list_gorm" {
+	program = ["env", "ENCORERUNTIME_NOPANIC=1", "go", "run", "./shoppingList/scripts/atlas-gorm-loader.go"]
+}
+  
+env "shopping_list" {
+	src = data.external_schema.shopping_list_gorm.url
+	url = "postgresql://hista-api-dpc2:local@127.0.0.1:9500/shopping_list?sslmode=disable"
+  
+	migration {
+		dir = "file://shoppingList/migrations"
+	  	format = golang-migrate
+	}
+
+	format {
+	  	migrate {
+			diff = "{{ sql . \"  \" }}"
+	  	}
+	}
+}
