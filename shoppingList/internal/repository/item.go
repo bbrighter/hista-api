@@ -57,6 +57,19 @@ func (r ItemRepo) Delete(ctx context.Context, ids []uint) error {
 	return nil
 }
 
+func (r ItemRepo) Patch(ctx context.Context, id uint, values map[string]any) error {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+
+	tx := r.db.Model(&entity.Item{}).Where("pi_id = ?", piid).Where("id = ?", id).Updates(values)
+	if tx.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return tx.Error
+}
+
 func (r ItemRepo) Check(ctx context.Context, id uint) error {
 	piid, err := generic_queries.PiidFromCtx(ctx)
 	if err != nil {

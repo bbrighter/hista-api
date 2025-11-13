@@ -33,3 +33,17 @@ func (s *Service) CheckItem(ctx context.Context, piid uuid.UUID, itemId uint) er
 func (s *Service) DeleteItem(ctx context.Context, piid uuid.UUID, itemId uint) error {
 	return errors.MapError(s.item.DeleteItem(ctx, []uint{itemId}))
 }
+
+type ItemPatchParams struct {
+	Quantity *uint8 `json:"quantity"`
+}
+
+// encore:api auth method=PATCH path=/piid/:piid/item/:itemId
+func (s *Service) PatchItem(ctx context.Context, piid uuid.UUID, itemId uint, params ItemPatchParams) error {
+	var zeroValue uint8 = 0
+	var quantity *uint8 = params.Quantity
+	if params.Quantity != nil && *params.Quantity == zeroValue {
+		quantity = nil
+	}
+	return errors.MapError(s.item.PatchItemQuantity(ctx, itemId, quantity))
+}

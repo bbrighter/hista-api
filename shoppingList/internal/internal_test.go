@@ -22,11 +22,6 @@ func (m *MockItemRepo) Delete(ctx context.Context, itemIds []uint) error {
 	return args.Error(0)
 }
 
-func (m *MockItemRepo) Check(ctx context.Context, itemId uint) error {
-	args := m.Called(ctx, itemId)
-	return args.Error(0)
-}
-
 func (m *MockItemRepo) Find(ctx context.Context, id uint) (*entity.Item, error) {
 	args := m.Called(ctx, id)
 	return args.Get(0).(*entity.Item), args.Error(1)
@@ -36,8 +31,8 @@ func (m *MockItemRepo) List(ctx context.Context, listId uint) ([]entity.Item, er
 	return args.Get(0).([]entity.Item), args.Error(1)
 }
 
-func (m *MockItemRepo) CheckUniqueness(ctx context.Context, productId uint, listId uint) error {
-	args := m.Called(ctx, productId, listId)
+func (m *MockItemRepo) Patch(ctx context.Context, id uint, values map[string]any) error {
+	args := m.Called(ctx, id, values)
 	return args.Error(0)
 }
 
