@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"encore.app/shared/contextKeys"
-	"encore.app/shared/generic_queries"
 	"encore.app/shoppingList/entity"
 	"encore.dev/types/uuid"
 	"gorm.io/gorm"
@@ -85,18 +84,21 @@ func (s *RepoTestSuite) TestDeleteItem() {
 	}
 }
 
-func (s *RepoTestSuite) TestCheckItem() {
+func (s *RepoTestSuite) TestPatchItem() {
+	var defaultQuantity uint8 = 3
+	defaultMap := map[string]any{"quantity": &defaultQuantity}
+	var nilQuantity *uint8
 	tests := map[string]struct {
-		numberOfChecks   int
 		useNonExistingId bool
 		useWrongPiid     bool
-		expectedValue    bool
-		expectError      error
+		expectedError    error
+		patchMap         map[string]any
 	}{
-		"ok":          {numberOfChecks: 1, expectedValue: true},
-		"check twice": {numberOfChecks: 2, expectedValue: false},
-		"not found":   {numberOfChecks: 1, useNonExistingId: true, expectError: gorm.ErrRecordNotFound},
-		"wrong piid":  {numberOfChecks: 1, useWrongPiid: true, expectError: gorm.ErrRecordNotFound},
+		"ok":             {patchMap: defaultMap},
+		"not found":      {useWrongPiid: true, patchMap: defaultMap, expectedError: gorm.ErrRecordNotFound},
+		"wrong piid":     {useWrongPiid: true, patchMap: defaultMap, expectedError: gorm.ErrRecordNotFound},
+		"empty quantity": {patchMap: map[string]any{"quantity": nilQuantity}},
+		"check":          {patchMap: map[string]any{"checked": gorm.Expr("NOT checked")}},
 	}
 
 	for name, test := range tests {
@@ -113,17 +115,20 @@ func (s *RepoTestSuite) TestCheckItem() {
 				ctx = context.WithValue(s.ctx, contextKeys.Piid, newGuid)
 			}
 
-			for range test.numberOfChecks {
-				err := s.ItemRepo.Check(ctx, itemId)
-				if test.expectError != nil {
-					s.Error(err)
-					return
-				}
-				s.NoError(err)
+			err := s.ItemRepo.Patch(ctx, itemId, test.patchMap)
+			if test.expectedError != nil {
+				s.Error(err, test.expectedError)
+				return
 			}
-			respItem, err := generic_queries.First[*entity.Item](ctx, s.db, itemId)
+			s.NoError(err)
+			dbItem, err := s.ItemRepo.Find(ctx, itemId)
 			s.Require().NoError(err)
-			s.Equal(test.expectedValue, respItem.Checked)
+			if _, ok := test.patchMap["quantity"]; ok {
+				s.EqualValues(dbItem.Quantity, test.patchMap["quantity"])
+			}
+			if _, ok := test.patchMap["checked"]; ok {
+				s.True(dbItem.Checked)
+			}
 		})
 	}
 }

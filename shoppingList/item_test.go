@@ -1,6 +1,7 @@
 package shoppinglist
 
 import (
+	entity "encore.app/shoppingList/entity"
 	"encore.dev/beta/errs"
 )
 
@@ -101,10 +102,10 @@ func (s *ApiTestSuite) TestCheckItem() {
 func (s *ApiTestSuite) TestDeleteItem() {
 	tests := map[string]struct {
 		useWrongItemId  bool
-		expectedErrVode errs.ErrCode
+		expectedErrCode errs.ErrCode
 	}{
 		"ok":        {},
-		"not found": {useWrongItemId: true, expectedErrVode: errs.NotFound},
+		"not found": {useWrongItemId: true, expectedErrCode: errs.NotFound},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
@@ -116,7 +117,53 @@ func (s *ApiTestSuite) TestDeleteItem() {
 			ctx := s.GetCtx(false)
 			err := s.service.DeleteItem(ctx, s.piid, itemId)
 
-			s.assertErrCode(err, test.expectedErrVode)
+			s.assertErrCode(err, test.expectedErrCode)
+		})
+	}
+}
+
+func (s *ApiTestSuite) TestPatchItem() {
+	var quantity0, quantity10 uint8
+	quantity0 = 0
+	quantity10 = 10
+	tests := map[string]struct {
+		useWrongItemId  bool
+		quantity        *uint8
+		expectedErrCode errs.ErrCode
+	}{
+		"10":        {quantity: &quantity10},
+		"0 as nil":  {quantity: &quantity0},
+		"nil":       {quantity: nil},
+		"not found": {useWrongItemId: true, expectedErrCode: errs.NotFound},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			var itemId uint = 1000
+			if !test.useWrongItemId {
+				listId := s.createList()
+				itemId = s.createItem(listId)
+			}
+			ctx := s.GetCtx(false)
+			params := ItemPatchParams{Quantity: test.quantity}
+			err := s.service.PatchItem(ctx, s.piid, itemId, params)
+			s.assertErrCode(err, test.expectedErrCode)
+
+			var dbItem entity.ItemResponse
+			if test.quantity != nil {
+				resp, _ := s.service.GetOrCreateList(ctx, s.piid)
+				for _, item := range resp.Items {
+					if item.ID == itemId {
+						dbItem = item
+						break
+					}
+				}
+				if *test.quantity == 0 {
+					s.Nil(dbItem.Quantity)
+				}
+				if *test.quantity > 0 {
+					s.Equal(test.quantity, dbItem.Quantity)
+				}
+			}
 		})
 	}
 }

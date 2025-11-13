@@ -23,10 +23,9 @@ type (
 	ItemRepo interface {
 		Create(ctx context.Context, productId uint, listId uint) (uint, error)
 		Delete(ctx context.Context, itemIds []uint) error
-		Check(ctx context.Context, itemId uint) error
 		Find(ctx context.Context, id uint) (*entity.Item, error)
 		List(ctx context.Context, listId uint) ([]entity.Item, error)
-		CheckUniqueness(ctx context.Context, productId uint, listId uint) error
+		Patch(ctx context.Context, id uint, values map[string]any) error
 	}
 
 	ProductRepo interface {
