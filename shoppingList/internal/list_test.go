@@ -30,6 +30,7 @@ func (s *internalTestSuite) TestDeleteList() {
 			s.itemRepo.On("List", ctx, listId).Return(test.items, test.listItemError)
 			s.itemRepo.On("Delete", ctx, itemIds).Return(nil)
 			s.listRepo.On("Delete", ctx, listId).Return(test.deleteListError)
+			s.momentRepo.On("Update", ctx).Return(nil)
 
 			err := s.listUc.Delete(ctx, listId, test.forceDelete)
 			if test.expectedError != "" {
@@ -62,6 +63,7 @@ func (s *internalTestSuite) TestCreateOrGetList() {
 
 			s.listRepo.On("First", ctx).Return(&entity.List{ID: 1}, test.listExistsError)
 			s.listRepo.On("Create", ctx).Return(2, nil)
+			s.momentRepo.On("Update", ctx).Return(nil)
 
 			list, err := s.listUc.FirstOrCreate(ctx)
 			if test.expectedError != nil {

@@ -17,10 +17,11 @@ type ListUseCase struct {
 	uow UnitOfWork
 	li  ListRepo
 	it  ItemRepo
+	m   MomentRepo
 }
 
-func NewListUseCase(r ListRepo, it ItemRepo, uow UnitOfWork) ListUseCase {
-	return ListUseCase{li: r, it: it, uow: uow}
+func NewListUseCase(r ListRepo, it ItemRepo, uow UnitOfWork, m MomentRepo) ListUseCase {
+	return ListUseCase{li: r, it: it, uow: uow, m: m}
 }
 
 func (l ListUseCase) FirstOrCreate(ctx context.Context) (*entity.List, error) {
@@ -40,6 +41,9 @@ func (l ListUseCase) FirstOrCreate(ctx context.Context) (*entity.List, error) {
 
 func (l ListUseCase) Delete(ctx context.Context, id uint, force bool) error {
 	err := l.uow.WithTransaction(ctx, func(tx UnitOfWork) error {
+		if err := l.m.Update(ctx); err != nil {
+			return err
+		}
 		items, err := tx.Item().List(ctx, id)
 		if err != nil {
 			return err

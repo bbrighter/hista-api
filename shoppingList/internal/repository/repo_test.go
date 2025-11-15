@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"testing"
+	"time"
 
 	"encore.app/shared/contextKeys"
 	"encore.app/shared/generic_queries"
@@ -21,6 +22,7 @@ type RepoTestSuite struct {
 	ctx         context.Context
 	ListRepo    internal.ListRepo
 	ItemRepo    internal.ItemRepo
+	MomentRepo  internal.MomentRepo
 	ProductRepo internal.ProductRepo
 	db          *gorm.DB
 }
@@ -45,6 +47,7 @@ func (suite *RepoTestSuite) SetupSuite() {
 	suite.ListRepo = NewListRepo(db)
 	suite.ItemRepo = NewItemRepo(db)
 	suite.ProductRepo = NewProductRepo(db)
+	suite.MomentRepo = NewMomentRepo(db)
 }
 
 func (suite *RepoTestSuite) SetupSubTest() {
@@ -65,6 +68,8 @@ func (suite *RepoTestSuite) TearDownSubTest() {
 	err = tx.Exec(`DELETE FROM lists`).Error
 	suite.Require().NoError(err)
 	err = tx.Exec(`DELETE FROM products`).Error
+	suite.Require().NoError(err)
+	err = tx.Exec(`DELETE FROM moments`).Error
 	suite.Require().NoError(err)
 }
 
@@ -93,6 +98,15 @@ func (s *RepoTestSuite) createList() entity.List {
 	err = gorm.G[entity.List](s.db).Create(s.ctx, &list)
 	s.Require().NoError(err)
 	return list
+}
+
+func (s *RepoTestSuite) createMoment(time time.Time) entity.Moment {
+	piid, err := generic_queries.PiidFromCtx(s.ctx)
+	s.Require().NoError(err)
+	moment := entity.Moment{PIID: piid, UpdatedAt: time}
+	err = gorm.G[entity.Moment](s.db).Create(s.ctx, &moment)
+	s.Require().NoError(err)
+	return moment
 }
 
 func (s *RepoTestSuite) AssertPostgresError(err error, code string) {
