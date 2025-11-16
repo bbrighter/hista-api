@@ -21,7 +21,7 @@ type MomentsResponse struct {
 }
 
 func (m Moment) ETag() string {
-	return fmt.Sprintf("%d", m.UpdatedAt.Unix())
+	return fmt.Sprintf(`"%d"`, m.UpdatedAt.Unix())
 }
 
 func (m Moment) To304Response() MomentsResponse {
