@@ -23,7 +23,7 @@ func (s *ApiTestSuite) TestGetMoments() {
 				s.Len(resp.Items, 1)
 				s.Equal(listId, resp.ListId)
 				s.Len(resp.Products, 1)
-				s.Greater(resp.ETag, int64(0))
+				s.NotEqual(resp.ETag, "0")
 			} else {
 				s.Equal(resp.Status, 304)
 				s.Len(resp.Items, 0)
