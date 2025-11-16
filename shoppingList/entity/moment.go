@@ -20,7 +20,11 @@ type MomentsResponse struct {
 }
 
 func (m Moment) ETag() int64 {
-	return m.UpdatedAt.Unix()
+	etag := m.UpdatedAt.Unix()
+	if etag == 0 {
+		return 100
+	}
+	return etag
 }
 
 func (m Moment) To304Response() MomentsResponse {
