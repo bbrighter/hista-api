@@ -14,7 +14,7 @@ func (s *ApiTestSuite) TestGetMoments() {
 			s.createItem(listId)
 			etag := s.etag
 			if test.useOutdatedETag {
-				etag = 123
+				etag = "123"
 			}
 			resp, err := s.service.GetMoments(s.ctx, s.piid, MomentsParams{IfNoneMatch: etag})
 			s.NoError(err)

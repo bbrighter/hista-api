@@ -10,7 +10,7 @@ import (
 )
 
 type MomentsParams struct {
-	IfNoneMatch int64 `header:"If-None-Match"`
+	IfNoneMatch string `header:"If-None-Match"`
 }
 
 // encore:api auth method=GET path=/piid/:piid/moments

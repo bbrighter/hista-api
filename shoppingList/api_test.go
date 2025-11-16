@@ -22,7 +22,7 @@ type ApiTestSuite struct {
 	ctx     context.Context
 	piid    uuid.UUID
 	db      *gorm.DB
-	etag    int64
+	etag    string
 }
 
 func (suite *ApiTestSuite) SetupSuite() {
