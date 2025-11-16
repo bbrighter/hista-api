@@ -1,6 +1,7 @@
 package entity
 
 import (
+	"fmt"
 	"time"
 
 	"encore.dev/types/uuid"
@@ -12,15 +13,15 @@ type Moment struct {
 }
 
 type MomentsResponse struct {
-	ETag     int64             `header:"ETag"`
+	ETag     string            `header:"ETag"`
 	ListId   uint              `json:"listId"`
 	Items    []ItemResponse    `json:"items"`
 	Status   int               `encore:"httpstatus"`
 	Products []ProductResponse `json:"products"`
 }
 
-func (m Moment) ETag() int64 {
-	return m.UpdatedAt.Unix()
+func (m Moment) ETag() string {
+	return fmt.Sprintf("%d", m.UpdatedAt.Unix())
 }
 
 func (m Moment) To304Response() MomentsResponse {
