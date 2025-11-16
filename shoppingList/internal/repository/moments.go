@@ -7,6 +7,7 @@ import (
 
 	"encore.app/shared/generic_queries"
 	"encore.app/shoppingList/entity"
+	"encore.dev/rlog"
 	"gorm.io/gorm"
 )
 
@@ -21,16 +22,19 @@ func NewMomentRepo(db *gorm.DB) MomentRepo {
 func (r MomentRepo) GetOrCreate(ctx context.Context) (*entity.Moment, error) {
 	piid, err := generic_queries.PiidFromCtx(ctx)
 	if err != nil {
+		rlog.Info("no piid for GetOrCreateMoments")
 		return &entity.Moment{}, err
 	}
 	moment, err := gorm.G[*entity.Moment](r.db).Where("pi_id = ?", piid).First(ctx)
 	if err == nil {
+		rlog.Info("moment found", "etag", moment.ETag())
 		return moment, err
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		moment = &entity.Moment{PIID: piid}
 		err := gorm.G[*entity.Moment](r.db).Create(ctx, &moment)
+		rlog.Info("moment created", "etag", moment.ETag())
 		return moment, err
 	}
 
