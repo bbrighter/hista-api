@@ -2,7 +2,9 @@ package shoppinglist
 
 import (
 	"context"
+	"fmt"
 	"testing"
+	"time"
 
 	"encore.app/shared/contextKeys"
 	entity "encore.app/shoppingList/entity"
@@ -20,6 +22,7 @@ type ApiTestSuite struct {
 	ctx     context.Context
 	piid    uuid.UUID
 	db      *gorm.DB
+	etag    int64
 }
 
 func (suite *ApiTestSuite) SetupSuite() {
@@ -39,14 +42,15 @@ func (suite *ApiTestSuite) SetupSuite() {
 }
 
 func (suite *ApiTestSuite) TearDownSubTest() {
-	var err error
-	tx := suite.db
-	err = tx.Exec(`DELETE FROM items`).Error
-	suite.Require().NoError(err)
-	err = tx.Exec(`DELETE FROM lists`).Error
-	suite.Require().NoError(err)
-	err = tx.Exec(`DELETE FROM products`).Error
-	suite.Require().NoError(err)
+	tables := []string{"items", "lists", "products", "moments"}
+	for _, table := range tables {
+		err := suite.db.Exec(fmt.Sprintf(`DELETE FROM "%s"`, table)).Error
+		suite.Require().NoError(err)
+	}
+}
+
+func (suite *ApiTestSuite) SetupSubTest() {
+	suite.createMoment(time.Date(2020, 5, 3, 2, 1, 0, 0, time.UTC))
 }
 
 func TestApiTestSuite(t *testing.T) {
@@ -54,7 +58,7 @@ func TestApiTestSuite(t *testing.T) {
 }
 
 func (suite *ApiTestSuite) createList() uint {
-	resp, err := suite.service.GetOrCreateList(suite.ctx, suite.piid)
+	resp, err := suite.service.PostList(suite.ctx, suite.piid)
 	suite.Require().NoError(err)
 	return resp.ID
 }
@@ -72,6 +76,13 @@ func (suite *ApiTestSuite) createItem(listId uint) uint {
 	err := gorm.G[entity.Item](suite.db).Create(suite.ctx, &item)
 	suite.Require().NoError(err)
 	return item.ID
+}
+
+func (suite *ApiTestSuite) createMoment(time time.Time) {
+	moment := entity.Moment{PIID: suite.piid, UpdatedAt: time}
+	err := gorm.G[entity.Moment](suite.db).Create(suite.ctx, &moment)
+	suite.Require().NoError(err)
+	suite.etag = moment.ETag()
 }
 
 func (suite *ApiTestSuite) assertErrCode(err error, expectedCode errs.ErrCode) {

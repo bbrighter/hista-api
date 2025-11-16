@@ -8,12 +8,6 @@ import (
 	"encore.dev/types/uuid"
 )
 
-// encore:api auth method=GET path=/piid/:piid/list
-func (s *Service) GetOrCreateList(ctx context.Context, piid uuid.UUID) (entity.ListResponse, error) {
-	list, err := s.list.FirstOrCreate(ctx)
-	return list.ToResponse(), errors.MapError(err)
-}
-
 type DeleteListForceDeleteParam struct {
 	Force bool `query:"force"`
 }
@@ -21,4 +15,10 @@ type DeleteListForceDeleteParam struct {
 // encore:api auth method=DELETE path=/piid/:piid/list/:listId
 func (s *Service) DeleteList(ctx context.Context, piid uuid.UUID, listId uint, params DeleteListForceDeleteParam) error {
 	return errors.MapError(s.list.Delete(ctx, listId, params.Force))
+}
+
+// encore:api auth method=POST path=/piid/:piid/list
+func (s *Service) PostList(ctx context.Context, piid uuid.UUID) (entity.IdResponse, error) {
+	list, err := s.list.Create(ctx)
+	return entity.ToIdResponse(list.ID), errors.MapError(err)
 }

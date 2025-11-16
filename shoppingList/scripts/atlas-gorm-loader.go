@@ -11,8 +11,10 @@ import (
 
 // Define the models to generate migrations for.
 var models = []any{
+	&entity.List{},
 	&entity.Item{},
 	&entity.Product{},
+	&entity.Moment{},
 }
 
 func main() {

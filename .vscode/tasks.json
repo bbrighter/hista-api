@@ -195,11 +195,25 @@
 			},
 		},
 		{
+			"type": "shell",
+			"label": "Update hash for migrations (shoppinglist)",
+			"command": "atlas migrate hash",
+			"options": {
+				"cwd": "${workspaceFolder}/shoppingList",
+			},
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"close": true,
+			}
+		},
+		{
 			"label": "Update hash for all migrations",
 			"dependsOn": [
 				"Update hash for migrations (hista)",
 				"Update hash for migrations (product_mgmt)",
-				"Update hash for migrations (users)"
+				"Update hash for migrations (users)",
+				"Update hash for migrations (shoppinglist)"
 			],
 			"dependsOrder": "parallel", // run one after another (default is parallel)
 			"icon": {

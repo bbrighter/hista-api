@@ -32,4 +32,9 @@ type (
 		Create(ctx context.Context, name string) (uint, error)
 		List(ctx context.Context) ([]*entity.Product, error)
 	}
+
+	MomentRepo interface {
+		GetOrCreate(ctx context.Context) (*entity.Moment, error)
+		Update(ctx context.Context) error
+	}
 )

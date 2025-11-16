@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encore.app/errors"
 	"encore.app/shoppingList/entity"
 	"gorm.io/gorm"
 )
@@ -30,6 +31,7 @@ func (s *internalTestSuite) TestDeleteList() {
 			s.itemRepo.On("List", ctx, listId).Return(test.items, test.listItemError)
 			s.itemRepo.On("Delete", ctx, itemIds).Return(nil)
 			s.listRepo.On("Delete", ctx, listId).Return(test.deleteListError)
+			s.momentRepo.On("Update", ctx).Return(nil)
 
 			err := s.listUc.Delete(ctx, listId, test.forceDelete)
 			if test.expectedError != "" {
@@ -46,15 +48,15 @@ func (s *internalTestSuite) TestDeleteList() {
 	}
 }
 
-func (s *internalTestSuite) TestCreateOrGetList() {
+func (s *internalTestSuite) TestCreateList() {
 	ctx := s.ctx
 	tests := map[string]struct {
 		listExistsError    error
 		expectCreateCalled bool
 		expectedError      error
 	}{
-		"ok, list exists":        {},
-		"ok, list doesn't exits": {listExistsError: gorm.ErrRecordNotFound, expectCreateCalled: true},
+		"list exists":         {expectedError: errors.ErrObjectExists},
+		"ok, list not exists": {listExistsError: gorm.ErrRecordNotFound, expectCreateCalled: true},
 	}
 
 	for name, test := range tests {
@@ -62,10 +64,11 @@ func (s *internalTestSuite) TestCreateOrGetList() {
 
 			s.listRepo.On("First", ctx).Return(&entity.List{ID: 1}, test.listExistsError)
 			s.listRepo.On("Create", ctx).Return(2, nil)
+			s.momentRepo.On("Update", ctx).Return(nil)
 
-			list, err := s.listUc.FirstOrCreate(ctx)
+			list, err := s.listUc.Create(ctx)
 			if test.expectedError != nil {
-				s.Error(err)
+				s.ErrorIs(err, test.expectedError)
 				return
 			}
 			s.NoError(err)

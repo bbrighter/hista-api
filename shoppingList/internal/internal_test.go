@@ -71,15 +71,27 @@ func (m *MockUow) Item() ItemRepo       { return m.Called().Get(0).(ItemRepo) }
 func (m *MockUow) List() ListRepo       { return m.Called().Get(0).(ListRepo) }
 func (m *MockUow) Product() ProductRepo { return m.Called().Get(0).(ProductRepo) }
 
+type MockMomentRepo struct{ mock.Mock }
+
+func (m *MockMomentRepo) GetOrCreate(ctx context.Context) (*entity.Moment, error) {
+	args := m.Called(ctx)
+	return args.Get(0).(*entity.Moment), args.Error(1)
+}
+func (m *MockMomentRepo) Update(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
 type internalTestSuite struct {
 	suite.Suite
-	listRepo *MockListRepo
-	itemRepo *MockItemRepo
-	prodRepo *MockProductRepo
-	uow      *MockUow
-	listUc   IListUseCase
-	itemUc   IItemUseCase
-	ctx      context.Context
+	listRepo   *MockListRepo
+	itemRepo   *MockItemRepo
+	prodRepo   *MockProductRepo
+	momentRepo *MockMomentRepo
+	uow        *MockUow
+	listUc     IListUseCase
+	itemUc     IItemUseCase
+	ctx        context.Context
 }
 
 func (s *internalTestSuite) SetupSubTest() {
@@ -87,12 +99,15 @@ func (s *internalTestSuite) SetupSubTest() {
 	s.listRepo = new(MockListRepo)
 	s.itemRepo = new(MockItemRepo)
 	s.prodRepo = new(MockProductRepo)
+	s.momentRepo = new(MockMomentRepo)
 	s.uow = new(MockUow)
-	s.listUc = NewListUseCase(s.listRepo, s.itemRepo, s.uow)
-	s.itemUc = NewItemUseCase(s.itemRepo, s.prodRepo, s.uow)
+	s.listUc = NewListUseCase(s.listRepo, s.itemRepo, s.uow, s.momentRepo)
+	s.itemUc = NewItemUseCase(s.itemRepo, s.prodRepo, s.uow, s.momentRepo)
 	s.uow.On("Item").Return(s.itemRepo)
 	s.uow.On("List").Return(s.listRepo)
 	s.uow.On("Product").Return(s.prodRepo)
+	// s.momentRepo.On("Update", mock.Anything).Return(nil)
+	// s.momentRepo.On("GetOrCreate", mock.Anything).Return(&entity.Moment{}, nil)
 }
 
 func TestInternal(t *testing.T) {

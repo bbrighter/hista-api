@@ -15,7 +15,7 @@ import (
 type Service struct {
 	item internal.IItemUseCase
 	list internal.IListUseCase
-	prod internal.IProductUseCase
+	mom  internal.IMomentUseCase
 }
 
 var shoppingListDb *sqldb.Database = sqldb.NewDatabase("shopping_list", sqldb.DatabaseConfig{
@@ -50,8 +50,9 @@ func initServiceWithDb(db *gorm.DB) *Service {
 	itemRepo := repository.NewItemRepo(db)
 	productRepo := repository.NewProductRepo(db)
 	listRepo := repository.NewListRepo(db)
-	uc := internal.NewItemUseCase(itemRepo, productRepo, uow)
-	list := internal.NewListUseCase(listRepo, itemRepo, uow)
-	products := internal.NewProductUseCase(productRepo)
-	return &Service{item: uc, list: list, prod: products}
+	momRepo := repository.NewMomentRepo(db)
+	uc := internal.NewItemUseCase(itemRepo, productRepo, uow, momRepo)
+	list := internal.NewListUseCase(listRepo, itemRepo, uow, momRepo)
+	moments := internal.NewMomentsUseCase(momRepo, listRepo, productRepo)
+	return &Service{item: uc, list: list, mom: moments}
 }
