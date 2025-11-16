@@ -2,6 +2,7 @@ package shoppinglist
 
 import (
 	"context"
+	"strings"
 
 	"encore.app/errors"
 	"encore.app/shoppingList/entity"
@@ -22,7 +23,7 @@ func (s *Service) GetMoments(ctx context.Context, piid uuid.UUID, params Moments
 		return entity.MomentsResponse{}, errors.MapError(err)
 	}
 	rlog.Info("Got moments:", "etag", mom.ETag(), "ifnonematch", params.IfNoneMatch)
-	if params.IfNoneMatch == mom.ETag() {
+	if normalizeETag(params.IfNoneMatch) == normalizeETag(mom.ETag()) {
 		return mom.To304Response(), nil
 	}
 	list, prods, err := s.mom.GetData(ctx)
@@ -32,4 +33,11 @@ func (s *Service) GetMoments(ctx context.Context, piid uuid.UUID, params Moments
 	}
 	rlog.Info("momRespEtag:", "etag", mom.ToResponse(list, prods).ETag)
 	return mom.ToResponse(list, prods), nil
+}
+
+func normalizeETag(s string) string {
+	s = strings.TrimSpace(s)
+	s = strings.TrimPrefix(s, "W/")
+	s = strings.Trim(s, `"`)
+	return s
 }
