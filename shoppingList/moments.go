@@ -2,7 +2,6 @@ package shoppinglist
 
 import (
 	"context"
-	"fmt"
 
 	"encore.app/errors"
 	"encore.app/shoppingList/entity"
@@ -13,13 +12,12 @@ type MomentsParams struct {
 	IfNoneMatch int64 `header:"If-None-Match"`
 }
 
-// encore:api method=GET path=/piid/:piid/moments
+// encore:api auth method=GET path=/piid/:piid/moments
 func (s *Service) GetMoments(ctx context.Context, piid uuid.UUID, params MomentsParams) (entity.MomentsResponse, error) {
 	mom, err := s.mom.GetMoments(ctx)
 	if err != nil {
 		return entity.MomentsResponse{}, errors.MapError(err)
 	}
-	fmt.Printf("IfNoneMatch: %d and ETag: %d and time %s", params.IfNoneMatch, mom.ETag(), mom.UpdatedAt.String())
 	if params.IfNoneMatch == mom.ETag() {
 		return mom.To304Response(), nil
 	}

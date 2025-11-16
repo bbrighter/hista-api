@@ -17,6 +17,7 @@ func (e *CustomError) Error() string {
 var (
 	ErrBadRequest     = errors.New("bad request")
 	ErrUncheckedItems = errors.New("unchecked items exist")
+	ErrObjectExists   = errors.New("object already exists")
 )
 
 func NewCustomError(message string, err error) *CustomError {

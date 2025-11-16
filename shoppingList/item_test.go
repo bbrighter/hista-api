@@ -150,7 +150,7 @@ func (s *ApiTestSuite) TestPatchItem() {
 
 			var dbItem entity.ItemResponse
 			if test.quantity != nil {
-				resp, _ := s.service.GetOrCreateList(ctx, s.piid)
+				resp, _ := s.service.GetMoments(ctx, s.piid, MomentsParams{})
 				for _, item := range resp.Items {
 					if item.ID == itemId {
 						dbItem = item

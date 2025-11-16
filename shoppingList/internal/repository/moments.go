@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"encore.app/shared/generic_queries"
@@ -26,11 +25,11 @@ func (r MomentRepo) GetOrCreate(ctx context.Context) (*entity.Moment, error) {
 	}
 	moment, err := gorm.G[*entity.Moment](r.db).Where("pi_id = ?", piid).First(ctx)
 	if err == nil {
-		fmt.Printf("GetOrCreate Etag: %d at %s", moment.ETag(), moment.UpdatedAt.String())
 		return moment, err
 	}
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
+		moment = &entity.Moment{PIID: piid}
 		err := gorm.G[*entity.Moment](r.db).Create(ctx, &moment)
 		return moment, err
 	}

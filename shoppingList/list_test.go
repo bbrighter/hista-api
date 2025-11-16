@@ -4,34 +4,6 @@ import (
 	"encore.dev/beta/errs"
 )
 
-func (s *ApiTestSuite) TestGetOrCreateList() {
-	tests := map[string]struct {
-		listExists   bool
-		useWrongPiid bool
-		newIdIsOldId bool
-	}{
-		"no list exists": {listExists: false},
-		"list exists":    {listExists: true, newIdIsOldId: true},
-		"wrong piid":     {useWrongPiid: true},
-	}
-	for name, test := range tests {
-		s.Run(name, func() {
-			var listId uint = 0
-			if test.listExists {
-				listId = s.createList()
-			}
-			ctx := s.GetCtx(test.useWrongPiid)
-			list, err := s.service.GetOrCreateList(ctx, s.piid)
-			s.NoError(err)
-			if test.newIdIsOldId {
-				s.Equal(listId, list.ID)
-			} else {
-				s.Greater(list.ID, uint(0))
-			}
-		})
-	}
-}
-
 func (s *ApiTestSuite) TestDeleteList() {
 	tests := map[string]struct {
 		useWrongId        bool
@@ -63,6 +35,39 @@ func (s *ApiTestSuite) TestDeleteList() {
 				s.Equal(test.statusCode, encoreErr.Code)
 			} else {
 				s.NoError(err)
+			}
+		})
+	}
+}
+
+func (s *ApiTestSuite) TestCreateList() {
+	tests := map[string]struct {
+		listExists        bool
+		useWrongPiid      bool
+		newIdIsOldId      bool
+		expectedErrorCode errs.ErrCode
+	}{
+		"no list exists": {listExists: false},
+		"list exists":    {listExists: true, newIdIsOldId: true, expectedErrorCode: errs.AlreadyExists},
+		"wrong piid":     {useWrongPiid: true},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			var listId uint = 0
+			if test.listExists {
+				listId = s.createList()
+			}
+			ctx := s.GetCtx(test.useWrongPiid)
+			list, err := s.service.PostList(ctx, s.piid)
+			if test.expectedErrorCode > 0 {
+				s.assertErrCode(err, test.expectedErrorCode)
+				return
+			}
+			s.NoError(err)
+			if test.newIdIsOldId {
+				s.Equal(listId, list.ID)
+			} else {
+				s.Greater(list.ID, uint(0))
 			}
 		})
 	}

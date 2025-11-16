@@ -12,11 +12,11 @@ type Moment struct {
 }
 
 type MomentsResponse struct {
-	ETag   int64          `header:"ETag"`
-	ListId uint           `json:"listId"`
-	Items  []ItemResponse `json:"items"`
-	Status int            `encore:"httpstatus"`
-	ProductListResponse
+	ETag     int64             `header:"ETag"`
+	ListId   uint              `json:"listId"`
+	Items    []ItemResponse    `json:"items"`
+	Status   int               `encore:"httpstatus"`
+	Products []ProductResponse `json:"products"`
 }
 
 func (m Moment) ETag() int64 {
@@ -29,10 +29,10 @@ func (m Moment) To304Response() MomentsResponse {
 
 func (m Moment) ToResponse(list *List, products Products) MomentsResponse {
 	return MomentsResponse{
-		ETag:                m.ETag(),
-		ListId:              list.ID,
-		Items:               list.ToResponse().Items,
-		ProductListResponse: products.ToResponse(),
-		Status:              200,
+		ETag:     m.ETag(),
+		ListId:   list.ID,
+		Items:    list.ToResponse().Items,
+		Products: products.ToResponse().Products,
+		Status:   200,
 	}
 }

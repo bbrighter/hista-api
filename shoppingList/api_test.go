@@ -58,7 +58,7 @@ func TestApiTestSuite(t *testing.T) {
 }
 
 func (suite *ApiTestSuite) createList() uint {
-	resp, err := suite.service.GetOrCreateList(suite.ctx, suite.piid)
+	resp, err := suite.service.PostList(suite.ctx, suite.piid)
 	suite.Require().NoError(err)
 	return resp.ID
 }
@@ -83,7 +83,6 @@ func (suite *ApiTestSuite) createMoment(time time.Time) {
 	err := gorm.G[entity.Moment](suite.db).Create(suite.ctx, &moment)
 	suite.Require().NoError(err)
 	suite.etag = moment.ETag()
-	fmt.Printf("createMoment created Etag %d", moment.ETag())
 }
 
 func (suite *ApiTestSuite) assertErrCode(err error, expectedCode errs.ErrCode) {

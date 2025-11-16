@@ -41,6 +41,9 @@ func MapError(err error) error {
 	if errors.Is(err, ErrUncheckedItems) {
 		return NewEncoreError(err.Error(), errs.InvalidArgument)
 	}
+	if errors.Is(err, ErrObjectExists) {
+		return NewEncoreError(err.Error(), errs.AlreadyExists)
+	}
 
 	customerErr, ok := err.(*CustomError)
 	if ok {
