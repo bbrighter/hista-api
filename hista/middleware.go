@@ -13,6 +13,9 @@ import (
 
 // encore:middleware target=all
 func AddPiidMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
+	if req.Data().Path == "/pollen" {
+		return next(req)
+	}
 	params := req.Data().PathParams
 	piidStr := params.Get("piid")
 	url_piid, err := uuid.FromString(piidStr)
