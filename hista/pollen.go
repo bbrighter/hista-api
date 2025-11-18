@@ -20,7 +20,7 @@ var _ = cron.NewJob("pollen", cron.JobConfig{
 	Endpoint: UpdatePollen,
 })
 
-// encore:api private
+// encore:api private method=POST path=/pollen
 func (service *Service) UpdatePollen(ctx context.Context) error {
 	return service.pollens.Create()
 }
