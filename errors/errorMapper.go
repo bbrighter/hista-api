@@ -38,19 +38,11 @@ func MapError(err error) error {
 		}
 	}
 
-	if errors.Is(err, ErrUncheckedItems) {
-		return NewEncoreError(err.Error(), errs.InvalidArgument)
-	}
-	if errors.Is(err, ErrObjectExists) {
+	switch {
+	case errors.Is(err, ErrObjectExists):
 		return NewEncoreError(err.Error(), errs.AlreadyExists)
-	}
-
-	customerErr, ok := err.(*CustomError)
-	if ok {
-		switch customerErr.Kind {
-		case ErrBadRequest:
-			return NewEncoreError(customerErr.Error(), errs.InvalidArgument)
-		}
+	case errors.Is(err, ErrCannotDelete):
+		return NewEncoreError(err.Error(), errs.InvalidArgument)
 	}
 
 	encoreErr, ok := err.(*errs.Error)

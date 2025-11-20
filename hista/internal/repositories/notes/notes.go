@@ -7,6 +7,7 @@ import (
 	"encore.app/errors"
 	"encore.app/hista/entity"
 	"encore.app/shared/generic_queries"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -42,7 +43,7 @@ func (repo *NotesRepository) Patch(ctx context.Context, id uint, date *time.Time
 	}
 	tx = tx.Clauses(clause.Returning{}).Where("pi_id = ?", piid).Updates(&note)
 	if tx.RowsAffected == 0 {
-		return errors.ErrorNotFound
+		return gorm.ErrRecordNotFound
 	}
 	return tx.Error
 }

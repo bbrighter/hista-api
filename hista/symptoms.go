@@ -3,6 +3,7 @@ package hista
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 	"encore.dev/types/uuid"
 )
@@ -10,7 +11,7 @@ import (
 // encore:api auth method=GET path=/piid/:piid/symptoms
 func (service *Service) ListSymptoms(ctx context.Context, piid uuid.UUID) (entity.SymptomCategoriesResponse, error) {
 	categories, err := service.symptoms.List(ctx)
-	return categories.ToResponse(), err
+	return categories.ToResponse(), errors.MapError(err)
 }
 
 type PatchSymptomNameParams struct {
@@ -19,7 +20,7 @@ type PatchSymptomNameParams struct {
 
 // encore:api auth method=PATCH path=/piid/:piid/symptoms/:id/name
 func (service *Service) PatchSymptomName(ctx context.Context, piid uuid.UUID, id uint, params PatchSymptomNameParams) error {
-	return service.symptoms.RenameSymptom(ctx, id, params.Name)
+	return errors.MapError(service.symptoms.RenameSymptom(ctx, id, params.Name))
 }
 
 type PatchSymptomCategoryParams struct {
@@ -28,7 +29,7 @@ type PatchSymptomCategoryParams struct {
 
 // encore:api auth method=PATCH path=/piid/:piid/symptoms/:id/category
 func (service *Service) PatchSymptomCategory(ctx context.Context, piid uuid.UUID, id uint, params PatchSymptomCategoryParams) error {
-	return service.symptoms.ChangeCategory(ctx, id, params.ToCategoryID)
+	return errors.MapError(service.symptoms.ChangeCategory(ctx, id, params.ToCategoryID))
 }
 
 type PostSymptomCategoryRequest struct {
@@ -38,7 +39,7 @@ type PostSymptomCategoryRequest struct {
 // encore:api auth method=POST path=/piid/:piid/symptom-categories
 func (service *Service) PostSymptomCategory(ctx context.Context, piid uuid.UUID, params PostSymptomCategoryRequest) (entity.IDResponse, error) {
 	id, err := service.symptoms.CreateCategory(ctx, params.Name)
-	return entity.IDResponse{ID: id}, err
+	return entity.IDResponse{ID: id}, errors.MapError(err)
 }
 
 type PatchCategoryNameParams struct {
@@ -47,10 +48,10 @@ type PatchCategoryNameParams struct {
 
 // encore:api auth method=PATCH path=/piid/:piid/symptom-categories/:id
 func (service *Service) PatchCategoryName(ctx context.Context, piid uuid.UUID, id uint, params PatchCategoryNameParams) error {
-	return service.symptoms.RenameCategory(ctx, id, params.Name)
+	return errors.MapError(service.symptoms.RenameCategory(ctx, id, params.Name))
 }
 
 // encore:api auth method=DELETE path=/piid/:piid/symptom-categories/:id
 func (service *Service) DeleteSymptomCategory(ctx context.Context, piid uuid.UUID, id uint) error {
-	return service.symptoms.DeleteCategory(ctx, id)
+	return errors.MapError(service.symptoms.DeleteCategory(ctx, id))
 }

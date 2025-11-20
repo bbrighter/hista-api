@@ -3,6 +3,7 @@ package symptoms
 import (
 	"testing"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -76,11 +77,11 @@ func TestDeleteCategory(t *testing.T) {
 	tests := map[string]struct {
 		catId         uint
 		symptoms      []entity.Symptom
-		expectedError string
+		expectedError error
 	}{
 		"ok":                      {catId: 1},
-		"not found":               {catId: 100, expectedError: "record not found"},
-		"symptoms block deleting": {catId: 1, symptoms: []entity.Symptom{{Name: "symptom", PIID: GUID, SymptomCategoryID: 1, SymptomCategoryPIID: GUID}}, expectedError: "cannot delete category with symptoms"},
+		"not found":               {catId: 100, expectedError: gorm.ErrRecordNotFound},
+		"symptoms block deleting": {catId: 1, symptoms: []entity.Symptom{{Name: "symptom", PIID: GUID, SymptomCategoryID: 1, SymptomCategoryPIID: GUID}}, expectedError: errors.ErrCannotDelete},
 	}
 
 	for name, test := range tests {
@@ -95,9 +96,9 @@ func TestDeleteCategory(t *testing.T) {
 			}
 
 			err = repo.DeleteCategory(ctx, test.catId)
-			if test.expectedError != "" {
+			if test.expectedError != nil {
 				assert.Error(t, err)
-				assert.EqualError(t, err, test.expectedError)
+				assert.ErrorIs(t, err, test.expectedError)
 			} else {
 				assert.NoError(t, err)
 			}

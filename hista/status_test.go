@@ -1,19 +1,13 @@
 package hista
 
 import (
-	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
-func TestCreateStatus(t *testing.T) {
-	service, ctx := initAPITest(t)
-
-	resp, err := service.PostStatus(ctx, TEST_PIID, DateParam{time.Now()})
-	defer service.DeleteStatus(ctx, TEST_PIID, resp.ID)
-	assert.NoError(t, err)
-	assert.GreaterOrEqual(t, resp.ID, uint(1))
+func (s *ApiTestSuite) TestCreateStatus() {
+	resp, err := s.service.PostStatus(s.ctx, s.piid, DateParam{time.Now()})
+	s.NoError(err)
+	s.GreaterOrEqual(resp.ID, uint(1))
 }
 
 // func TestAddStatus(t *testing.T) {
@@ -70,16 +64,27 @@ func TestCreateStatus(t *testing.T) {
 // 	assert.Equal(t, newStatusResp.Morning.ID, statusResp.Morning.ID)
 // }
 
-func TestListStatus(t *testing.T) {
-	service, ctx := initAPITest(t)
-
-	resp, _ := service.ListStatus(ctx, TEST_PIID)
-	assert.Len(t, resp.Statuses, 0)
+func (s *ApiTestSuite) TestListStatus() {
+	tests := map[string]struct {
+		createStatus   bool
+		expectedAmount int
+	}{
+		"0": {},
+		"1": {createStatus: true, expectedAmount: 1},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			if test.createStatus {
+				s.createTestStatus()
+			}
+			resp, err := s.service.ListStatus(s.ctx, s.piid)
+			s.NoError(err)
+			s.Len(resp.Statuses, test.expectedAmount)
+		})
+	}
 }
 
-func TestUpdateStatus(t *testing.T) {
-	service, ctx := initAPITest(t)
-
+func (s *ApiTestSuite) TestUpdateStatus() {
 	tests := map[string]struct {
 		date    bool
 		morning bool
@@ -91,11 +96,8 @@ func TestUpdateStatus(t *testing.T) {
 	}
 
 	for name, test := range tests {
-		t.Run(name, func(t *testing.T) {
-			resp, err := service.PostStatus(ctx, TEST_PIID, DateParam{time.Now()})
-			statusId := resp.ID
-			defer service.DeleteStatus(ctx, TEST_PIID, statusId)
-			assert.NoError(t, err)
+		s.Run(name, func() {
+			statusId := s.createTestStatus()
 
 			var params = PatchStatusParams{}
 			if test.date {
@@ -110,22 +112,22 @@ func TestUpdateStatus(t *testing.T) {
 				params.EveningFitness = &eveningFitness
 			}
 
-			err = service.PatchStatus(ctx, TEST_PIID, statusId, params)
-			assert.NoError(t, err)
+			err := s.service.PatchStatus(s.ctx, s.piid, statusId, params)
+			s.NoError(err)
 
-			statuses, err := service.status.Find(ctx)
-			assert.NoError(t, err)
+			statuses, err := s.service.status.Find(s.ctx)
+			s.NoError(err)
 			status := statuses[0]
 			if test.date {
-				assert.True(t, time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC).Equal(status.Date))
+				s.True(time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC).Equal(status.Date))
 			} else {
-				assert.True(t, time.Now().After(status.Date))
+				s.True(time.Now().After(status.Date))
 			}
 			if test.morning {
-				assert.EqualValues(t, &morningFitness, status.MorningFitness)
+				s.EqualValues(&morningFitness, status.MorningFitness)
 			}
 			if test.evening {
-				assert.EqualValues(t, &eveningFitness, status.EveningFitness)
+				s.EqualValues(&eveningFitness, status.EveningFitness)
 			}
 		})
 	}

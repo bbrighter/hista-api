@@ -1,76 +1,65 @@
 package hista
 
 import (
-	"context"
-	"testing"
 	"time"
 
-	"encore.app/hista/entity"
-	"github.com/stretchr/testify/assert"
+	"encore.dev/beta/errs"
 )
 
-var testNote = new(entity.Note)
-
-func (service *Service) createTestNote(ctx context.Context, t *testing.T) func(t *testing.T) {
-	resp, err := service.PostNote(ctx, TEST_PIID)
-	assert.NoError(t, err)
-	testNote.ID = resp.ID
-	cleanUp := func(t *testing.T) {
-		err := service.DeleteNote(ctx, TEST_PIID, resp.ID)
-		assert.NoError(t, err)
-		testNote = new(entity.Note)
+func (s *ApiTestSuite) TestGetNotes() {
+	tests := map[string]struct {
+		createBefore   bool
+		expectedNumber int
+	}{
+		"0": {},
+		"1": {createBefore: true, expectedNumber: 1},
 	}
-	return cleanUp
+	for name, test := range tests {
+		s.Run(name, func() {
+			if test.createBefore {
+				s.createTestNote()
+			}
+			resp, err := s.service.ListNotes(s.ctx, s.piid)
+			s.NoError(err)
+			s.Len(resp.Notes, test.expectedNumber)
+		})
+	}
 }
 
-func TestGetNotes(t *testing.T) {
-	service, ctx := initAPITest(t)
-
-	var resp entity.NotesResp
-	resp, _ = service.ListNotes(ctx, TEST_PIID)
-	assert.Len(t, resp.Notes, 0)
-
-	cleanUp := service.createTestNote(ctx, t)
-	defer cleanUp(t)
-	resp, _ = service.ListNotes(ctx, TEST_PIID)
-	assert.Len(t, resp.Notes, 1)
-}
-
-func TestDeleteNote(t *testing.T) {
-	service, ctx := initAPITest(t)
+func (s *ApiTestSuite) TestDeleteNote() {
 
 	var err error
-	err = service.DeleteNote(ctx, TEST_PIID, 1)
-	assert.Error(t, err)
+	err = s.service.DeleteNote(s.ctx, s.piid, 1)
+	s.Error(err)
 
-	service.createTestNote(ctx, t)
+	noteId := s.createTestNote()
 
-	err = service.DeleteNote(ctx, TEST_PIID, testNote.ID)
-	assert.NoError(t, err)
+	err = s.service.DeleteNote(s.ctx, s.piid, noteId)
+	s.NoError(err)
 }
 
-func TestPatchNote(t *testing.T) {
-	service, ctx := initAPITest(t)
+func (s *ApiTestSuite) TestPatchNote() {
+	date := time.Date(2000, 1, 1, 1, 0, 0, 0, time.Local)
+	text := "text"
+	tests := map[string]struct {
+		useWrongId        bool
+		params            NoteParams
+		expectedErrorCode errs.ErrCode
+	}{
+		"ok, date":  {params: NoteParams{Date: &date}},
+		"ok, text":  {params: NoteParams{Text: &text}},
+		"not found": {useWrongId: true, params: NoteParams{Text: &text}, expectedErrorCode: errs.NotFound},
+		"no params": {expectedErrorCode: errs.InvalidArgument},
+	}
 
-	var params NoteParams
-	var err error
-	err = service.PatchNote(ctx, TEST_PIID, 1, params)
-	assert.Error(t, err)
-
-	cleanup := service.createTestNote(ctx, t)
-	defer cleanup(t)
-
-	err = service.PatchNote(ctx, TEST_PIID, testNote.ID, params)
-	assert.Error(t, err)
-
-	newTime := time.Date(2000, 1, 1, 1, 0, 0, 0, time.Local)
-	params.Date = &newTime
-	err = service.PatchNote(ctx, TEST_PIID, testNote.ID, params)
-	assert.NoError(t, err)
-
-	newText := "text"
-	params.Date = nil
-	params.Text = &newText
-	err = service.PatchNote(ctx, TEST_PIID, testNote.ID, params)
-	assert.NoError(t, err)
+	for name, test := range tests {
+		s.Run(name, func() {
+			noteId := s.createTestNote()
+			if test.useWrongId {
+				noteId = 1000
+			}
+			err := s.service.PatchNote(s.ctx, s.piid, noteId, test.params)
+			s.assertErrCode(err, test.expectedErrorCode)
+		})
+	}
 }

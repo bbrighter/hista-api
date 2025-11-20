@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 	"encore.dev/types/uuid"
 )
@@ -11,21 +12,21 @@ import (
 // encore:api auth method=GET path=/piid/:piid/notes
 func (service *Service) ListNotes(ctx context.Context, piid uuid.UUID) (entity.NotesResp, error) {
 	notes, err := service.notes.List(ctx)
-	return notes.ToResp(), err
+	return notes.ToResp(), errors.MapError(err)
 }
 
 // encore:api auth method=POST path=/piid/:piid/notes
 func (service *Service) PostNote(ctx context.Context, piid uuid.UUID) (entity.NoteResp, error) {
 	note, err := service.notes.Create(ctx)
 	if err != nil {
-		return entity.NoteResp{}, err
+		return entity.NoteResp{}, errors.MapError(err)
 	}
 	return note.ToResp(), nil
 }
 
 // encore:api auth method=DELETE path=/piid/:piid/notes/:noteId
 func (service *Service) DeleteNote(ctx context.Context, piid uuid.UUID, noteId uint) error {
-	return service.notes.Delete(ctx, noteId)
+	return errors.MapError(service.notes.Delete(ctx, noteId))
 }
 
 type NoteParams struct {
@@ -35,5 +36,5 @@ type NoteParams struct {
 
 // encore:api auth method=PATCH path=/piid/:piid/notes/:noteId
 func (service *Service) PatchNote(ctx context.Context, piid uuid.UUID, noteId uint, params NoteParams) error {
-	return service.notes.Patch(ctx, noteId, params.Date, params.Text)
+	return errors.MapError(service.notes.Patch(ctx, noteId, params.Date, params.Text))
 }
