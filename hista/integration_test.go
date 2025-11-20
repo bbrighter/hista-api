@@ -127,3 +127,58 @@ func (s *ApiTestSuite) TestSymptoms() {
 	err = s.service.DeleteSymptomCategory(s.ctx, s.piid, cat2Id.ID)
 	s.assertErrCode(err, errs.InvalidArgument)
 }
+
+func (s *ApiTestSuite) TestMeals() {
+	mealsResp, err := s.service.ListMeals(s.ctx, s.piid)
+	s.NoError(err)
+	s.Len(mealsResp.Meals, 0)
+
+	now := time.Now()
+	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, entity.MealParams{Date: &now}) // Why does POSt have so many params? I don't use them.
+	s.NoError(err)
+	mealId := postMealResp.ID
+
+	mealsResp, err = s.service.ListMeals(s.ctx, s.piid)
+	s.NoError(err)
+	s.Len(mealsResp.Meals, 1)
+
+	mealResp, err := s.service.GetMeal(s.ctx, s.piid, mealId)
+	s.NoError(err)
+	s.Equal(mealId, mealResp.ID)
+
+	foodResp, err := s.service.PostFood(s.ctx, s.piid, mealId, FoodParams{IngredientName: "ing", Condition: entity.Cooked})
+	s.NoError(err)
+	foodId := foodResp.Food.ID
+	s.Len(foodResp.Ingredients.Ingredients, 1)
+	s.Equal("ing", foodResp.Food.Ingredient.Name)
+
+	ingResp, err := s.service.ListIngredients(s.ctx, s.piid)
+	s.NoError(err)
+	s.Len(ingResp.Ingredients, 1)
+
+	err = s.service.PatchFoodCondition(s.ctx, s.piid, foodId, FoodConditionParams{Condition: "raw"}) // TODO: Why does this take a string, but the post not?
+	s.NoError(err)
+
+	var freshness entity.Freshness = entity.Fresh
+	var stressLevel uint8 = 3
+	var isAlone bool = false
+	err = s.service.PatchMeal(s.ctx, s.piid, mealId, entity.MealParams{Freshness: &freshness, StressLevel: &stressLevel, IsAlone: &isAlone})
+	s.NoError(err)
+	mealResp, err = s.service.GetMeal(s.ctx, s.piid, mealId)
+	s.NoError(err)
+	s.Equal(entity.Raw, mealResp.Foods[0].Condition)
+	s.Equal(freshness, mealResp.Freshness)
+	s.Equal(stressLevel, mealResp.StressLevel)
+	s.Equal(isAlone, mealResp.IsAlone)
+
+	ings, err := s.service.DeleteFood(s.ctx, s.piid, foodId)
+	s.NoError(err)
+	s.Len(ings.Ingredients, 0)
+
+	_, err = s.service.DeleteMeal(s.ctx, s.piid, mealId)
+	s.NoError(err)
+
+	_, err = s.service.GetMeal(s.ctx, s.piid, mealId)
+	s.assertErrCode(err, errs.NotFound)
+
+}
