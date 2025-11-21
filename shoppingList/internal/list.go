@@ -50,7 +50,7 @@ func (l ListUseCase) Delete(ctx context.Context, id uint, force bool) error {
 			}
 		}
 		if len(uncheckedIds) > 0 && !force {
-			return fmt.Errorf("%w with item id %v", errors.ErrUncheckedItems, uncheckedIds)
+			return fmt.Errorf("unchecked items exist with item id %v, %w", uncheckedIds, errors.ErrCannotDelete)
 		}
 		if len(uncheckedIds) > 0 && force {
 			if err := tx.Item().Delete(ctx, uncheckedIds); err != nil {

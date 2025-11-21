@@ -41,7 +41,7 @@ func TestFindFoodForSymptoms(t *testing.T) {
 	assert.Len(t, resp, 0)
 }
 
-func TestCoundFoods(t *testing.T) {
+func TestCountFoods(t *testing.T) {
 	repo, ctx := initTest(t)
 
 	results, err := repo.CountFoods(ctx, []uint{1})

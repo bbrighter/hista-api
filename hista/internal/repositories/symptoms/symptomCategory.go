@@ -3,7 +3,9 @@ package symptoms
 import (
 	"context"
 	"errors"
+	"fmt"
 
+	customErrors "encore.app/errors"
 	"encore.app/hista/entity"
 	"encore.app/shared/generic_queries"
 	"gorm.io/gorm"
@@ -63,7 +65,7 @@ func (repo *SymptomsRepo) DeleteCategory(ctx context.Context, catId uint) error 
 		return err
 	}
 	if count > 0 {
-		return errors.New("cannot delete category with symptoms")
+		return fmt.Errorf("symptoms still exist, %w", customErrors.ErrCannotDelete)
 	}
 	return generic_queries.Delete[*entity.SymptomCategory](ctx, repo.db, catId)
 }

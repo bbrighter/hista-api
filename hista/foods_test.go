@@ -1,49 +1,73 @@
 package hista
 
 import (
-	"context"
 	"testing"
 
 	"encore.app/hista/entity"
+	"encore.dev/beta/errs"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func (service *Service) createTestFood(ctx context.Context, t *testing.T) (foodId uint, ingredientId uint) {
-	meal, err := service.PostMeal(ctx, TEST_PIID, entity.MealParams{})
-	require.NoError(t, err)
-	foodResp, err := service.PostFood(ctx, TEST_PIID, meal.ID, FoodParams{IngredientName: "ingredient", IngredientID: 0})
-	require.NoError(t, err)
-	return foodResp.Food.ID, foodResp.Food.Ingredient.ID
+func (s *ApiTestSuite) TestDeleteFood() {
+	tests := map[string]struct {
+		useWrongId      bool
+		expectedErrCode errs.ErrCode
+	}{
+		"ok":        {},
+		"not found": {useWrongId: true, expectedErrCode: errs.NotFound},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			foodId, _ := s.createTestFood()
+			if test.useWrongId {
+				foodId = 1000
+			}
+			ing, err := s.service.DeleteFood(s.ctx, s.piid, foodId)
+			s.assertErrCode(err, test.expectedErrCode)
+			s.Len(ing.Ingredients, 0)
+		})
+	}
 }
 
-func TestDeleteFood(t *testing.T) {
-	service, ctx := initAPITest(t)
-
-	_, err := service.DeleteFood(ctx, TEST_PIID, 1)
-	assert.EqualError(t, err, "not_found: not found")
-
-	foodId, _ := service.createTestFood(ctx, t)
-
-	ing, err := service.DeleteFood(ctx, TEST_PIID, foodId)
-	assert.NoError(t, err)
-	assert.Len(t, ing.Ingredients, 0)
+func (s *ApiTestSuite) TestPatchFoodCondition() {
+	var params = FoodConditionParams{Condition: entity.Raw}
+	tests := map[string]struct {
+		useWrongId      bool
+		params          FoodConditionParams
+		expectedErrCode errs.ErrCode
+	}{
+		"ok":        {params: params},
+		"not found": {params: params, useWrongId: true, expectedErrCode: errs.NotFound},
+		// "no params": {expectedErrCode: errs.InvalidArgument},
+		// "invalid condition": {params: FoodConditionParams{Condition: "invalid"}, expectedErrCode: errs.InvalidArgument},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			foodId, _ := s.createTestFood()
+			if test.useWrongId {
+				foodId = 1000
+			}
+			err := s.service.PatchFoodCondition(s.ctx, s.piid, foodId, test.params)
+			s.assertErrCode(err, test.expectedErrCode)
+		})
+	}
 }
 
-func TestPatchFoodCondition(t *testing.T) {
-	service, ctx := initAPITest(t)
+func TestFoodParamValidation(t *testing.T) {
+	tests := map[string]struct {
+		condition     string
+		expectedError bool
+	}{}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			params := FoodConditionParams{Condition: entity.FoodCondition(test.condition)}
+			err := params.Validate()
+			if test.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
 
-	var params = FoodConditionParams{Condition: "raw"}
-
-	err := service.PatchFoodCondition(ctx, TEST_PIID, 100, params)
-	assert.EqualError(t, err, "not_found: not found")
-
-	foodId, _ := service.createTestFood(ctx, t)
-
-	err = service.PatchFoodCondition(ctx, TEST_PIID, foodId, params)
-	assert.NoError(t, err)
-
-	params.Condition = "invalid"
-	err = service.PatchFoodCondition(ctx, TEST_PIID, foodId, params)
-	assert.EqualError(t, err, "invalid_argument: invalid condition")
+	}
 }

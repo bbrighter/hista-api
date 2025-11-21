@@ -1,33 +1,31 @@
 package hista
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"fmt"
 )
 
-func TestGetPollens(t *testing.T) {
-	service, ctx := initAPITest(t)
-	service.pollens.UseTestQuery(t)
-
-	pollens, err := service.ListPollens(ctx, TEST_PIID)
-	assert.NoError(t, err)
-	assert.Len(t, pollens.Pollens, 0)
+func (s *ApiTestSuite) TestGetPollens() {
+	tests := map[string]struct {
+		createPollen  bool
+		expectedCount int
+	}{
+		"0": {},
+		"1": {createPollen: true, expectedCount: 1},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			if test.createPollen {
+				fmt.Print("create pollen")
+				s.createTestPollen()
+			}
+			pollens, err := s.service.ListPollens(s.ctx, s.piid)
+			s.NoError(err)
+			s.Len(pollens.Pollens, test.expectedCount)
+		})
+	}
 }
 
-func TestUpdatePollen(t *testing.T) {
-	service, ctx := initAPITest(t)
-	service.pollens.UseTestQuery(t)
-
-	err := service.UpdatePollen(ctx)
-	assert.NoError(t, err)
-
-	pollens, _ := service.ListPollens(ctx, TEST_PIID)
-	assert.Len(t, pollens.Pollens, 1)
-
-	err = service.UpdatePollen(ctx)
-	assert.NoError(t, err)
-
-	pollens, _ = service.ListPollens(ctx, TEST_PIID)
-	assert.Len(t, pollens.Pollens, 1)
+func (s *ApiTestSuite) TestUpdatePollen() {
+	err := s.service.UpdatePollen(s.ctx)
+	s.NoError(err)
 }

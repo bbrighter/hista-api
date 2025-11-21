@@ -24,7 +24,7 @@ const (
 	NoPhysicalActivity HeadacheSymptom = "no physical activity"
 )
 
-var validHeadacheSymptoms = map[HeadacheSymptom]struct{}{
+var ValidHeadacheSymptoms = map[HeadacheSymptom]struct{}{
 	ShortTermMemory: {}, Tinnitus: {}, LightSensitive: {},
 	NoiseSensitive: {}, OdorSensitive: {}, Dizziness: {},
 	ConcentrationLack: {}, Tired: {}, Exhausted: {},
@@ -45,7 +45,7 @@ func (e *HeadacheSymptoms) Scan(value any) error {
 		return err
 	}
 	for _, s := range symptoms {
-		if _, ok := validHeadacheSymptoms[s]; !ok {
+		if _, ok := ValidHeadacheSymptoms[s]; !ok {
 			return fmt.Errorf("invalid headache symptom: %s", s)
 		}
 	}
@@ -55,7 +55,7 @@ func (e *HeadacheSymptoms) Scan(value any) error {
 
 func (e HeadacheSymptoms) Value() (driver.Value, error) {
 	for _, s := range e {
-		if _, ok := validHeadacheSymptoms[s]; !ok {
+		if _, ok := ValidHeadacheSymptoms[s]; !ok {
 			return nil, fmt.Errorf("invalid headache symptom: %s", s)
 		}
 	}

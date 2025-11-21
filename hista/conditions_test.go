@@ -1,47 +1,50 @@
 package hista
 
 import (
-	"testing"
-
 	"encore.app/hista/entity"
-	"github.com/stretchr/testify/assert"
+	"encore.dev/beta/errs"
 )
 
-func TestPatchCondition(t *testing.T) {
-	t.Skip()
-	service, ctx := initAPITest(t)
+func (s *ApiTestSuite) TestPatchCondition() {
+	s.T().Skip()
 
-	id := service.createTestEvent(ctx, t)
+	id := s.createTestEvent()
 
 	var err error
-	err = service.PatchCondition(ctx, TEST_PIID, 100, PatchSeverityRequestParams{Severity: entity.HighSeverity})
-	assert.EqualError(t, err, "not_found: not found")
+	err = s.service.PatchCondition(s.ctx, s.piid, 100, PatchSeverityRequestParams{Severity: entity.HighSeverity})
+	s.assertErrCode(err, errs.NotFound)
 
-	catId, err := service.symptoms.CreateCategory(ctx, "cat")
-	assert.NoError(t, err)
+	catId, err := s.service.symptoms.CreateCategory(s.ctx, "cat")
+	s.NoError(err)
 	symtpomName := "name"
-	resp, err := service.PostCondition(ctx, TEST_PIID, id, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
-	defer service.DeleteCondition(ctx, TEST_PIID, resp.Condition.ID)
-	assert.NoError(t, err)
+	resp, err := s.service.PostCondition(s.ctx, s.piid, id, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
+	s.NoError(err)
 	conditionId := resp.Condition.ID
 
-	err = service.PatchCondition(ctx, TEST_PIID, conditionId, PatchSeverityRequestParams{Severity: entity.HighSeverity})
-	assert.NoError(t, err)
+	err = s.service.PatchCondition(s.ctx, s.piid, conditionId, PatchSeverityRequestParams{Severity: entity.HighSeverity})
+	s.NoError(err)
 }
 
-func TestDeleteCondition(t *testing.T) {
-	service, ctx := initAPITest(t)
+func (s *ApiTestSuite) TestDeleteCondition() {
+	tests := map[string]struct {
+		useWrongId      bool
+		expectedErrCode errs.ErrCode
+	}{
+		"ok":        {},
+		"not found": {useWrongId: true, expectedErrCode: errs.NotFound},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			condId, _, _ := s.createTestCondition()
+			if test.useWrongId {
+				condId = 1000
+			}
+			cats, err := s.service.DeleteCondition(s.ctx, s.piid, condId)
+			s.assertErrCode(err, test.expectedErrCode)
+			if test.expectedErrCode == 0 {
+				s.Len(cats.Categories, 1, "categories are not deleted")
+			}
 
-	id := service.createTestEvent(ctx, t)
-	catId, err := service.symptoms.CreateCategory(ctx, "cat2")
-	assert.NoError(t, err)
-	symtpomName := "name"
-	resp, err := service.PostCondition(ctx, TEST_PIID, id, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
-	assert.NoError(t, err)
-	conditionId := resp.Condition.ID
-
-	cats, err := service.DeleteCondition(ctx, TEST_PIID, conditionId)
-	assert.NoError(t, err)
-
-	assert.Len(t, cats.Categories, 1)
+		})
+	}
 }

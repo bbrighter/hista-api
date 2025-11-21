@@ -2,9 +2,9 @@ package hista
 
 import (
 	"context"
+	"fmt"
 
 	"encore.app/hista/entity"
-	"encore.app/hista/internal/repositories/meals"
 	"encore.dev/types/uuid"
 )
 
@@ -15,16 +15,19 @@ func (service *Service) DeleteFood(ctx context.Context, piid uuid.UUID, foodId u
 }
 
 type FoodConditionParams struct {
-	Condition string `query:"condition"`
+	Condition entity.FoodCondition `json:"condition"`
+}
+
+func (f FoodConditionParams) Validate() error {
+	switch f.Condition {
+	case entity.Cooked, entity.Raw:
+		return nil
+	default:
+		return fmt.Errorf("invalid condition: %s; valid are %s and %s", f.Condition, entity.Cooked, entity.Raw)
+	}
 }
 
 // encore:api auth method=PATCH path=/piid/:piid/foods/:foodId/condition
 func (service *Service) PatchFoodCondition(ctx context.Context, piid uuid.UUID, foodId uint, params FoodConditionParams) error {
-	var err error
-	condition, err := meals.StringToFoodCondition(params.Condition)
-	if err != nil {
-		return err
-	}
-	return service.foods.ChangeCondition(ctx, foodId, condition)
-
+	return service.foods.ChangeCondition(ctx, foodId, params.Condition)
 }

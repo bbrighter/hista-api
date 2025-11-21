@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"encore.app/errors"
 	"encore.app/hista/entity"
 )
 
@@ -20,7 +19,7 @@ type (
 
 	IMealUseCase interface {
 		List(ctx context.Context) (entity.Meals, error)
-		Create(ctx context.Context, date *time.Time) (entity.Meal, error)
+		Create(ctx context.Context, date time.Time) (entity.Meal, error)
 		Get(ctx context.Context, id uint) (entity.Meal, error)
 		Delete(ctx context.Context, id uint) (entity.Ingredients, error)
 		Patch(ctx context.Context, id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error
@@ -38,39 +37,35 @@ func NewMealUseCase(repo IMealsRepository, ings IIngredientRepository) MealUseCa
 
 func (uc MealUseCase) List(ctx context.Context) (entity.Meals, error) {
 	meals, err := uc.meals.ListMeals(ctx)
-	return meals, errors.MapError(err)
+	return meals, err
 }
 
 func (uc MealUseCase) Get(ctx context.Context, id uint) (entity.Meal, error) {
 	meal, err := uc.meals.GetMeal(ctx, id)
-	return meal, errors.MapError(err)
+	return meal, err
 }
 
-func (uc MealUseCase) Create(ctx context.Context, date *time.Time) (entity.Meal, error) {
+func (uc MealUseCase) Create(ctx context.Context, date time.Time) (entity.Meal, error) {
 	var meal = &entity.Meal{
 		IsAlone:     true,
 		Freshness:   entity.Fresh,
 		StressLevel: 0,
-	}
-	if date == nil || date.IsZero() {
-		meal.Date = time.Now()
-	} else {
-		meal.Date = *date
+		Date:        date,
 	}
 
 	err := uc.meals.CreateMeal(ctx, meal)
-	return *meal, errors.MapError(err)
+	return *meal, err
 }
 
 func (uc MealUseCase) Delete(ctx context.Context, id uint) (ings entity.Ingredients, err error) {
 	err = uc.meals.DeleteMeal(ctx, id)
 	if err == nil {
 		ings, err := uc.ingredients.ListIngredients(ctx)
-		return ings, errors.MapError(err)
+		return ings, err
 	}
-	return ings, errors.MapError(err)
+	return ings, err
 }
 
 func (uc MealUseCase) Patch(ctx context.Context, id uint, date *time.Time, freshness *entity.Freshness, stressLevel *uint8, isAlone *bool) error {
-	return errors.MapError(uc.meals.PatchMeal(ctx, id, date, freshness, stressLevel, isAlone))
+	return uc.meals.PatchMeal(ctx, id, date, freshness, stressLevel, isAlone)
 }

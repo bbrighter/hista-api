@@ -1,34 +1,55 @@
 package hista
 
-import (
-	"testing"
+import "encore.app/hista/entity"
 
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-)
-
-func TestGetDiary(t *testing.T) {
-	service, ctx := initAPITest(t)
-
-	resp, err := service.GetDiary(ctx, TEST_PIID)
-	assert.NoError(t, err)
-	assert.Len(t, resp.Diaries, 0)
-
-	eventResp, err := service.CreateConditionEvent(ctx, TEST_PIID)
-	require.NoError(t, err)
-	catResp, err := service.PostSymptomCategory(ctx, TEST_PIID, PostSymptomCategoryRequest{Name: "cat"})
-	require.NoError(t, err)
-	var symptomName = "symptomName"
-	_, err = service.PostCondition(ctx, TEST_PIID, eventResp.ID, ConditionRequestParams{SymptomName: &symptomName, CategoryID: &catResp.ID})
-	require.NoError(t, err)
-
-	// cleanupFood := service.createTestFood(ctx, t)
-	// defer cleanupFood(t)
-
-	// cleanupNote := service.createTestNote(ctx, t)
-	// defer cleanupNote(t)
-
-	resp, err = service.GetDiary(ctx, TEST_PIID)
-	assert.NoError(t, err)
-	assert.Len(t, resp.Diaries, 1)
+func (s *ApiTestSuite) TestGetDiary() {
+	tests := map[string]struct {
+		createCondition bool
+		createFood      bool
+		createNote      bool
+		createPollen    bool
+		expectedLen     int
+	}{
+		"all":       {createCondition: true, createFood: true, createNote: true, createPollen: true, expectedLen: 9},
+		"none":      {},
+		"food":      {createFood: true, expectedLen: 1},
+		"note":      {createNote: true, expectedLen: 1},
+		"condition": {createCondition: true, expectedLen: 1},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			if test.createCondition {
+				s.createTestCondition()
+			}
+			if test.createFood {
+				s.createTestFood()
+			}
+			if test.createNote {
+				s.createTestNote()
+			}
+			if test.createPollen {
+				s.createTestPollen()
+			}
+			resp, err := s.service.GetDiary(s.ctx, s.piid)
+			s.NoError(err)
+			s.Len(resp.Diaries, test.expectedLen)
+			var types []entity.DiaryType
+			for _, d := range resp.Diaries {
+				types = append(types, d.Type)
+			}
+			if test.createCondition {
+				s.Contains(types, entity.DiarySymptom)
+			}
+			if test.createFood {
+				s.Contains(types, entity.DiaryFood)
+			}
+			if test.createNote {
+				s.Contains(types, entity.DiaryNote)
+			}
+			if test.createPollen {
+				s.Contains(types, entity.DiaryPollen)
+			}
+		},
+		)
+	}
 }
