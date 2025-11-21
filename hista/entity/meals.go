@@ -181,16 +181,13 @@ func (meals Meals) ToMealsResponse() MealsResponse {
 	return MealsResponse{resps}
 }
 
-type MealParams struct {
+type PostMealParams struct {
+	Date time.Time `json:"date"`
+}
+
+type PatchMealParams struct {
 	Date        *time.Time `json:"date" encore:"optional"`
 	Freshness   *Freshness `json:"freshness" encore:"optional"`
 	StressLevel *uint8     `json:"stressLevel" encore:"optional"`
 	IsAlone     *bool      `json:"isAlone" encore:"optional"`
-}
-
-type PatchParams struct {
-	Date        *time.Time
-	Freshness   *Freshness
-	StressLevel *uint8
-	IsAlone     *bool
 }

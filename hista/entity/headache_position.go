@@ -21,7 +21,7 @@ const (
 	Eye    HeadachePosition = "eye"
 )
 
-var validHeadachePositions = map[HeadachePosition]struct{}{
+var ValidHeadachePositions = map[HeadachePosition]struct{}{
 	Front: {}, Back: {}, Top: {},
 	Left: {}, Right: {}, Neck: {},
 	Ear: {}, Temple: {}, Side: {},
@@ -41,7 +41,7 @@ func (e *HeadachePositions) Scan(value any) error {
 		return err
 	}
 	for _, p := range positions {
-		if _, ok := validHeadachePositions[p]; !ok {
+		if _, ok := ValidHeadachePositions[p]; !ok {
 			return fmt.Errorf("invalid headache position: %s", p)
 		}
 	}
@@ -52,7 +52,7 @@ func (e *HeadachePositions) Scan(value any) error {
 
 func (e HeadachePositions) Value() (driver.Value, error) {
 	for _, p := range e {
-		if _, ok := validHeadachePositions[p]; !ok {
+		if _, ok := ValidHeadachePositions[p]; !ok {
 			return nil, fmt.Errorf("invalid headache position: %s", p)
 		}
 	}

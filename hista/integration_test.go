@@ -133,8 +133,7 @@ func (s *ApiTestSuite) TestMeals() {
 	s.NoError(err)
 	s.Len(mealsResp.Meals, 0)
 
-	now := time.Now()
-	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, entity.MealParams{Date: &now}) // Why does POSt have so many params? I don't use them.
+	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, entity.PostMealParams{Date: time.Now()}) // Why does POSt have so many params? I don't use them.
 	s.NoError(err)
 	mealId := postMealResp.ID
 
@@ -146,7 +145,7 @@ func (s *ApiTestSuite) TestMeals() {
 	s.NoError(err)
 	s.Equal(mealId, mealResp.ID)
 
-	foodResp, err := s.service.PostFood(s.ctx, s.piid, mealId, FoodParams{IngredientName: "ing", Condition: entity.Cooked})
+	foodResp, err := s.service.PostFood(s.ctx, s.piid, mealId, FoodParams{IngredientName: "ing"})
 	s.NoError(err)
 	foodId := foodResp.Food.ID
 	s.Len(foodResp.Ingredients.Ingredients, 1)
@@ -156,13 +155,13 @@ func (s *ApiTestSuite) TestMeals() {
 	s.NoError(err)
 	s.Len(ingResp.Ingredients, 1)
 
-	err = s.service.PatchFoodCondition(s.ctx, s.piid, foodId, FoodConditionParams{Condition: "raw"}) // TODO: Why does this take a string, but the post not?
+	err = s.service.PatchFoodCondition(s.ctx, s.piid, foodId, FoodConditionParams{Condition: entity.Raw})
 	s.NoError(err)
 
 	var freshness entity.Freshness = entity.Fresh
 	var stressLevel uint8 = 3
 	var isAlone bool = false
-	err = s.service.PatchMeal(s.ctx, s.piid, mealId, entity.MealParams{Freshness: &freshness, StressLevel: &stressLevel, IsAlone: &isAlone})
+	err = s.service.PatchMeal(s.ctx, s.piid, mealId, entity.PatchMealParams{Freshness: &freshness, StressLevel: &stressLevel, IsAlone: &isAlone})
 	s.NoError(err)
 	mealResp, err = s.service.GetMeal(s.ctx, s.piid, mealId)
 	s.NoError(err)

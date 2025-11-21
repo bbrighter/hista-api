@@ -14,7 +14,7 @@ const (
 	Stabbing  HeadacheType = "stabbing"
 )
 
-var validHeadacheTypes = map[HeadacheType]struct{}{
+var ValidHeadacheTypes = map[HeadacheType]struct{}{
 	Pulsating: {}, Dull: {}, Stabbing: {},
 }
 
@@ -31,7 +31,7 @@ func (e *HeadacheTypes) Scan(value any) error {
 		return err
 	}
 	for _, t := range types {
-		if _, ok := validHeadacheTypes[t]; !ok {
+		if _, ok := ValidHeadacheTypes[t]; !ok {
 			return fmt.Errorf("invalid headache type: %s", t)
 		}
 	}
@@ -41,7 +41,7 @@ func (e *HeadacheTypes) Scan(value any) error {
 
 func (e HeadacheTypes) Value() (driver.Value, error) {
 	for _, t := range e {
-		if _, ok := validHeadacheTypes[t]; !ok {
+		if _, ok := ValidHeadacheTypes[t]; !ok {
 			return nil, fmt.Errorf("invalid headache type: %s", t)
 		}
 	}

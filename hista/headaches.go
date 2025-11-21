@@ -2,6 +2,7 @@ package hista
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"encore.app/errors"
@@ -59,6 +60,15 @@ type PatchHeadachePositionsParams struct {
 	Positions entity.HeadachePositions `json:"positions"`
 }
 
+func (p PatchHeadachePositionsParams) Validate() error {
+	for _, pos := range p.Positions {
+		if _, ok := entity.ValidHeadachePositions[pos]; !ok {
+			return fmt.Errorf("invalid headache position %s", pos)
+		}
+	}
+	return nil
+}
+
 // encore:api auth method=PATCH path=/piid/:piid/headaches/:id/positions
 func (service *Service) PatchHeadachePositions(ctx context.Context, piid uuid.UUID, id uint, params PatchHeadachePositionsParams) error {
 	return errors.MapError(service.headaches.PatchPositions(ctx, id, params.Positions))
@@ -68,6 +78,15 @@ type PatchHeadacheSymptomsParams struct {
 	Symptoms entity.HeadacheSymptoms `json:"symptoms"`
 }
 
+func (p PatchHeadacheSymptomsParams) Validate() error {
+	for _, sym := range p.Symptoms {
+		if _, ok := entity.ValidHeadacheSymptoms[sym]; !ok {
+			return fmt.Errorf("invalid headache symptom %s", sym)
+		}
+	}
+	return nil
+}
+
 // encore:api auth method=PATCH path=/piid/:piid/headaches/:id/symptoms
 func (service *Service) PatchHeadacheSymptoms(ctx context.Context, piid uuid.UUID, id uint, params PatchHeadacheSymptomsParams) error {
 	return errors.MapError(service.headaches.PatchSymptoms(ctx, id, params.Symptoms))
@@ -75,6 +94,15 @@ func (service *Service) PatchHeadacheSymptoms(ctx context.Context, piid uuid.UUI
 
 type PatchHeadacheTypesParams struct {
 	Types entity.HeadacheTypes `json:"types"`
+}
+
+func (p PatchHeadacheTypesParams) Validate() error {
+	for _, typ := range p.Types {
+		if _, ok := entity.ValidHeadacheTypes[typ]; !ok {
+			return fmt.Errorf("invalid headache type %s", typ)
+		}
+	}
+	return nil
 }
 
 // encore:api auth method=PATCH path=/piid/:piid/headaches/:id/types

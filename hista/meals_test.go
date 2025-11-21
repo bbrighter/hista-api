@@ -20,8 +20,7 @@ func (s *ApiTestSuite) TestGetMealsAPI() {
 }
 
 func (s *ApiTestSuite) TestPostMealAPI() {
-	var now = time.Now()
-	var params = entity.MealParams{Date: &now}
+	var params = entity.PostMealParams{Date: time.Now()}
 	resp, err := s.service.PostMeal(s.ctx, s.piid, params)
 	defer s.service.DeleteMeal(s.ctx, s.piid, resp.ID)
 
@@ -45,7 +44,6 @@ func (s *ApiTestSuite) TestGetMealAPI() {
 			}
 			_, err := s.service.GetMeal(s.ctx, s.piid, id)
 			s.assertErrCode(err, test.expectedErrCode)
-			// TODO: Do we need to check that ingredients etc. are in it? yes, probably
 		})
 	}
 }
@@ -74,7 +72,7 @@ func (s *ApiTestSuite) TestDeleteMealAPI() {
 }
 
 func (s *ApiTestSuite) TestPatchMealAPI() {
-	var params entity.MealParams
+	var params entity.PatchMealParams
 	var now time.Time = time.Now()
 	params.Date = &now
 
@@ -107,9 +105,8 @@ func (s *ApiTestSuite) TestPostFood() {
 
 	mealId := s.createTestMeal()
 
-	var params = FoodParams{IngredientName: "New", Condition: entity.Cooked}
-	food, err := s.service.PostFood(s.ctx, s.piid, mealId, params)
-	defer s.service.DeleteFood(s.ctx, s.piid, food.Food.ID)
+	var params = FoodParams{IngredientName: "New"}
+	_, err := s.service.PostFood(s.ctx, s.piid, mealId, params)
 	s.NoError(err)
 }
 
@@ -118,7 +115,7 @@ func (s *ApiTestSuite) TestDeleteFoodAPI() {
 	s.EqualError(err, "not_found: not found")
 
 	mealId := s.createTestMeal()
-	var params = FoodParams{IngredientName: "New", Condition: entity.Cooked}
+	var params = FoodParams{IngredientName: "New"}
 	food, _ := s.service.PostFood(s.ctx, s.piid, mealId, params)
 
 	ing, err := s.service.DeleteFood(s.ctx, s.piid, food.Food.ID)

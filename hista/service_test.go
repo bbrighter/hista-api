@@ -77,13 +77,13 @@ func (s *ApiTestSuite) createTestNote() uint {
 }
 
 func (s *ApiTestSuite) createTestMeal() uint {
-	meal, err := s.service.PostMeal(s.ctx, s.piid, entity.MealParams{})
+	meal, err := s.service.PostMeal(s.ctx, s.piid, entity.PostMealParams{Date: time.Now()})
 	s.Require().NoError(err)
 	return meal.ID
 }
 
 func (s *ApiTestSuite) createTestFood() (foodId uint, ingredientId uint) {
-	meal, err := s.service.PostMeal(s.ctx, s.piid, entity.MealParams{})
+	meal, err := s.service.PostMeal(s.ctx, s.piid, entity.PostMealParams{Date: time.Now()})
 	s.Require().NoError(err)
 	foodResp, err := s.service.PostFood(s.ctx, s.piid, meal.ID, FoodParams{IngredientName: "ingredient", IngredientID: 0})
 	s.Require().NoError(err)
@@ -136,6 +136,6 @@ func (suite *ApiTestSuite) assertErrCode(err error, expectedCode errs.ErrCode) b
 	}
 	encoreErr, ok := err.(*errs.Error)
 	suite.Require().True(ok)
-	suite.Equal(encoreErr.Code, expectedCode)
+	suite.Equal(encoreErr.Code, expectedCode, encoreErr)
 	return true
 }

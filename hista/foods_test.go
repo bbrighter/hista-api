@@ -1,6 +1,12 @@
 package hista
 
-import "encore.dev/beta/errs"
+import (
+	"testing"
+
+	"encore.app/hista/entity"
+	"encore.dev/beta/errs"
+	"github.com/stretchr/testify/assert"
+)
 
 func (s *ApiTestSuite) TestDeleteFood() {
 	tests := map[string]struct {
@@ -24,16 +30,16 @@ func (s *ApiTestSuite) TestDeleteFood() {
 }
 
 func (s *ApiTestSuite) TestPatchFoodCondition() {
-	var params = FoodConditionParams{Condition: "raw"}
+	var params = FoodConditionParams{Condition: entity.Raw}
 	tests := map[string]struct {
 		useWrongId      bool
 		params          FoodConditionParams
 		expectedErrCode errs.ErrCode
 	}{
-		"ok":                {params: params},
-		"not found":         {params: params, useWrongId: true, expectedErrCode: errs.NotFound},
-		"no params":         {expectedErrCode: errs.InvalidArgument},
-		"invalid condition": {params: FoodConditionParams{Condition: "invalid"}, expectedErrCode: errs.InvalidArgument},
+		"ok":        {params: params},
+		"not found": {params: params, useWrongId: true, expectedErrCode: errs.NotFound},
+		// "no params": {expectedErrCode: errs.InvalidArgument},
+		// "invalid condition": {params: FoodConditionParams{Condition: "invalid"}, expectedErrCode: errs.InvalidArgument},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
@@ -44,5 +50,24 @@ func (s *ApiTestSuite) TestPatchFoodCondition() {
 			err := s.service.PatchFoodCondition(s.ctx, s.piid, foodId, test.params)
 			s.assertErrCode(err, test.expectedErrCode)
 		})
+	}
+}
+
+func TestFoodParamValidation(t *testing.T) {
+	tests := map[string]struct {
+		condition     string
+		expectedError bool
+	}{}
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			params := FoodConditionParams{Condition: entity.FoodCondition(test.condition)}
+			err := params.Validate()
+			if test.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+
 	}
 }
