@@ -2,7 +2,7 @@ package hista
 
 import (
 	"context"
-	"slices"
+	"strings"
 
 	"encore.app/errors"
 	"encore.app/shared/contextKeys"
@@ -14,11 +14,10 @@ import (
 
 // encore:middleware target=all
 func AddPiidMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
-	var internalPaths []string = []string{
-		"/pollen",
-		"/internal/product-instance/move/:fromPiid/:toPiid",
-		"/internal/product-instance/move/:toPiid"}
-	if slices.Contains(internalPaths, req.Data().Path) {
+	if req.Data().Path == "/pollen" {
+		return next(req)
+	}
+	if strings.HasPrefix(req.Data().Path, "/internal/product-instance/move/") {
 		return next(req)
 	}
 	params := req.Data().PathParams
