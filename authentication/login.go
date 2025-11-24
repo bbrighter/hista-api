@@ -4,7 +4,9 @@ import (
 	"context"
 	"time"
 
+	"encore.app/authentication/entity"
 	"encore.app/users"
+	uuid "encore.dev/types/uuid"
 )
 
 type LoginParams struct {
@@ -27,7 +29,18 @@ func (service *Service) Login(ctx context.Context, params LoginParams) (*LoginRe
 	}
 
 	expirationTime := time.Hour * 24 * 7
-	signedToken, err := service.g.GenerateToken(params.UserName, resp.User.ID, resp.Permissions.ToMap(), expirationTime)
+	appMap := make(map[uuid.UUID]entity.ProductAndApps)
+	for _, perm := range resp.Permissions {
+		piid := perm.UserProductInstance.ProductInstanceId
+		pa, ok := appMap[piid]
+		if !ok {
+			pa = entity.ProductAndApps{AppIds: []string{}, Product: perm.UserProductInstance.ProductId}
+		}
+		pa.AppIds = append(pa.AppIds, perm.App)
+		appMap[piid] = pa
+	}
+
+	signedToken, err := service.g.GenerateToken(params.UserName, resp.User.ID, appMap, expirationTime)
 
 	return &LoginResponse{Token: signedToken}, err
 }

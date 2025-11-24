@@ -12,6 +12,12 @@ type CustomClaims struct {
 }
 
 type ProductInstanceClaim struct {
-	PIID   uuid.UUID `json:"piid"`
-	AppIds []string  `json:"appIds"`
+	PIID    uuid.UUID `json:"piid"`
+	AppIds  []string  `json:"appIds"`
+	Product string    `json:"product"`
+}
+
+type ProductAndApps struct {
+	AppIds  []string
+	Product string
 }

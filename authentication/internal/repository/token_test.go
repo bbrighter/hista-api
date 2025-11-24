@@ -27,8 +27,8 @@ func TestGenerateToken(t *testing.T) {
 	r := newTestTokenRepo(t)
 
 	guid := uuid.FromStringOrNil(GUID_STR)
-	piidMap := make(map[uuid.UUID][]string)
-	piidMap[guid] = []string{"app1"}
+	piidMap := make(map[uuid.UUID]entity.ProductAndApps)
+	piidMap[guid] = entity.ProductAndApps{AppIds: []string{"app1"}, Product: "product"}
 	token := r.GenerateToken("name", guid, piidMap, time.Hour)
 
 	sub, err := token.Claims.GetSubject()
