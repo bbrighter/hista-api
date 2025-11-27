@@ -12,7 +12,7 @@ type UUIDResponse struct {
 	ID uuid.UUID `json:"id"`
 }
 
-// encore:api private method=POST path=/product-instance/:productId/user/:name
+// encore:api private method=POST path=/internal/product/:productId/users/:name
 func (s Service) CreateProductInstanceWithOwner(ctx context.Context, productId string, name string) (UUIDResponse, error) {
 	_, err := users.Exists(ctx, name)
 	if err != nil {
@@ -25,11 +25,11 @@ func (s Service) CreateProductInstanceWithOwner(ctx context.Context, productId s
 	if err != nil {
 		return UUIDResponse{}, err
 	}
-	return s.AddUserToProductInstance(ctx, name, resp.ID)
+	return s.AddUserToProductInstance(ctx, resp.ID, name)
 }
 
-// encore:api auth method=POST path=/user/:name/product-instance/:productInstanceId
-func (s Service) AddUserToProductInstance(ctx context.Context, name string, productInstanceId uuid.UUID) (UUIDResponse, error) {
+// encore:api auth method=POST path=/piid/:productInstanceId/users/:name
+func (s Service) AddUserToProductInstance(ctx context.Context, productInstanceId uuid.UUID, name string) (UUIDResponse, error) {
 	userId, err := users.Exists(ctx, name)
 	if err != nil {
 		return UUIDResponse{}, err
@@ -55,8 +55,8 @@ func (s Service) AddUserToProductInstance(ctx context.Context, name string, prod
 	return UUIDResponse{ID: userId.UserId}, err
 }
 
-// encore:api auth method=DELETE path=/user/:name/product-instance/:productInstanceId tag:user-management
-func (s Service) RemoveUserFromProductInstance(ctx context.Context, name string, productInstanceId uuid.UUID) error {
+// encore:api auth method=DELETE path=/piid/:productInstanceId/users/:name
+func (s Service) RemoveUserFromProductInstance(ctx context.Context, productInstanceId uuid.UUID, name string) error {
 	userId, err := users.Exists(ctx, name)
 	if err != nil {
 		return err
@@ -77,7 +77,7 @@ type UserListResponse struct {
 	Users []UserResponse `json:"users"`
 }
 
-// encore:api auth method=GET path=/product-instance/:productInstanceId/users
+// encore:api auth method=GET path=/piid/:productInstanceId/users
 func (s Service) GetUsersForProductInstance(ctx context.Context, productInstanceId uuid.UUID) (UserListResponse, error) {
 	users, err := users.ListUsersForProductInstance(ctx, productInstanceId)
 	var resp []UserResponse
