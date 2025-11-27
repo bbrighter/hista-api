@@ -12,9 +12,10 @@ type UUIDResponse struct {
 	ID uuid.UUID `json:"id"`
 }
 
-// encore:api private method=POST path=/product-instance/:productId/user/:userId
-func (s Service) CreateProductInstanceWithOwner(ctx context.Context, productId string, userId uuid.UUID) (UUIDResponse, error) {
-	if err := users.Exists(ctx, userId); err != nil {
+// encore:api private method=POST path=/product-instance/:productId/user/:name
+func (s Service) CreateProductInstanceWithOwner(ctx context.Context, productId string, name string) (UUIDResponse, error) {
+	_, err := users.Exists(ctx, name)
+	if err != nil {
 		return UUIDResponse{}, err
 	}
 	if _, err := product_mgmt.FindProduct(ctx, productId); err != nil {
@@ -24,48 +25,47 @@ func (s Service) CreateProductInstanceWithOwner(ctx context.Context, productId s
 	if err != nil {
 		return UUIDResponse{}, err
 	}
-	if err := s.AddUserToProductInstance(ctx, userId, resp.ID); err != nil {
-		return UUIDResponse{}, err
-	}
-	return UUIDResponse{ID: resp.ID}, nil
-
+	return s.AddUserToProductInstance(ctx, name, resp.ID)
 }
 
-// encore:api auth method=POST path=/user/:userId/product-instance/:productInstanceId tag:user-management
-func (s Service) AddUserToProductInstance(ctx context.Context, userId uuid.UUID, productInstanceId uuid.UUID) error {
-	err := users.Exists(ctx, userId)
+// encore:api auth method=POST path=/user/:name/product-instance/:productInstanceId
+func (s Service) AddUserToProductInstance(ctx context.Context, name string, productInstanceId uuid.UUID) (UUIDResponse, error) {
+	userId, err := users.Exists(ctx, name)
 	if err != nil {
-		return err
+		return UUIDResponse{}, err
 	}
 	instance, err := product_mgmt.FindInstance(ctx, productInstanceId)
 	if err != nil {
-		return err
+		return UUIDResponse{}, err
 	}
 	var appIds []string
 	for _, app := range instance.Product.Apps {
 		appIds = append(appIds, app.ID)
 	}
 
-	return users.AddUserToProductInstance(
+	err = users.AddUserToProductInstance(
 		ctx,
-		userId,
+		userId.UserId,
 		productInstanceId,
 		users.AddUserToProductInstanceParams{
 			AppIds:    appIds,
 			ProductId: instance.Product.ID,
 		})
+
+	return UUIDResponse{ID: userId.UserId}, err
 }
 
-// encore:api auth method=DELETE path=/user/:userId/product-instance/:productInstanceId tag:user-management
-func (s Service) RemoveUserFromProductInstance(ctx context.Context, userId uuid.UUID, productInstanceId uuid.UUID) error {
-	if err := users.Exists(ctx, userId); err != nil {
-		return err
-	}
-	_, err := product_mgmt.FindInstance(ctx, productInstanceId)
+// encore:api auth method=DELETE path=/user/:name/product-instance/:productInstanceId tag:user-management
+func (s Service) RemoveUserFromProductInstance(ctx context.Context, name string, productInstanceId uuid.UUID) error {
+	userId, err := users.Exists(ctx, name)
 	if err != nil {
 		return err
 	}
-	return users.RemoveUserFromProductInstance(ctx, userId, productInstanceId)
+	_, err = product_mgmt.FindInstance(ctx, productInstanceId)
+	if err != nil {
+		return err
+	}
+	return users.RemoveUserFromProductInstance(ctx, userId.UserId, productInstanceId)
 }
 
 type UserResponse struct {

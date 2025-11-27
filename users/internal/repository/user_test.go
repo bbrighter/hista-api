@@ -180,6 +180,41 @@ func TestFindUser(t *testing.T) {
 	}
 }
 
+func TestFindUserByName(t *testing.T) {
+
+	tests := map[string]struct {
+		useId         bool
+		expectedError bool
+	}{
+		"ok":             {useId: true},
+		"user not found": {useId: false, expectedError: true},
+	}
+
+	r, ctx := initTest(t)
+	testUser, err := r.Create(ctx, "name", "password")
+	assert.NoError(t, err)
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			var name string
+			if test.useId {
+				name = testUser.Name
+			} else {
+				name = "sth"
+			}
+
+			user, err := r.FindByName(ctx, name)
+			if test.expectedError {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, testUser.ID, user.ID)
+				assert.Equal(t, "name", user.Name)
+			}
+		})
+	}
+}
+
 func TestAddUser(t *testing.T) {
 	tests := map[string]struct {
 		useExistingUser bool

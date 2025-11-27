@@ -94,6 +94,10 @@ func (r UserRepo) Find(ctx context.Context, id uuid.UUID) (entity.User, error) {
 	return gorm.G[entity.User](r.db).Where("id = ?", id).First(ctx)
 }
 
+func (r UserRepo) FindByName(ctx context.Context, name string) (entity.User, error) {
+	return gorm.G[entity.User](r.db).Where("name = ?", name).First(ctx)
+}
+
 func (r UserRepo) List(ctx context.Context) entity.Users {
 	users, _ := gorm.G[entity.User](r.db).Find(ctx)
 	return entity.Users(users)

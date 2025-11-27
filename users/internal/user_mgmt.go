@@ -15,7 +15,7 @@ type (
 		AddUser(ctx context.Context, instanceId uuid.UUID, productId string, user entity.User, app_ids []string) error
 		RemoveUser(ctx context.Context, instanceId uuid.UUID, user entity.User) error
 		List(ctx context.Context) entity.Users
-		Find(ctx context.Context, id uuid.UUID) (entity.User, error)
+		FindByName(ctx context.Context, name string) (entity.User, error)
 		ListUserForInstance(ctx context.Context, instanceId uuid.UUID) ([]entity.User, error)
 	}
 
@@ -25,7 +25,7 @@ type (
 		AddUserToInstance(ctx context.Context, instanceId uuid.UUID, productId string, userId uuid.UUID, app_ids []string) error
 		RemoveUserFromInstance(ctx context.Context, instanceId uuid.UUID, userId uuid.UUID) error
 		List(ctx context.Context) entity.Users
-		Exists(ctx context.Context, id uuid.UUID) error
+		Find(ctx context.Context, name string) (entity.User, error)
 		ListForInstance(ctx context.Context, instanceId uuid.UUID) (entity.Users, error)
 	}
 )
@@ -57,9 +57,9 @@ func (uc UserManagementUseCase) List(ctx context.Context) entity.Users {
 	return uc.r.List(ctx)
 }
 
-func (uc UserManagementUseCase) Exists(ctx context.Context, id uuid.UUID) error {
-	_, err := uc.r.Find(ctx, id)
-	return errors.MapError(err)
+func (uc UserManagementUseCase) Find(ctx context.Context, name string) (entity.User, error) {
+	user, err := uc.r.FindByName(ctx, name)
+	return user, errors.MapError(err)
 }
 
 func (uc UserManagementUseCase) ListForInstance(ctx context.Context, instanceId uuid.UUID) (entity.Users, error) {
