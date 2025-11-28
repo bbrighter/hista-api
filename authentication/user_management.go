@@ -3,8 +3,12 @@ package authentication
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/product_mgmt"
+	entity "encore.app/shared/entity"
 	"encore.app/users"
+	"encore.dev/beta/auth"
+	"encore.dev/beta/errs"
 	"encore.dev/types/uuid"
 )
 
@@ -57,6 +61,13 @@ func (s Service) AddUserToProductInstance(ctx context.Context, productInstanceId
 
 // encore:api auth method=DELETE path=/piid/:productInstanceId/users/:name
 func (s Service) RemoveUserFromProductInstance(ctx context.Context, productInstanceId uuid.UUID, name string) error {
+	data, ok := auth.Data().(*entity.AuthData)
+	if !ok {
+		return errors.NewEncoreError("no user", errs.InvalidArgument)
+	}
+	if data.UserName == name {
+		return errors.NewEncoreError("cannot delete current user", errs.InvalidArgument)
+	}
 	userId, err := users.Exists(ctx, name)
 	if err != nil {
 		return err
