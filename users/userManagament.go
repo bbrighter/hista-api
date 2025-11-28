@@ -33,9 +33,10 @@ func (s *Service) ListUsers(ctx context.Context) (entity.UserListResponse, error
 	return users.ToResponse(), nil
 }
 
-// encore:api private method=GET path=/internal/user/:id
-func (s *Service) Exists(ctx context.Context, id uuid.UUID) error {
-	return s.mgmt.Exists(ctx, id)
+// encore:api private method=GET path=/internal/user/:name
+func (s *Service) Exists(ctx context.Context, name string) (UserIdResponse, error) {
+	user, err := s.mgmt.Find(ctx, name)
+	return UserIdResponse{UserId: user.ID}, err
 }
 
 type AddUserToProductInstanceParams struct {

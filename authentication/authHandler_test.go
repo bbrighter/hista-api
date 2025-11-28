@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"encore.app/authentication/entity"
 	uuid "encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -29,8 +30,8 @@ func TestAuthHandler(t *testing.T) {
 			ctx := context.Background()
 			s, _ := initService()
 
-			piidMap := make(map[uuid.UUID][]string)
-			piidMap[uuid.FromStringOrNil(piid_guid)] = []string{"app1"}
+			piidMap := make(map[uuid.UUID]entity.ProductAndApps)
+			piidMap[uuid.FromStringOrNil(piid_guid)] = entity.ProductAndApps{AppIds: []string{"app1"}, Product: "product"}
 			token, err := s.g.GenerateToken("name", uuid.FromStringOrNil(user_guid), piidMap, time.Hour)
 			// token := initTestToken(t)
 			require.NoError(t, err)

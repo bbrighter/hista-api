@@ -9,6 +9,7 @@ import (
 	"encore.app/errors"
 	shared "encore.app/shared/entity"
 	"encore.dev/beta/auth"
+	"encore.dev/types/uuid"
 	"github.com/golang-jwt/jwt/v5"
 )
 
@@ -29,10 +30,10 @@ func AuthHandler(ctx context.Context, params *AuthParams) (auth.UID, *shared.Aut
 		for _, a := range c.AppIds {
 			appMapping[a] = true
 		}
-		inst := shared.AuthProductInstance{PIID: c.PIID, AppMapping: appMapping}
+		inst := shared.AuthProductInstance{PIID: c.PIID, AppMapping: appMapping, Product: c.Product}
 		instances = append(instances, inst)
 	}
-	return auth.UID(claims.Subject), &shared.AuthData{Instances: instances}, nil
+	return auth.UID(claims.Subject), &shared.AuthData{Instances: instances, UserName: claims.UserName, UserId: uuid.FromStringOrNil(claims.Subject)}, nil
 }
 
 func parseToken(token string) (*entity.CustomClaims, error) {
