@@ -9,23 +9,24 @@ import (
 type HeadachePosition string
 
 const (
-	Front  HeadachePosition = "front"
-	Back   HeadachePosition = "back"
-	Top    HeadachePosition = "top"
-	Left   HeadachePosition = "left"
-	Right  HeadachePosition = "right"
-	Neck   HeadachePosition = "neck"
-	Ear    HeadachePosition = "ear"
-	Temple HeadachePosition = "temple"
-	Side   HeadachePosition = "side"
-	Eye    HeadachePosition = "eye"
+	Front    HeadachePosition = "front"
+	Back     HeadachePosition = "back"
+	Top      HeadachePosition = "top"
+	Left     HeadachePosition = "left"
+	Right    HeadachePosition = "right"
+	Neck     HeadachePosition = "neck"
+	Ear      HeadachePosition = "ear"
+	Temple   HeadachePosition = "temple"
+	Side     HeadachePosition = "side"
+	Eye      HeadachePosition = "eye"
+	FrontTop HeadachePosition = "front top"
 )
 
 var ValidHeadachePositions = map[HeadachePosition]struct{}{
 	Front: {}, Back: {}, Top: {},
 	Left: {}, Right: {}, Neck: {},
 	Ear: {}, Temple: {}, Side: {},
-	Eye: {},
+	Eye: {}, FrontTop: {},
 }
 
 type HeadachePositions []HeadachePosition
