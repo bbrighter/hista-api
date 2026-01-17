@@ -36,9 +36,8 @@ func (suite *ApiTestSuite) SetupSuite() {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: sqlDb.Stdlib(),
 	}))
-	suite.db = db.Debug()
+	suite.db = db
 	suite.Require().NoError(err)
-	suite.service = initServiceWithDb(suite.db)
 }
 
 func (suite *ApiTestSuite) TearDownSubTest() {
@@ -50,6 +49,7 @@ func (suite *ApiTestSuite) TearDownSubTest() {
 }
 
 func (suite *ApiTestSuite) SetupSubTest() {
+	suite.service = initServiceWithDb(suite.db)
 	suite.createMoment(time.Date(2020, 5, 3, 2, 1, 0, 0, time.UTC))
 }
 
