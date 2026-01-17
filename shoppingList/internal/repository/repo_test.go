@@ -44,13 +44,17 @@ func (suite *RepoTestSuite) SetupSuite() {
 	if err != nil {
 		panic(err)
 	}
-	suite.ListRepo = NewListRepo(db)
-	suite.ItemRepo = NewItemRepo(db)
-	suite.ProductRepo = NewProductRepo(db)
-	suite.MomentRepo = NewMomentRepo(db)
+	suite.ListRepo = NewListRepo(suite.db)
+	suite.ItemRepo = NewItemRepo(suite.db)
+	suite.ProductRepo = NewProductRepo(suite.db)
+	suite.MomentRepo = NewMomentRepo(suite.db)
 }
 
 func (suite *RepoTestSuite) SetupSubTest() {
+	suite.ListRepo = NewListRepo(suite.db)
+	suite.ItemRepo = NewItemRepo(suite.db)
+	suite.ProductRepo = NewProductRepo(suite.db)
+	suite.MomentRepo = NewMomentRepo(suite.db)
 	if err := suite.db.Migrator().AutoMigrate(
 		&entity.Item{},
 		&entity.List{},

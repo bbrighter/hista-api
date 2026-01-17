@@ -7,7 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *RepoTestSuite) TestGetOrCreate() {
+func (s *RepoTestSuite) TestGetOrCreateMoment() {
 	tests := map[string]struct {
 		entryExists bool
 		expectError error
@@ -30,7 +30,7 @@ func (s *RepoTestSuite) TestGetOrCreate() {
 			}
 			s.NoError(err)
 			if test.entryExists {
-				s.True(moment.UpdatedAt.Equal(oldTime))
+				s.True(moment.UpdatedAt.Equal(oldTime), moment.UpdatedAt.String(), oldTime.String())
 			} else {
 				s.True(time.Until(moment.UpdatedAt).Seconds() < 10)
 			}
@@ -65,4 +65,27 @@ func (s *RepoTestSuite) TestUpdateMoments() {
 			s.True(time.Until(moment.UpdatedAt).Seconds() < 5)
 		})
 	}
+}
+
+
+func (s *RepoTestSuite) TestCaching() {	
+	// No cache exists
+	updatedAt := time.Now()
+	s.createMoment(updatedAt)
+
+	moment, err := s.MomentRepo.GetOrCreate(s.ctx)
+	s.NoError(err)
+	s.Equal(updatedAt.Round(time.Second), moment.UpdatedAt.Round(time.Second))
+
+	// Remove db entry, rely on cached value
+	rows, err := gorm.G[entity.Moment](s.db).Where("1=1").Delete(s.ctx)
+	s.Require().NoError(err)
+	s.Require().EqualValues(1, rows)
+	
+	moment, err = s.MomentRepo.GetOrCreate(s.ctx)
+	s.NoError(err)
+	s.Equal(updatedAt.Round(time.Second), moment.UpdatedAt.Round(time.Second))
+
+
+	
 }
