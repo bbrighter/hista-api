@@ -5,13 +5,12 @@ import (
 	"strings"
 
 	"encore.app/shoppingList/entity"
-	"gorm.io/gorm"
 )
 
 type IItemUseCase interface {
 	AddItemByProductId(ctx context.Context, listId uint, productId uint) (uint, error)
 	AddItemByName(ctx context.Context, listId uint, name string) (*entity.Item, error)
-	CheckItem(ctx context.Context, itemId uint) error
+	CheckItem(ctx context.Context, itemId uint, checked bool) error
 	DeleteItem(ctx context.Context, itemIds []uint) error
 	PatchItemQuantity(ctx context.Context, itemId uint, quantity *uint8) error
 }
@@ -59,11 +58,12 @@ func (uc ItemUseCase) AddItemByName(ctx context.Context, listId uint, name strin
 
 	return returnItem, err
 }
-func (uc ItemUseCase) CheckItem(ctx context.Context, itemId uint) error {
+func (uc ItemUseCase) CheckItem(ctx context.Context, itemId uint, checked bool) error {
 	if err := uc.m.Update(ctx); err != nil {
 		return err
 	}
-	return uc.i.Patch(ctx, itemId, map[string]any{"checked": gorm.Expr("NOT checked")})
+	return uc.i.Patch(ctx, itemId, map[string]any{"checked": checked})
+	
 }
 func (uc ItemUseCase) DeleteItem(ctx context.Context, itemIds []uint) error {
 	if err := uc.m.Update(ctx); err != nil {

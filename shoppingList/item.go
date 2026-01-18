@@ -24,9 +24,13 @@ func (s *Service) PostItemByName(ctx context.Context, piid uuid.UUID, listId uin
 	return item.ToResponse(), errors.MapError(err)
 }
 
+type ItemCheckParams struct {
+	Checked bool `json:"checked"`
+}
+
 // encore:api auth method=PATCH path=/piid/:piid/item/:itemId/check
-func (s *Service) CheckItem(ctx context.Context, piid uuid.UUID, itemId uint) error {
-	return errors.MapError(s.item.CheckItem(ctx, itemId))
+func (s *Service) CheckItem(ctx context.Context, piid uuid.UUID, itemId uint, params ItemCheckParams) error {
+	return errors.MapError(s.item.CheckItem(ctx, itemId, params.Checked))
 }
 
 // encore:api auth method=DELETE path=/piid/:piid/item/:itemId

@@ -75,13 +75,15 @@ func (s *ApiTestSuite) TestPostItemByName() {
 
 func (s *ApiTestSuite) TestCheckItem() {
 	tests := map[string]struct {
+		checked         bool
 		useWrongItemId  bool
 		expectedErrCode errs.ErrCode
 		useWrongPiid    bool
 	}{
-		"ok":         {},
-		"not found":  {useWrongItemId: true, expectedErrCode: errs.NotFound},
-		"wrong piid": {useWrongPiid: true, expectedErrCode: errs.NotFound},
+		"not found":   {useWrongItemId: true, expectedErrCode: errs.NotFound},
+		"wrong piid":  {useWrongPiid: true, expectedErrCode: errs.NotFound},
+		"ok, check":   {checked: true},
+		"ok, uncheck": {checked: false},
 	}
 
 	for name, test := range tests {
@@ -92,9 +94,19 @@ func (s *ApiTestSuite) TestCheckItem() {
 				itemId = s.createItem(listId)
 			}
 			ctx := s.GetCtx(test.useWrongPiid)
-			err := s.service.CheckItem(ctx, s.piid, itemId)
+			err := s.service.CheckItem(ctx, s.piid, itemId, ItemCheckParams{Checked: test.checked})
 
 			s.assertErrCode(err, test.expectedErrCode)
+
+			if test.expectedErrCode == 0 {
+				moments, err := s.service.GetMoments(ctx, s.piid, MomentsParams{})
+				s.NoError(err)
+				for _, item := range moments.Items {
+					if item.ID == itemId {
+						s.Equal(test.checked, item.Checked)
+					}
+				}
+			}
 		})
 	}
 }

@@ -41,7 +41,7 @@
 				"--services",
 				"shoppinglist,authentication",
 				"-o",
-				"C:\\Users\\Test\\Documents\\Code\\shopping-list-ui\\src\\api\\generatedApi.ts",
+				"~/Dokumente/Code/shopping-list-ui/src/api/generatedApi.ts",
 			],
 			"icon": {
 				"id": "broadcast"
