@@ -1,20 +1,10 @@
 {
-    "cSpell.words": [
-        "gorm"
-    ],
     "github.copilot.enable": {
         "*": false,
         "plaintext": false,
         "markdown": false,
         "scminput": false
     },
-  "command.pickEncorePid": {
-    "command": "powershell",
-    "args": [
-      "-ExecutionPolicy",
-      "Bypass",
-      "-File",
-      "${workspaceFolder}/.vscode/start-encore-and-get-pid.ps1"
-    ]
-  }
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "golang.go",
 }
