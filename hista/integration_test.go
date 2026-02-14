@@ -179,5 +179,23 @@ func (s *ApiTestSuite) TestMeals() {
 
 	_, err = s.service.GetMeal(s.ctx, s.piid, mealId)
 	s.assertErrCode(err, errs.NotFound)
+}
 
+func (s *ApiTestSuite) TestManageIngredients() {
+	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, entity.PostMealParams{Date: time.Now()})
+	_, err = s.service.PostFood(s.ctx, s.piid, postMealResp.ID, FoodParams{IngredientName: "ing"})
+
+	ingredients, err := s.service.ListIngredients(s.ctx, s.piid)
+	s.NoError(err)
+	s.Len(ingredients.Ingredients, 1)
+	ing := ingredients.Ingredients[0]
+
+	err = s.service.ArchiveIngredient(s.ctx, s.piid, ing.ID)
+	s.NoError(err)
+
+	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Name: "new name"})
+	s.NoError(err)
+
+	err = s.service.DeleteIngredient(s.ctx, s.piid, ing.ID)
+	s.assertErrCode(err, errs.NotFound)
 }

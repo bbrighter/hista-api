@@ -15,10 +15,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const GUID_STR = "cf0d4408-8db5-4572-b5d9-4ed873d1341f"
-
-var GUID = uuid.FromStringOrNil(GUID_STR)
-
 func initTest(t *testing.T) (*MealRepository, context.Context) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 	err := db.AutoMigrate(

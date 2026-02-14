@@ -29,3 +29,13 @@ func (repo *MealRepository) CreateOrReplaceIngredient(ctx context.Context, name 
 func (repo *MealRepository) ListIngredients(ctx context.Context) ([]*entity.Ingredient, error) {
 	return generic_queries.List[*entity.Ingredient](ctx, repo.db)
 }
+
+func (repo *MealRepository) ChangeIngredientName(ctx context.Context, id uint, newName string) error {
+	return generic_queries.UpdateColumn[*entity.Ingredient](ctx, repo.db, id, "name", newName)
+}
+func (repo *MealRepository) ToggleArchived(ctx context.Context, id uint) error {
+	return generic_queries.UpdateColumn[*entity.Ingredient](ctx, repo.db, id, "is_archived", gorm.Expr("NOT is_archived"))
+}
+func (repo *MealRepository) DeleteIngredient(ctx context.Context, id uint) error {
+	return generic_queries.Delete[*entity.Ingredient](ctx, repo.db, id)
+}
