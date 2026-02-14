@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"encore.app/errors"
@@ -10,6 +11,10 @@ import (
 
 type (
 	IStatisticsRepo interface {
+		SymptomsAfterIngredients(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientId uint) (entity.FoodResults, error)
+		CountMealsWithIngredients(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientId uint) (int64, error)
+	}
+	IOldStatisticsRepo interface {
 		FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error)
 		FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error)
 		CountFoods(ctx context.Context, symptomIds []uint) ([]entity.CountResult, error)
@@ -17,20 +22,48 @@ type (
 	}
 
 	IStatisticsUseCase interface {
-		FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (entity.FoodResults, error)
+		FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientId uint) (entity.FoodResults, int64, error)
 		FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error)
 	}
 )
 
-type StatisticsUseCase struct {
-	repo IStatisticsRepo
+type StatiaticsUseCase struct {
+	r IStatisticsRepo
 }
 
-func NewStatisticsUseCase(repo IStatisticsRepo) StatisticsUseCase {
-	return StatisticsUseCase{repo: repo}
+func NewStatisticsUseCase(repo IStatisticsRepo) StatiaticsUseCase {
+	return StatiaticsUseCase{r: repo}
 }
 
-func (uc StatisticsUseCase) FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (results entity.FoodResults, err error) {
+func (uc StatiaticsUseCase) FindSymptomsForFoods(ctx context.Context, fromDate, toDate time.Time, ingredientId uint) (entity.FoodResults, int64, error) {
+	counts, err := uc.r.CountMealsWithIngredients(ctx, fromDate, toDate, ingredientId)
+	fmt.Printf("%v", counts)
+	if err != nil {
+		return entity.FoodResults{}, 0, err
+	}
+	results, err := uc.r.SymptomsAfterIngredients(ctx, fromDate, toDate, ingredientId)
+	if err != nil {
+		return entity.FoodResults{}, 0, err
+	}
+
+	// TODO: Nicht richtig. counts zählt pro Ingredient, results pro SymptomId. Nochmal nachdenken, was ich will!
+
+	return results, counts, nil
+}
+
+func (uc StatiaticsUseCase) FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (entity.SymptomResults, error) {
+	return entity.SymptomResults{}, nil
+}
+
+type StatisticsOldUseCase struct {
+	repo IOldStatisticsRepo
+}
+
+func NewStatisticsOldUseCase(repo IOldStatisticsRepo) StatisticsOldUseCase {
+	return StatisticsOldUseCase{repo: repo}
+}
+
+func (uc StatisticsOldUseCase) FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientIds []uint) (results entity.FoodResults, err error) {
 	results, err = uc.repo.FindSymptomsForFoods(ctx, fromDate, toDate, ingredientIds)
 	if err != nil {
 		return results, errors.MapError(err)
@@ -52,7 +85,7 @@ func (uc StatisticsUseCase) FindSymptomsForFoods(ctx context.Context, fromDate t
 	}
 	return results, errors.MapError(err)
 }
-func (uc StatisticsUseCase) FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (results entity.SymptomResults, err error) {
+func (uc StatisticsOldUseCase) FindFoodForSymptoms(ctx context.Context, fromDate time.Time, toDate time.Time, symptomIds []uint) (results entity.SymptomResults, err error) {
 	results, err = uc.repo.FindFoodForSymptoms(ctx, fromDate, toDate, symptomIds)
 	if err != nil {
 		return results, errors.MapError(err)

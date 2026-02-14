@@ -15,7 +15,7 @@
 				"-e",
 				"local",
 				"-o",
-				"C:\\Users\\Test\\Documents\\Code\\hista-ui\\src\\api\\generatedApi.ts",
+				"~/Dokumente/Code/hista-ui/src/api/generatedApi.ts",
 			],
 			"icon": {
 				"id": "broadcast"
