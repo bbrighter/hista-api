@@ -14,4 +14,4 @@ encore db reset --shadow $DB_NAME
 export ENCORERUNTIME_NOPANIC=1
 
 # Generate the migration
-atlas migrate diff $MIGRATION_NAME --env api --dev-url "$(encore db conn-uri --shadow $DB_NAME)&search_path=public"
+atlas migrate diff $MIGRATION_NAME --env hista --dev-url "$(encore db conn-uri --shadow $DB_NAME)&search_path=public"

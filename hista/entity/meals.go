@@ -60,9 +60,10 @@ const (
 )
 
 type Ingredient struct {
-	ID   uint      `gorm:"primaryKey"`
-	PIID uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Name string    `gorm:"uniqueIndex"`
+	ID         uint      `gorm:"primaryKey"`
+	PIID       uuid.UUID `gorm:"type:uuid;primaryKey"`
+	Name       string    `gorm:"uniqueIndex"`
+	IsArchived bool
 }
 
 func (i *Ingredient) SetPiid(id uuid.UUID) {
@@ -104,8 +105,9 @@ type IDResponse struct {
 }
 
 type IngredientResponse struct {
-	ID   uint   `json:"id"`
-	Name string `json:"name"`
+	ID         uint   `json:"id"`
+	Name       string `json:"name"`
+	IsArchived bool   `json:"isArchived"`
 }
 
 type IngredientsResponse struct {
@@ -114,8 +116,9 @@ type IngredientsResponse struct {
 
 func (i Ingredient) ToIngredientResponse() IngredientResponse {
 	return IngredientResponse{
-		ID:   i.ID,
-		Name: i.Name,
+		ID:         i.ID,
+		Name:       i.Name,
+		IsArchived: i.IsArchived,
 	}
 }
 

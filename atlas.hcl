@@ -39,14 +39,14 @@ env "product_mgmt" {
 }
 
 data "external_schema" "api_gorm" {
-	program = ["env", "ENCORERUNTIME_NOPANIC=1", "go", "run", "./api/scripts/atlas-gorm-loader.go"]
+	program = ["env", "ENCORERUNTIME_NOPANIC=1", "go", "run", "./hista/scripts/atlas-gorm-loader.go"]
 }
-env "api" {
+env "hista" {
 	src = data.external_schema.api_gorm.url
 	url = "postgresql://hista-api-dpc2:local@127.0.0.1:9500/hista_db?sslmode=disable"
   
 	migration {
-	  	dir = "file://api/migrations"
+	  	dir = "file://hista/migrations"
 	  	format = golang-migrate
 	}
   

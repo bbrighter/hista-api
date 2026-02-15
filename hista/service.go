@@ -19,20 +19,21 @@ import (
 
 //encore:service
 type Service struct {
-	DB              *gorm.DB
-	meals           internal.IMealUseCase
-	foods           internal.IFoodUseCase
-	ingredients     internal.IIngredientUseCase
-	notes           internal.INotesUseCase
-	symptoms        internal.ISymptomsUseCase
-	conditionEvents internal.IConditionEventUseCase
-	conditions      internal.IConditionUseCase
-	diary           internal.IDiaryUseCase
-	statistics      internal.IStatisticsUseCase
-	pollens         internal.IPollenUseCase
-	status          internal.IStatusUseCase
-	headaches       internal.IHeadacheUseCase
-	move            internal.PiidMover
+	DB                 *gorm.DB
+	meals              internal.IMealUseCase
+	foods              internal.IFoodUseCase
+	ingredients        internal.IIngredientUseCase
+	ingredientsManager internal.IIngredientManager
+	notes              internal.INotesUseCase
+	symptoms           internal.ISymptomsUseCase
+	conditionEvents    internal.IConditionEventUseCase
+	conditions         internal.IConditionUseCase
+	diary              internal.IDiaryUseCase
+	statistics         internal.IStatisticsUseCase
+	pollens            internal.IPollenUseCase
+	status             internal.IStatusUseCase
+	headaches          internal.IHeadacheUseCase
+	move               internal.PiidMover
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -74,19 +75,20 @@ func initServiceWithDb(db *gorm.DB) *Service {
 	moveRepo := move.NewMoveRepo(db)
 
 	return &Service{
-		DB:              db,
-		meals:           internal.NewMealUseCase(mealRepo, mealRepo),
-		ingredients:     internal.NewIngredientUseCase(mealRepo),
-		foods:           internal.NewFoodUseCase(mealRepo, mealRepo),
-		notes:           internal.NewNoteUseCase(noteRepo),
-		symptoms:        internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
-		conditionEvents: internal.NewConditionEventUseCase(symptomRepo, symptomRepo),
-		conditions:      internal.NewConditionsUseCase(symptomRepo, symptomRepo),
-		diary:           internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo, pollenRepo),
-		statistics:      internal.NewStatisticsUseCase(statsRepo),
-		pollens:         internal.NewPollenUseCase(pollenRepo, dwdRepo),
-		status:          internal.NewStatusUseCase(statusRepo),
-		headaches:       internal.NewHeadacheUseCase(headacheRepo),
-		move:            internal.NewPiidMoveUseCase(moveRepo),
+		DB:                 db,
+		meals:              internal.NewMealUseCase(mealRepo, mealRepo),
+		ingredients:        internal.NewIngredientUseCase(mealRepo),
+		ingredientsManager: internal.NewIngredientsManager(mealRepo),
+		foods:              internal.NewFoodUseCase(mealRepo, mealRepo),
+		notes:              internal.NewNoteUseCase(noteRepo),
+		symptoms:           internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
+		conditionEvents:    internal.NewConditionEventUseCase(symptomRepo, symptomRepo),
+		conditions:         internal.NewConditionsUseCase(symptomRepo, symptomRepo),
+		diary:              internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo, pollenRepo),
+		statistics:         internal.NewStatisticsUseCase(statsRepo),
+		pollens:            internal.NewPollenUseCase(pollenRepo, dwdRepo),
+		status:             internal.NewStatusUseCase(statusRepo),
+		headaches:          internal.NewHeadacheUseCase(headacheRepo),
+		move:               internal.NewPiidMoveUseCase(moveRepo),
 	}
 }

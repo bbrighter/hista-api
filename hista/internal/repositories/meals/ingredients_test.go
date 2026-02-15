@@ -4,8 +4,10 @@ import (
 	"testing"
 
 	"encore.app/hista/entity"
+	"encore.app/shared/generic_queries"
 	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 // func TestCreateOrReplaceIngredient(t *testing.T) {
@@ -71,3 +73,53 @@ func TestGetIngredients(t *testing.T) {
 // 	rows = service.db.First(entity.Ingredient{ID: 1}).RowsAffected
 // 	assert.EqualValues(t, 0, rows)
 // }
+
+func (s *MealRepoTestSuite) TestGetIngredients() {
+	ing, err := s.repo.ListIngredients(s.ctx)
+	s.NoError(err)
+	s.Len(ing, 3)
+}
+
+func (s *MealRepoTestSuite) TestChangeName() {
+	var err error
+
+	err = s.repo.ChangeIngredientName(s.ctx, 1, "new name")
+	s.NoError(err)
+	ing, err := gorm.G[entity.Ingredient](s.db).Where("id = ?", 1).First(s.ctx)
+	s.Require().NoError(err)
+	s.Equal("new name", ing.Name)
+
+	err = s.repo.ChangeIngredientName(s.ctx, 100, "new name")
+	s.ErrorIs(err, gorm.ErrRecordNotFound)
+}
+
+func (s *MealRepoTestSuite) TestToggleArchived() {
+	var err error
+	var ing entity.Ingredient
+
+	err = s.repo.ToggleArchived(s.ctx, 1)
+	s.NoError(err)
+	ing, err = gorm.G[entity.Ingredient](s.db).Where("id = ?", 1).First(s.ctx)
+	s.Require().NoError(err)
+	s.Equal(true, ing.IsArchived)
+	err = s.repo.ToggleArchived(s.ctx, 1)
+	ing, err = gorm.G[entity.Ingredient](s.db).Where("id = ?", 1).First(s.ctx)
+	s.Require().NoError(err)
+	s.Equal(false, ing.IsArchived)
+
+	err = s.repo.ToggleArchived(s.ctx, 100)
+	s.ErrorIs(err, gorm.ErrRecordNotFound)
+}
+
+func (s *MealRepoTestSuite) TestDeleteIngredient() {
+	var err error
+
+	err = s.repo.DeleteIngredient(s.ctx, 1)
+	s.Error(err)
+	s.ErrorContains(err, "23503")
+
+	ing := entity.Ingredient{ID: 95, Name: "no relations"}
+	generic_queries.Create(s.ctx, s.db, &ing)
+	err = s.repo.DeleteIngredient(s.ctx, ing.ID)
+	s.NoError(err)
+}

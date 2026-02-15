@@ -80,10 +80,10 @@
 		},
 		{
 			"type": "shell",
-			"label": "Atlas: migrate api",
-			"command": "sh",
+			"label": "Atlas: migrate hista",
+			"command": "bash",
 			"args": [
-				"${workspaceFolder}/api/scripts/generate-migration",
+				"${workspaceFolder}/hista/scripts/generate-migration",
 				" ${input:migrationName}",
 			],
 			"icon": {
@@ -160,7 +160,7 @@
 			"label": "Update hash for migrations (hista)",
 			"command": "atlas migrate hash",
 			"options": {
-				"cwd": "${workspaceFolder}/api",
+				"cwd": "${workspaceFolder}/hista",
 			},
 			"presentation": {
 				"reveal": "silent",
