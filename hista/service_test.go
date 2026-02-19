@@ -51,6 +51,7 @@ func (s *ApiTestSuite) cleanTables() {
 		"pollens", "pollen_events",
 		"statuses",
 		"headaches",
+		"intakes", "medicines",
 	}
 	for _, table := range tables {
 		err := s.db.Exec(fmt.Sprintf(`DELETE FROM "%s"`, table)).Error

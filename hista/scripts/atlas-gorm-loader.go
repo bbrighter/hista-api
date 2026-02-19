@@ -5,7 +5,7 @@ import (
 	"io"
 	"os"
 
-	// _ "ariga.io/atlas-go-sdk/recordriver"
+	_ "ariga.io/atlas-go-sdk/recordriver"
 	gormSchema "ariga.io/atlas-provider-gorm/gormschema"
 	"encore.app/hista/entity"
 )
@@ -24,6 +24,8 @@ var models = []any{
 	&entity.PollenEvent{},
 	&entity.Status{},
 	&entity.Headache{},
+	&entity.Intake{},
+	&entity.Medicine{},
 }
 
 func main() {
