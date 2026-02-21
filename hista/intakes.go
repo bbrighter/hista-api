@@ -19,7 +19,7 @@ func (s *Service) IncrementIntake(ctx context.Context, piid uuid.UUID, medicineI
 	return errors.MapError(s.intake.Increment(ctx, medicineId))
 }
 
-// encore api auth method=POST path=/piid/:piid/intakes/medicines/:medicineId/decrement
+// encore:api auth method=POST path=/piid/:piid/intakes/medicines/:medicineId/decrement
 func (s *Service) DecrementIntake(ctx context.Context, piid uuid.UUID, medicineId uint) error {
 	return errors.MapError(s.intake.Decrement(ctx, medicineId))
 }
