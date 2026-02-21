@@ -91,6 +91,10 @@ func (s *MealRepoTestSuite) TestChangeName() {
 
 	err = s.repo.ChangeIngredientName(s.ctx, 100, "new name")
 	s.ErrorIs(err, gorm.ErrRecordNotFound)
+
+	// Change to already existing name
+	err = s.repo.ChangeIngredientName(s.ctx, 2, "new name")
+	s.Error(err)
 }
 
 func (s *MealRepoTestSuite) TestToggleArchived() {
