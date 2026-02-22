@@ -10,7 +10,7 @@ import (
 
 // encore:api auth method=GET path=/piid/:piid/intakes
 func (s *Service) ListIntakes(ctx context.Context, piid uuid.UUID) (entity.IntakeResponseList, error) {
-	list, err := s.intake.List(ctx)
+	list, err := s.intake.ListGrouped(ctx)
 	return list.ToResponse(), errors.MapError(err)
 }
 

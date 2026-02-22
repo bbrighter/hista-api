@@ -126,6 +126,13 @@ func (s *ApiTestSuite) createTestPollen() {
 	s.Require().NoError(err)
 }
 
+func (s *ApiTestSuite) createTestIntake() {
+	id, err := s.service.medicine.Create(s.ctx, "Medicine")
+	s.Require().NoError(err)
+	err = s.service.intake.Increment(s.ctx, id)
+	s.Require().NoError(err)
+}
+
 func (suite *ApiTestSuite) assertErrCode(err error, expectedCode errs.ErrCode) bool {
 	if expectedCode == 0 {
 		suite.NoError(err)

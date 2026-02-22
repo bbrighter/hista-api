@@ -16,6 +16,7 @@ type (
 
 	IUser interface {
 		ChangePassword(ctx context.Context, id uuid.UUID, newPassword string, oldPassword string) error
+		ChangePasswordForced(ctx context.Context, id uuid.UUID, newPassword string) error
 	}
 )
 
@@ -33,6 +34,14 @@ func (uc UserUseCase) ChangePassword(ctx context.Context, id uuid.UUID, newPassw
 		return err
 	}
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		return err
+	}
+	return uc.r.ChangePassword(ctx, id, newPassword)
+}
+
+func (uc UserUseCase) ChangePasswordForced(ctx context.Context, id uuid.UUID, newPassword string) error {
+	_, err := uc.r.Find(ctx, id)
+	if err != nil {
 		return err
 	}
 	return uc.r.ChangePassword(ctx, id, newPassword)

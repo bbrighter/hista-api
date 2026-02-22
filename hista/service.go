@@ -90,7 +90,7 @@ func initServiceWithDb(db *gorm.DB) *Service {
 		symptoms:           internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
 		conditionEvents:    internal.NewConditionEventUseCase(symptomRepo, symptomRepo),
 		conditions:         internal.NewConditionsUseCase(symptomRepo, symptomRepo),
-		diary:              internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo, pollenRepo),
+		diary:              internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo, pollenRepo, intakeRepo),
 		statistics:         internal.NewStatisticsUseCase(statsRepo),
 		pollens:            internal.NewPollenUseCase(pollenRepo, dwdRepo),
 		status:             internal.NewStatusUseCase(statusRepo),

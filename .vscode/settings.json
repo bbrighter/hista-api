@@ -7,7 +7,4 @@
     },
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "golang.go",
-    "[sql]": {
-        "editor.defaultFormatter": "inferrinizzard.prettier-sql-vscode"
-    },
 }

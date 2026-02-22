@@ -8,9 +8,10 @@ func (s *ApiTestSuite) TestGetDiary() {
 		createFood      bool
 		createNote      bool
 		createPollen    bool
+		createIntake    bool
 		expectedLen     int
 	}{
-		"all":       {createCondition: true, createFood: true, createNote: true, createPollen: true, expectedLen: 9},
+		"all":       {createCondition: true, createFood: true, createNote: true, createPollen: true, createIntake: true, expectedLen: 10},
 		"none":      {},
 		"food":      {createFood: true, expectedLen: 1},
 		"note":      {createNote: true, expectedLen: 1},
@@ -30,6 +31,9 @@ func (s *ApiTestSuite) TestGetDiary() {
 			if test.createPollen {
 				s.createTestPollen()
 			}
+			if test.createIntake {
+				s.createTestIntake()
+			}
 			resp, err := s.service.GetDiary(s.ctx, s.piid)
 			s.NoError(err)
 			s.Len(resp.Diaries, test.expectedLen)
@@ -48,6 +52,9 @@ func (s *ApiTestSuite) TestGetDiary() {
 			}
 			if test.createPollen {
 				s.Contains(types, entity.DiaryPollen)
+			}
+			if test.createIntake {
+				s.Contains(types, entity.DiaryIntake)
 			}
 		},
 		)
