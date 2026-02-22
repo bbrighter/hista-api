@@ -11,7 +11,7 @@
             "type": "go",
             "request": "attach",
             "mode": "local",
-            "processId": "encore_app_out.exe"
+            "processId": "encore_app_out"
         },
         {
             "name": "Connect to server",

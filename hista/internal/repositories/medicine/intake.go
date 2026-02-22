@@ -28,7 +28,18 @@ func isNotArchived(tx *gorm.DB) *gorm.DB {
 	return tx.Where("medicines.is_archived = ?", false)
 }
 
-func (r IntakeRepo) List(ctx context.Context) (entity.GroupedIntakeList, error) {
+func (r IntakeRepo) List(ctx context.Context) ([]*entity.Intake, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return []*entity.Intake{}, err
+	}
+	return gorm.G[*entity.Intake](r.db).
+		Where("pi_id = ?", piid).
+		Preload("Medicine", nil).
+		Find(ctx)
+}
+
+func (r IntakeRepo) ListGrouped(ctx context.Context) (entity.GroupedIntakeList, error) {
 	var list entity.GroupedIntakeList
 	piid, err := generic_queries.PiidFromCtx(ctx)
 	if err != nil {

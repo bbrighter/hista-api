@@ -19,7 +19,7 @@ func (service *Service) PostStatus(ctx context.Context, piid uuid.UUID, params D
 }
 
 type PatchStatusParams struct {
-	Date           time.Time `json:"date" encore:"optional"`
+	Date           time.Time `json:"date"`
 	MorningFitness *int      `json:"morningFitness" encore:"optional"`
 	MorningSleep   *int      `json:"morningSleep" encore:"optional"`
 	EveningFitness *int      `json:"eveningFitness" encore:"optional"`

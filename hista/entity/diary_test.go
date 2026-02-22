@@ -41,8 +41,11 @@ func TestCreateRawDiary(t *testing.T) {
 			Type:      Ambrosia,
 			Intensity: MediumPollen,
 		}}}}
-	var diaries []RawDiary = CreateRawDiary(meals, events, cats, notes, pollens)
-	assert.Len(t, diaries, 4)
+	intakes := []*Intake{
+		{ID: 1, Date: now.Add(-10 * time.Second), Medicine: Medicine{ID: 1, Name: "Medicine"}},
+	}
+	var diaries []RawDiary = CreateRawDiary(meals, events, cats, notes, pollens, intakes)
+	assert.Len(t, diaries, 5)
 	var firstDiary RawDiary = diaries[0] // First is latest
 	assert.Equal(t, firstDiary.Content, "Ingredient")
 	assert.Equal(t, firstDiary.Severity, "cooked")
@@ -56,4 +59,7 @@ func TestCreateRawDiary(t *testing.T) {
 	assert.Equal(t, DiaryPollen, fourthDiary.Type)
 	assert.Equal(t, "Ambrosia", fourthDiary.Category)
 	assert.Equal(t, "Mittlere", fourthDiary.Severity)
+	var fithDiary RawDiary = diaries[4]
+	assert.Equal(t, DiaryIntake, fithDiary.Type)
+	assert.Equal(t, "Medicine", fithDiary.Content)
 }

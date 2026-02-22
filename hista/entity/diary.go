@@ -22,9 +22,10 @@ const (
 	DiarySymptom DiaryType = "Symptom"
 	DiaryNote    DiaryType = "Note"
 	DiaryPollen  DiaryType = "Pollen"
+	DiaryIntake  DiaryType = "Intake"
 )
 
-func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories, notes Notes, pollens PollenEvents) []RawDiary {
+func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories, notes Notes, pollens PollenEvents, intakes []*Intake) []RawDiary {
 	var diaries = []RawDiary{}
 	for _, meal := range meals {
 		for _, food := range meal.Foods {
@@ -67,6 +68,14 @@ func CreateRawDiary(meals Meals, events ConditionEvents, cats SymptomCategories,
 			}
 			diaries = append(diaries, diary)
 		}
+	}
+	for _, i := range intakes {
+		var diary = RawDiary{
+			Date:    i.Date,
+			Type:    DiaryIntake,
+			Content: i.Medicine.Name,
+		}
+		diaries = append(diaries, diary)
 	}
 	sort.Slice(diaries, func(i, j int) bool {
 		return diaries[j].Date.Before(diaries[i].Date)

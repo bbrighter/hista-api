@@ -7,10 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (s *MedicineRepoTestSuite) TestList() {
-	// now := time.Now()
-	// today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, time.UTC)
-
+func (s *MedicineRepoTestSuite) TestListGrouped() {
 	tests := map[string]struct {
 		numberOfIntakes   map[uint]int
 		expectedLength    int
@@ -32,7 +29,7 @@ func (s *MedicineRepoTestSuite) TestList() {
 			err := s.tx.CreateInBatches(intakes, 10).Error
 			s.Require().NoError(err)
 
-			list, err := s.intake.List(s.ctx)
+			list, err := s.intake.ListGrouped(s.ctx)
 			s.NoError(err)
 			s.Len(list, test.expectedLength)
 
