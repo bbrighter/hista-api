@@ -127,7 +127,7 @@ func (s *ApiTestSuite) createTestPollen() {
 }
 
 func (s *ApiTestSuite) createTestIntake() {
-	id, err := s.service.medicine.Create(s.ctx, "Medicine")
+	id, err := s.service.medicine.Create(s.ctx, "Medicine No. 1")
 	s.Require().NoError(err)
 	err = s.service.intake.Increment(s.ctx, id)
 	s.Require().NoError(err)

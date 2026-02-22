@@ -29,7 +29,14 @@ func isNotArchived(tx *gorm.DB) *gorm.DB {
 }
 
 func (r IntakeRepo) List(ctx context.Context) ([]*entity.Intake, error) {
-	return generic_queries.List[*entity.Intake](ctx, r.db)
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return []*entity.Intake{}, err
+	}
+	return gorm.G[*entity.Intake](r.db).
+		Where("pi_id = ?", piid).
+		Preload("Medicine", nil).
+		Find(ctx)
 }
 
 func (r IntakeRepo) ListGrouped(ctx context.Context) (entity.GroupedIntakeList, error) {
