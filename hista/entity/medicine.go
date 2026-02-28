@@ -10,6 +10,7 @@ type Medicine struct {
 	ID         uint      `gorm:"primaryKey;autoIncrement"`
 	PIID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name       string    `gorm:"uniqueIndex"`
+	SortOrder  int       `gorm:"not null"`
 	IsArchived bool      `gorm:"not null"`
 	Intakes    []Intake
 }
@@ -38,13 +39,14 @@ type MedicineResponse struct {
 	ID         uint   `json:"id"`
 	Name       string `json:"name"`
 	IsArchived bool   `json:"isArchived"`
+	SortOrder  int    `json:"sortOrder"`
 }
 type MedicineListResponse struct {
 	Medicines []MedicineResponse `json:"medicines"`
 }
 
 func (m Medicine) ToResponse() MedicineResponse {
-	return MedicineResponse{ID: m.ID, Name: m.Name, IsArchived: m.IsArchived}
+	return MedicineResponse{ID: m.ID, Name: m.Name, IsArchived: m.IsArchived, SortOrder: m.SortOrder}
 }
 
 func (ms Medicines) ToResponse() MedicineListResponse {

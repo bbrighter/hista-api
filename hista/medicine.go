@@ -5,6 +5,7 @@ import (
 
 	"encore.app/errors"
 	"encore.app/hista/entity"
+	"encore.dev/beta/errs"
 	"encore.dev/types/uuid"
 )
 
@@ -45,4 +46,17 @@ func (s *Service) PatchMedicine(ctx context.Context, piid uuid.UUID, medicineId 
 		err = errors.ErrBadRequest
 	}
 	return errors.MapError(err)
+}
+
+type MoveMedicineParams struct {
+	PreviousId *uint `json:"previousId" encore:"optional"`
+	NextId     *uint `json:"nextId" encore:"optional"`
+}
+
+// encore:api auth method=PATCH path=/piid/:piid/medicines/:medicineId/reorder
+func (s *Service) ReorderMedicine(ctx context.Context, piid uuid.UUID, medicineId uint, params MoveMedicineParams) error {
+	if params.NextId == nil && params.PreviousId == nil {
+		return errors.NewEncoreError("nextId or previousId must be set", errs.InvalidArgument)
+	}
+	return errors.MapError(s.medicine.Reorder(ctx, medicineId, params.PreviousId, params.NextId))
 }

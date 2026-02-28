@@ -37,7 +37,7 @@ func (suite *MedicineRepoTestSuite) SetupSuite() {
 	}
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: sqlDb.Stdlib(),
-	}))
+	}), &gorm.Config{TranslateError: true})
 	suite.rootDb = db
 	if err != nil {
 		panic(err)
@@ -46,14 +46,14 @@ func (suite *MedicineRepoTestSuite) SetupSuite() {
 
 func (s *MedicineRepoTestSuite) SetupTest() {
 	tx := s.rootDb.Begin()
-	s.tx = tx.Debug()
+	s.tx = tx
 	s.med = NewMedicineRepo(s.tx)
 	s.intake = NewIntakeRepo(s.tx)
 	s.fillWithData()
 }
 
 func (s *MedicineRepoTestSuite) TearDownSubTest() {
-	err := s.tx.Debug().Exec("DELETE FROM intakes").Error
+	err := s.tx.Exec("DELETE FROM intakes").Error
 	s.Require().NoError(err)
 }
 
@@ -62,9 +62,9 @@ func (s *MedicineRepoTestSuite) TearDownTest() {
 }
 
 func (s *MedicineRepoTestSuite) fillWithData() {
-	var medicine1 = entity.Medicine{PIID: GUID, Name: "Medicine1", IsArchived: false}
-	var medicine2 = entity.Medicine{PIID: GUID, Name: "Medicine2", IsArchived: false}
-	var archivedMedicine = entity.Medicine{PIID: GUID, Name: "ArchivedMedicine", IsArchived: true}
+	var medicine1 = entity.Medicine{PIID: GUID, Name: "Medicine1", IsArchived: false, SortOrder: 1}
+	var medicine2 = entity.Medicine{PIID: GUID, Name: "Medicine2", IsArchived: false, SortOrder: 2}
+	var archivedMedicine = entity.Medicine{PIID: GUID, Name: "ArchivedMedicine", IsArchived: true, SortOrder: 3}
 
 	err := s.tx.CreateInBatches(&entity.Medicines{&medicine1, &medicine2, &archivedMedicine}, 10).Error
 	s.Require().NoError(err)
