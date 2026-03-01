@@ -24,8 +24,8 @@ func isIntakesPiid(piid uuid.UUID) func(*gorm.DB) *gorm.DB {
 	}
 }
 
-func isNotArchived(tx *gorm.DB) *gorm.DB {
-	return tx.Where("medicines.is_archived = ?", false)
+func isNotOld(tx *gorm.DB) *gorm.DB {
+	return tx.Where("intakes.date > current_date - 7")
 }
 
 func (r IntakeRepo) List(ctx context.Context) ([]*entity.Intake, error) {
@@ -48,7 +48,7 @@ func (r IntakeRepo) ListGrouped(ctx context.Context) (entity.GroupedIntakeList, 
 
 	err = r.db.
 		Model(entity.Intake{}).
-		Scopes(isIntakesPiid(piid), isNotArchived).
+		Scopes(isIntakesPiid(piid), isNotOld).
 		Joins("LEFT JOIN medicines ON intakes.medicine_id = medicines.id and intakes.medicine_pi_id = medicines.pi_id").
 		Select("count(*) as count", "medicines.id as medicine_id", "DATE(intakes.date) as date").
 		Group("medicines.id").Group("DATE(intakes.date)").
