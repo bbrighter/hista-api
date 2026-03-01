@@ -13,6 +13,7 @@ import (
 	"encore.app/hista/internal/repositories/statistics"
 	"encore.app/hista/internal/repositories/status"
 	"encore.app/hista/internal/repositories/symptoms"
+	unitofwork "encore.app/hista/internal/unitOfWork"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -47,7 +48,7 @@ var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig
 func initDb() (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: HistaDB.Stdlib(),
-	}))
+	}), &gorm.Config{TranslateError: true})
 
 	if err != nil {
 		return nil, err
@@ -79,6 +80,7 @@ func initServiceWithDb(db *gorm.DB) *Service {
 	moveRepo := move.NewMoveRepo(db)
 	medicineRepo := medicine.NewMedicineRepo(db)
 	intakeRepo := medicine.NewIntakeRepo(db)
+	uow := unitofwork.NewUnitOfWork(db)
 
 	return &Service{
 		DB:                 db,
@@ -97,7 +99,7 @@ func initServiceWithDb(db *gorm.DB) *Service {
 		headaches:          internal.NewHeadacheUseCase(headacheRepo),
 		move:               internal.NewPiidMoveUseCase(moveRepo),
 		medicineList:       internal.NewMedicineListUseCase(medicineRepo),
-		medicine:           internal.NewMedicineMgtmUseCase(medicineRepo),
+		medicine:           internal.NewMedicineMgtmUseCase(medicineRepo, uow),
 		intake:             internal.NewIntakeMgmtUseCase(intakeRepo),
 	}
 }
