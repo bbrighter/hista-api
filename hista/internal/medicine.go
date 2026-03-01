@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	"encore.app/hista/entity"
@@ -52,9 +53,10 @@ func NewMedicineMgtmUseCase(r IMedicineRepo, uow UnitOfWork) MedicineMgmtUseCase
 	return MedicineMgmtUseCase{r: r, uow: uow}
 }
 func (uc MedicineMgmtUseCase) Create(ctx context.Context, name string) (uint, error) {
-	var returnId *uint
+	var returnId = new(uint)
 	err := uc.uow.WithTransaction(ctx, func(tx UnitOfWork) error {
 		if err := tx.Medicine().BulkShift(ctx); err != nil {
+			fmt.Printf("Error: %s", err)
 			return err
 		}
 		id, err := tx.Medicine().Create(ctx, name)
@@ -62,6 +64,7 @@ func (uc MedicineMgmtUseCase) Create(ctx context.Context, name string) (uint, er
 		return err
 	})
 	return *returnId, err
+
 }
 
 func (uc MedicineMgmtUseCase) Delete(ctx context.Context, id uint) error {

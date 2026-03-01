@@ -40,16 +40,10 @@ func (r MedicineRepo) BulkShift(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	rows, err := gorm.G[entity.Medicine](r.db).
+	_, err = gorm.G[entity.Medicine](r.db).
 		Where("pi_id = ?", piid).
 		Update(ctx, "sort_order", gorm.Expr("sort_order + ?", r.stepSize))
-	if err != nil {
-		return err
-	}
-	if rows == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	return nil
+	return err
 }
 
 func (r MedicineRepo) Reorder(ctx context.Context) error {
