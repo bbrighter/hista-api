@@ -4,7 +4,7 @@ WITH reordered as (
     SELECT 
         "id",
         "pi_id",
-        ROW_NUMBER() OVER (PARTITION BY "pi_id" ORDER BY "name") * 10 as "sort_order"
+        ROW_NUMBER() OVER (PARTITION BY "pi_id" ORDER BY "name") * 100 as "sort_order"
     FROM "medicines"
 )
 UPDATE "medicines" m 
