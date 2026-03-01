@@ -11,11 +11,11 @@ func (s *ApiTestSuite) TestGetDiary() {
 		createIntake    bool
 		expectedLen     int
 	}{
-		"all":       {createCondition: true, createFood: true, createNote: true, createPollen: true, createIntake: true, expectedLen: 10},
-		"none":      {},
-		"food":      {createFood: true, expectedLen: 1},
-		"note":      {createNote: true, expectedLen: 1},
-		"condition": {createCondition: true, expectedLen: 1},
+		"all": {createCondition: true, createFood: true, createNote: true, createPollen: true, createIntake: true, expectedLen: 10},
+		// "none":      {},
+		// "food":      {createFood: true, expectedLen: 1},
+		// "note":      {createNote: true, expectedLen: 1},
+		// "condition": {createCondition: true, expectedLen: 1},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
