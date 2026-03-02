@@ -94,8 +94,8 @@ func (repo *MealRepository) DeleteFood(ctx context.Context, foodId uint) error {
 	})
 }
 
-func (repo *MealRepository) ChangeCondition(ctx context.Context, foodId uint, condition entity.FoodCondition) error {
-	return generic_queries.UpdateColumn[*entity.Food](ctx, repo.db, foodId, "condition", string(condition))
+func (repo *MealRepository) UpdateFood(ctx context.Context, foodId uint, column string, value any) error {
+	return generic_queries.UpdateColumn[*entity.Food](ctx, repo.db, foodId, column, value)
 }
 
 func (repo *MealRepository) GetFood(ctx context.Context, foodId uint) (entity.Food, error) {
@@ -106,18 +106,4 @@ func (repo *MealRepository) GetFood(ctx context.Context, foodId uint) (entity.Fo
 	var food = entity.Food{ID: foodId, PIID: piid}
 	repo.db.Preload(clause.Associations).First(&food)
 	return food, nil
-}
-
-func StringToFoodCondition(str string) (entity.FoodCondition, error) {
-	var err error
-	var condition entity.FoodCondition
-	switch str {
-	case "raw":
-		condition = entity.Raw
-	case "cooked":
-		condition = entity.Cooked
-	default:
-		err = errors.BadRequest("invalid condition")
-	}
-	return condition, err
 }
