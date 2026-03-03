@@ -30,10 +30,10 @@ func (s *ApiTestSuite) TestDeleteFood() {
 }
 
 func (s *ApiTestSuite) TestPatchFoodCondition() {
-	var params = FoodConditionParams{Condition: entity.Raw}
+	var params = PatchFoodConditionParams{Condition: entity.Raw}
 	tests := map[string]struct {
 		useWrongId      bool
-		params          FoodConditionParams
+		params          PatchFoodConditionParams
 		expectedErrCode errs.ErrCode
 	}{
 		"ok":        {params: params},
@@ -60,7 +60,7 @@ func TestFoodParamValidation(t *testing.T) {
 	}{}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			params := FoodConditionParams{Condition: entity.FoodCondition(test.condition)}
+			params := PatchFoodConditionParams{Condition: entity.FoodCondition(test.condition)}
 			err := params.Validate()
 			if test.expectedError {
 				assert.Error(t, err)
@@ -69,5 +69,35 @@ func TestFoodParamValidation(t *testing.T) {
 			}
 		})
 
+	}
+}
+
+func (s *ApiTestSuite) TestPatchFoodAmount() {
+	var newAmount int = 10
+	tests := map[string]struct {
+		useWrongId        bool
+		newAmount         *int
+		expectedErrorCode errs.ErrCode
+	}{
+		"ok":          {newAmount: &newAmount},
+		"not found":   {useWrongId: true, expectedErrorCode: errs.NotFound},
+		"insert null": {},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			foodId, _ := s.createTestFood()
+			if test.useWrongId {
+				foodId = 100
+			}
+			err := s.service.PatchFoodAmount(s.ctx, s.piid, foodId, PatchFoodAmountParams{Amount: test.newAmount})
+			if s.assertErrCode(err, test.expectedErrorCode) {
+				return
+			}
+
+			mealResp, _ := s.service.ListMeals(s.ctx, s.piid)
+			foodResp, _ := s.service.GetFoods(s.ctx, s.piid, mealResp.Meals[0].ID)
+			food := foodResp.Foods[0]
+			s.Equal(test.newAmount, food.Amount)
+		})
 	}
 }

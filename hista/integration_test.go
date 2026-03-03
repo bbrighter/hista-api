@@ -155,7 +155,7 @@ func (s *ApiTestSuite) TestMeals() {
 	s.NoError(err)
 	s.Len(ingResp.Ingredients, 1)
 
-	err = s.service.PatchFoodCondition(s.ctx, s.piid, foodId, FoodConditionParams{Condition: entity.Raw})
+	err = s.service.PatchFoodCondition(s.ctx, s.piid, foodId, PatchFoodConditionParams{Condition: entity.Raw})
 	s.NoError(err)
 
 	var freshness entity.Freshness = entity.Fresh

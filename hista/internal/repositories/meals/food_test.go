@@ -88,30 +88,3 @@ func TestDeleteFoodKeepsUsedIngredients(t *testing.T) {
 	count, _ := gorm.G[entity.Ingredient](repo.db).Where("id = 10").Count(ctx, "*")
 	assert.EqualValues(t, 1, count)
 }
-
-func TestChangeFoodCondition(t *testing.T) {
-	repo, ctx := initTest(t)
-
-	var err error
-	var condition = entity.Raw
-	err = repo.ChangeCondition(ctx, 1, condition)
-	assert.Error(t, err)
-
-	var food = entity.Food{ID: 1, Condition: entity.Cooked, PIID: GUID}
-	repo.db.Create(&food)
-	err = repo.ChangeCondition(ctx, 1, condition)
-	assert.NoError(t, err)
-}
-
-func TestStringToFoodCondition(t *testing.T) {
-	t.Parallel()
-
-	var err error
-	var cond entity.FoodCondition
-	cond, err = StringToFoodCondition("raw")
-	assert.NoError(t, err)
-	assert.Equal(t, entity.Raw, cond)
-
-	_, err = StringToFoodCondition("bad input")
-	assert.Error(t, err)
-}
