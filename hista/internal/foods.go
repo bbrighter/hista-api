@@ -72,6 +72,9 @@ func (uc FoodUseCase) Delete(ctx context.Context, foodId uint) (ingredients enti
 }
 
 func (uc FoodUseCase) ChangeAmount(ctx context.Context, foodId uint, amount *int) error {
+	if amount != nil && *amount == 0 {
+		amount = nil
+	}
 	return uc.food.UpdateFood(ctx, foodId, "amount", amount)
 }
 
