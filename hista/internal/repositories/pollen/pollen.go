@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"encore.app/hista/entity"
+	"encore.dev/rlog"
 	"gorm.io/gorm/clause"
 )
 
@@ -12,9 +13,18 @@ func (repo *PollenRepo) Create(pollen entity.Pollens, lastUpdated time.Time) err
 		Where("created_at > ?", lastUpdated).
 		First(&entity.PollenEvent{}).
 		RowsAffected == 0
+	var event = entity.PollenEvent{Pollens: pollen}
+	rlog.Info("pollens to be inserted in repo.Create",
+		"time", event.CreatedAt,
+		"number of pollens", len(event.Pollens),
+	)
+	for _, p := range event.Pollens {
+		rlog.Info("Detail", string(p.Type), p.Intensity)
+	}
 	if mustBeUpdated {
-		var event = entity.PollenEvent{Pollens: pollen}
-		return repo.db.Create(&event).Error
+		err := repo.db.Debug().Create(&event).Error
+		rlog.Info("id of event", "id", event.ID)
+		return err
 	}
 	return nil
 }
