@@ -51,9 +51,12 @@ func (uc PollenUseCase) Create() error {
 		return errors.MapError(err)
 	}
 	dwdPollen := pollen.ToPollen()
-	rlog.Info("found pollens", "amount", len(dwdPollen))
-	for _, pollen := range dwdPollen {
-		rlog.Info("pollen details", string(pollen.Type), pollen.Intensity.String())
+	rlog.Info("found pollens",
+		"amount", len(dwdPollen),
+		"updated at", updatedAt.String(),
+	)
+	for _, p := range dwdPollen {
+		rlog.Info("pollen details", string(p.Type), p.Intensity.String())
 	}
 	return errors.MapError(uc.repo.Create(dwdPollen, updatedAt))
 }
