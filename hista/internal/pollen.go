@@ -6,6 +6,7 @@ import (
 
 	"encore.app/errors"
 	"encore.app/hista/entity"
+	"encore.dev/rlog"
 )
 
 type (
@@ -49,7 +50,12 @@ func (uc PollenUseCase) Create() error {
 	if err != nil {
 		return errors.MapError(err)
 	}
-	return errors.MapError(uc.repo.Create(pollen.ToPollen(), updatedAt))
+	dwdPollen := pollen.ToPollen()
+	rlog.Info("found pollens", "amount", len(dwdPollen))
+	for _, pollen := range dwdPollen {
+		rlog.Info("pollen details", string(pollen.Type), pollen.Intensity.String())
+	}
+	return errors.MapError(uc.repo.Create(dwdPollen, updatedAt))
 }
 
 func (uc PollenUseCase) UseTestQuery(t *testing.T) {
