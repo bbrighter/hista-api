@@ -91,7 +91,7 @@ func (s *ApiTestSuite) TestCheckItem() {
 			var itemId uint = 1000
 			if !test.useWrongItemId {
 				listId := s.createList()
-				itemId = s.createItem(listId)
+				itemId = s.createItem(listId).ID
 			}
 			ctx := s.GetCtx(test.useWrongPiid)
 			err := s.service.CheckItem(ctx, s.piid, itemId, ItemCheckParams{Checked: test.checked})
@@ -124,7 +124,7 @@ func (s *ApiTestSuite) TestDeleteItem() {
 			var itemId uint = 1000
 			if !test.useWrongItemId {
 				listId := s.createList()
-				itemId = s.createItem(listId)
+				itemId = s.createItem(listId).ID
 			}
 			ctx := s.GetCtx(false)
 			err := s.service.DeleteItem(ctx, s.piid, itemId)
@@ -153,7 +153,7 @@ func (s *ApiTestSuite) TestPatchItem() {
 			var itemId uint = 1000
 			if !test.useWrongItemId {
 				listId := s.createList()
-				itemId = s.createItem(listId)
+				itemId = s.createItem(listId).ID
 			}
 			ctx := s.GetCtx(false)
 			params := ItemPatchParams{Quantity: test.quantity}

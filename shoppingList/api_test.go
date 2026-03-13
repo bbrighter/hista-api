@@ -65,17 +65,17 @@ func (suite *ApiTestSuite) createList() uint {
 
 func (suite *ApiTestSuite) createProduct() uint {
 	var product = entity.Product{Name: "name", PIID: suite.piid}
-	err := gorm.G[entity.Product](suite.db).Create(suite.ctx, &product)
+	err := gorm.G[entity.Product](suite.db.Debug()).Create(suite.ctx, &product)
 	suite.Require().NoError(err)
 	return product.ID
 }
 
-func (suite *ApiTestSuite) createItem(listId uint) uint {
+func (suite *ApiTestSuite) createItem(listId uint) entity.Item {
 	productId := suite.createProduct()
 	var item = entity.Item{PIID: suite.piid, ProductPiid: suite.piid, ListPiid: suite.piid, ProductId: productId, ListId: listId}
 	err := gorm.G[entity.Item](suite.db).Create(suite.ctx, &item)
 	suite.Require().NoError(err)
-	return item.ID
+	return item
 }
 
 func (suite *ApiTestSuite) createMoment(time time.Time) {
