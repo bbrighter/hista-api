@@ -31,6 +31,8 @@ type (
 	ProductRepo interface {
 		Create(ctx context.Context, name string) (uint, error)
 		List(ctx context.Context) ([]*entity.Product, error)
+		Update(ctx context.Context, id uint, values map[string]any) error
+		Delete(ctx context.Context, id uint) error
 	}
 
 	MomentRepo interface {
