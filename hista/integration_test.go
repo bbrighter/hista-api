@@ -5,6 +5,7 @@ import (
 
 	"encore.app/hista/entity"
 	"encore.dev/beta/errs"
+	"encore.dev/types/option"
 )
 
 func (s *ApiTestSuite) TestHeadaches() {
@@ -183,7 +184,7 @@ func (s *ApiTestSuite) TestMeals() {
 
 func (s *ApiTestSuite) TestManageIngredients() {
 	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, entity.PostMealParams{Date: time.Now()})
-	_, err = s.service.PostFood(s.ctx, s.piid, postMealResp.ID, FoodParams{IngredientName: "ing"})
+	foodResp, err := s.service.PostFood(s.ctx, s.piid, postMealResp.ID, FoodParams{IngredientName: "ing"})
 
 	ingredients, err := s.service.ListIngredients(s.ctx, s.piid)
 	s.NoError(err)
@@ -193,9 +194,39 @@ func (s *ApiTestSuite) TestManageIngredients() {
 	err = s.service.ArchiveIngredient(s.ctx, s.piid, ing.ID)
 	s.NoError(err)
 
-	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Name: "new name"})
+	name := option.Some("new name")
+	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Name: name})
 	s.NoError(err)
 
+	archived := option.Some(true)
+	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Archived: archived})
+	s.NoError(err)
+
+	nutrition := entity.PatchNutritionParams{Protein: 100, Carbohydrate: 10, Fat: 0, Fiber: 2}
+	nutritionParams := option.Some(nutrition)
+	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Nutrition: nutritionParams})
+	s.NoError(err)
+
+	ingredients, err = s.service.ListIngredients(s.ctx, s.piid)
+	s.NoError(err)
+	s.Len(ingredients.Ingredients, 1)
+	ing = ingredients.Ingredients[0]
+	s.Equal("new name", ing.Name)
+	s.True(ing.IsArchived)
+	s.Equal(100, ing.Nutrition.Protein)
+	s.Equal(10, ing.Nutrition.Carbohydrate)
+	s.Equal(0, ing.Nutrition.Fat)
+	s.Equal(2, ing.Nutrition.Fiber)
+
+	// Ingredient is still in use in food
 	err = s.service.DeleteIngredient(s.ctx, s.piid, ing.ID)
-	s.assertErrCode(err, errs.NotFound)
+	s.assertErrCode(err, errs.InvalidArgument)
+	ingredients, err = s.service.DeleteFood(s.ctx, s.piid, foodResp.Food.ID)
+	s.NoError(err)
+
+	ingredients, err = s.service.ListIngredients(s.ctx, s.piid)
+	s.NoError(err)
+	s.Len(ingredients.Ingredients, 0)
+
+	// Todo: Can I test DeleteIngredient here?
 }

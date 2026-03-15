@@ -23,7 +23,8 @@ func MapError(err error) error {
 		return PiidMissing
 	case errors.Is(err, gorm.ErrDuplicatedKey):
 		return NewEncoreError("duplicate key", errs.AlreadyExists)
-
+	case errors.Is(err, gorm.ErrForeignKeyViolated):
+		return NewEncoreError("foreign key violated", errs.InvalidArgument)
 	}
 
 	pgErr, ok := err.(*pgconn.PgError)
