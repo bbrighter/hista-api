@@ -202,7 +202,7 @@ func (s *ApiTestSuite) TestManageIngredients() {
 	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Archived: archived})
 	s.NoError(err)
 
-	nutrition := entity.PatchNutritionParams{Protein: 100, Carbohydrate: 10, Fat: 0, Fiber: 2}
+	nutrition := entity.PatchNutritionParams{Protein: 100, Carbohydrate: 10, Fat: 0.2, Fiber: 2}
 	nutritionParams := option.Some(nutrition)
 	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Nutrition: nutritionParams})
 	s.NoError(err)
@@ -213,10 +213,10 @@ func (s *ApiTestSuite) TestManageIngredients() {
 	ing = ingredients.Ingredients[0]
 	s.Equal("new name", ing.Name)
 	s.True(ing.IsArchived)
-	s.Equal(100, ing.Nutrition.Protein)
-	s.Equal(10, ing.Nutrition.Carbohydrate)
-	s.Equal(0, ing.Nutrition.Fat)
-	s.Equal(2, ing.Nutrition.Fiber)
+	s.EqualValues(100, ing.Nutrition.Protein)
+	s.EqualValues(10, ing.Nutrition.Carbohydrate)
+	s.EqualValues(float32(0.2), ing.Nutrition.Fat)
+	s.EqualValues(2, ing.Nutrition.Fiber)
 
 	// Ingredient is still in use in food
 	err = s.service.DeleteIngredient(s.ctx, s.piid, ing.ID)

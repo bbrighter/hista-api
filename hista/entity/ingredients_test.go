@@ -8,10 +8,10 @@ import (
 
 func TestToIngredientResponse(t *testing.T) {
 	t.Parallel()
-	var prot int = 100
-	var carb int = 20
-	var fat int = 15
-	var fiber int = 0
+	var prot float32 = 100
+	var carb float32 = 20
+	var fat float32 = 15.2
+	var fiber float32 = 0
 	var ingredient = Ingredient{
 		ID:         1,
 		Name:       "Name",

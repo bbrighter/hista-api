@@ -47,17 +47,17 @@ func (ingredients Ingredients) ToIngredientsResponse() IngredientsResponse {
 }
 
 type Nutrition struct {
-	Protein      *int
-	Carbohydrate *int
-	Fat          *int
-	Fiber        *int
+	Protein      *float32
+	Carbohydrate *float32
+	Fat          *float32
+	Fiber        *float32
 }
 
 type NutritionResp struct {
-	Protein      int `json:"protein"`
-	Carbohydrate int `json:"carbohydrate"`
-	Fat          int `json:"fat"`
-	Fiber        int `json:"fiber"`
+	Protein      float32 `json:"protein"`
+	Carbohydrate float32 `json:"carbohydrate"`
+	Fat          float32 `json:"fat"`
+	Fiber        float32 `json:"fiber"`
 }
 
 func (n Nutrition) toNutritionResp() *NutritionResp {
@@ -73,10 +73,10 @@ func (n Nutrition) toNutritionResp() *NutritionResp {
 }
 
 type PatchNutritionParams struct {
-	Protein      int `json:"protein"`
-	Carbohydrate int `json:"carbohydrate"`
-	Fat          int `json:"fat"`
-	Fiber        int `json:"fiber"`
+	Protein      float32 `json:"protein"`
+	Carbohydrate float32 `json:"carbohydrate"`
+	Fat          float32 `json:"fat"`
+	Fiber        float32 `json:"fiber"`
 }
 
 func (p *PatchNutritionParams) ToNutrition() *Nutrition {
