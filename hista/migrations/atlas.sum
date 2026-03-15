@@ -1,4 +1,4 @@
-h1:8JN7+Tn7V24QqXorv3BwjiO0Quvu6wdc2akfT5uIIQM=
+h1:hxBiM2wfLnhlTvprXtDhHsRxk1oeM/UIeBkfcxmukc4=
 01_init.up.sql h1:bBHPF80iMRqX6AK+ikKt9RTKizc3Y9nr41RqcuH9gG0=
 02_symptoms.up.sql h1:glbwJqV17F46bu1qlM7aYFt41iFFiWtmfxKhyfH0xLI=
 03_authentification.up.sql h1:mpny0nu+aEV0w8BtGAvJpU69KWUxqyi8z94Q2LSEP+o=
@@ -15,4 +15,5 @@ h1:8JN7+Tn7V24QqXorv3BwjiO0Quvu6wdc2akfT5uIIQM=
 14_archive_ingredients.up.sql h1:hT1Lpk4pgwenUD57U4uhoTxtz2bBl13MPOx7B2Cpxg0=
 15_medicine.up.sql h1:QnKNdwIuX19UDj+sneSz+9FEGrwQvEIutNmJ/tVi4+U=
 16_sort_medicine.up.sql h1:4uZNoEj5vgrRL/PFlOeelE7SCN/TdKUlq6kn+fXR4L4=
-20260301191836_17_amount.up.sql h1:7Q7O9qjfQ/VipX//J2y0K5gTVufYJf/br45D+nz8JBQ=
+17_amount.up.sql h1:rhabPjyZtO6rlPDki9lJ0B4UsYP8IeIQ4Lw13QMGTGg=
+20260313201211_18_nutrition.up.sql h1:Xl6hjZnAoaMokNqUGI0nlePCQNP+rcP2jKNJkaASAj0=

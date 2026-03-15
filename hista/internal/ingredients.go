@@ -2,6 +2,7 @@ package internal
 
 import (
 	"context"
+	"strings"
 
 	"encore.app/errors"
 	"encore.app/hista/entity"
@@ -10,9 +11,9 @@ import (
 type (
 	IIngredientRepository interface {
 		ListIngredients(ctx context.Context) ([]*entity.Ingredient, error)
-		ChangeIngredientName(ctx context.Context, id uint, newName string) error
-		ToggleArchived(ctx context.Context, id uint) error
 		DeleteIngredient(ctx context.Context, id uint) error
+		UpdateIngredient(ctx context.Context, id uint, values map[string]any) error
+		ToggleArchived(ctx context.Context, id uint) error
 	}
 
 	IIngredientUseCase interface {
@@ -20,7 +21,7 @@ type (
 	}
 
 	IIngredientManager interface {
-		ChangeName(ctx context.Context, id uint, newName string) error
+		ChangeIngredient(ctx context.Context, id uint, newName *string, newNutrition *entity.Nutrition, isArchived *bool) error
 		ToggleArchived(ctx context.Context, id uint) error
 		Delete(ctx context.Context, id uint) error
 	}
@@ -47,12 +48,31 @@ func NewIngredientsManager(repo IIngredientRepository) IngredientManager {
 	return IngredientManager{repo: repo}
 }
 
-func (uc IngredientManager) ChangeName(ctx context.Context, id uint, newName string) error {
-	return uc.repo.ChangeIngredientName(ctx, id, newName)
+func (uc IngredientManager) ChangeIngredient(ctx context.Context, id uint,
+	newName *string,
+	newNutrition *entity.Nutrition,
+	isArchived *bool,
+) error {
+	values := make(map[string]any)
+	if newName != nil {
+		values["name"] = strings.TrimSpace(*newName)
+	}
+	if newNutrition != nil {
+		values["nutrition_protein"] = newNutrition.Protein
+		values["nutrition_carbohydrate"] = newNutrition.Carbohydrate
+		values["nutrition_fat"] = newNutrition.Fat
+		values["nutrition_fiber"] = newNutrition.Fiber
+	}
+	if isArchived != nil {
+		values["is_archived"] = *isArchived
+	}
+	return uc.repo.UpdateIngredient(ctx, id, values)
 }
+
 func (uc IngredientManager) ToggleArchived(ctx context.Context, id uint) error {
 	return uc.repo.ToggleArchived(ctx, id)
 }
+
 func (uc IngredientManager) Delete(ctx context.Context, id uint) error {
 	return uc.repo.DeleteIngredient(ctx, id)
 }

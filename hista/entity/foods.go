@@ -33,19 +33,6 @@ const (
 	Cooked FoodCondition = "cooked"
 )
 
-type Ingredient struct {
-	ID         uint      `gorm:"primaryKey"`
-	PIID       uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Name       string    `gorm:"uniqueIndex"`
-	IsArchived bool      `gorm:"not null"`
-}
-
-func (i *Ingredient) SetPiid(id uuid.UUID) {
-	i.PIID = id
-}
-
-type Ingredients []*Ingredient
-
 type FoodResponse struct {
 	ID         uint               `json:"id"`
 	Ingredient IngredientResponse `json:"ingredient"`
@@ -55,32 +42,6 @@ type FoodResponse struct {
 
 type FoodsResponse struct {
 	Foods []FoodResponse `json:"foods"`
-}
-
-type IngredientResponse struct {
-	ID         uint   `json:"id"`
-	Name       string `json:"name"`
-	IsArchived bool   `json:"isArchived"`
-}
-
-type IngredientsResponse struct {
-	Ingredients []IngredientResponse `json:"ingredients"`
-}
-
-func (i Ingredient) ToIngredientResponse() IngredientResponse {
-	return IngredientResponse{
-		ID:         i.ID,
-		Name:       i.Name,
-		IsArchived: i.IsArchived,
-	}
-}
-
-func (ingredients Ingredients) ToIngredientsResponse() IngredientsResponse {
-	var resps []IngredientResponse
-	for _, ing := range ingredients {
-		resps = append(resps, ing.ToIngredientResponse())
-	}
-	return IngredientsResponse{resps}
 }
 
 func (food Food) ToFoodResponse() FoodResponse {

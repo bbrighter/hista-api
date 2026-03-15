@@ -33,7 +33,7 @@ func (s *ApiTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: sqlDb.Stdlib(),
-	}))
+	}), &gorm.Config{TranslateError: true})
 	s.Require().NoError(err)
 	s.db = db
 	s.service = *initServiceWithDb(s.db)
