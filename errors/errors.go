@@ -19,6 +19,8 @@ var ErrorNil = NewEncoreError("must not be nil", errs.InvalidArgument)
 
 var ErrorIDMissing = NewEncoreError("id must be set", errs.InvalidArgument)
 
+var ErrorAlreadyExists = NewEncoreError("already exists", errs.AlreadyExists)
+
 func ErrorAttributeMustBeSet(attribute string) *errs.Error {
 	return NewEncoreError(attribute+" must be set", errs.InvalidArgument)
 }

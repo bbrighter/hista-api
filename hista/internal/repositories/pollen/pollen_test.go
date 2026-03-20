@@ -1,107 +1,74 @@
 package pollen
 
 import (
-	"testing"
+	"context"
 	"time"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
-	"github.com/glebarez/sqlite"
-	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
 )
 
-func initPollenTest(t *testing.T) *PollenRepo {
-	db, err := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	assert.NoError(t, err)
-	err = db.AutoMigrate(&entity.Pollen{}, entity.PollenEvent{})
-	assert.NoError(t, err)
-	return &PollenRepo{
-		db: db,
+func (s *PollenRepoTestSuite) TestFindPollenWithSeverity() {
+	s.createEvent(time.Now())
+
+	var events entity.PollenEvents
+	events = s.repo.FindPollenWithSeverity(0)
+	s.Len(events, 1)
+
+	expectedResults := map[entity.PollenType]entity.PollenIntensity{
+		entity.Ambrosia: entity.HighPollen,
+		entity.Beifuss:  entity.NoPollen,
 	}
+	results := make(map[entity.PollenType]entity.PollenIntensity)
+	for _, p := range events[0].Pollens {
+		results[p.Type] = p.Intensity
+	}
+	s.Equal(expectedResults, results)
 }
 
-func TestCreate(t *testing.T) {
-	repo := initPollenTest(t)
-
-	dwdLastUpdated := time.Date(2000, 12, 12, 0, 0, 0, 0, time.Local)
+func (s *PollenRepoTestSuite) TestCreateAndVerify() {
 	var err error
 	var inputPollens = entity.Pollens{
-		entity.Pollen{
-			Type:      entity.Ambrosia,
-			Intensity: entity.HighPollen,
-		},
-		entity.Pollen{
-			Type:      entity.Beifuss,
-			Intensity: entity.MediumToHighPollen,
-		},
+		{Type: entity.Ambrosia, Intensity: entity.HighPollen},
+		{Type: entity.Beifuss, Intensity: entity.MediumToHighPollen},
+		{Type: entity.Birke, Intensity: entity.MediumPollen},
+		{Type: entity.Esche, Intensity: entity.NoPollen},
+		{Type: entity.Graeser, Intensity: entity.NoToSmallPollen},
+		{Type: entity.Roggen, Intensity: entity.SmallPollen},
+		{Type: entity.Hasel, Intensity: entity.SmallToMediumPollen},
 	}
-	err = repo.Create(inputPollens, dwdLastUpdated)
-	assert.NoError(t, err)
+	err = s.repo.Create(s.ctx, inputPollens)
+	s.NoError(err)
 
-	var pollens entity.Pollens
-	var events entity.PollenEvents
-	repo.db.Find(&pollens)
-	assert.Len(t, pollens, 2)
-	repo.db.Find(&events)
-	assert.Len(t, events, 1)
-
-	var inputPollens2 = entity.Pollens{
-		entity.Pollen{
-			Type:      entity.Ambrosia,
-			Intensity: entity.HighPollen,
-		},
-		entity.Pollen{
-			Type:      entity.Beifuss,
-			Intensity: entity.MediumToHighPollen,
-		},
+	pollens, err := gorm.G[entity.Pollen](s.tx).Find(context.Background())
+	s.Len(pollens, 7)
+	var expectedResult = map[entity.PollenType]entity.PollenIntensity{
+		entity.Ambrosia: entity.HighPollen,
+		entity.Beifuss:  entity.MediumToHighPollen,
+		entity.Birke:    entity.MediumPollen,
+		entity.Esche:    entity.NoPollen,
+		entity.Graeser:  entity.NoToSmallPollen,
+		entity.Roggen:   entity.SmallPollen,
+		entity.Hasel:    entity.SmallToMediumPollen,
 	}
-	err = repo.Create(inputPollens2, dwdLastUpdated)
-	assert.NoError(t, err)
-	repo.db.Find(&pollens)
-	assert.Len(t, pollens, 2)
-	repo.db.Find(&events)
-	assert.Len(t, events, 1)
 
-	var inputPollens3 = entity.Pollens{
-		entity.Pollen{
-			Type:      entity.Ambrosia,
-			Intensity: entity.HighPollen,
-		},
-		entity.Pollen{
-			Type:      entity.Beifuss,
-			Intensity: entity.MediumToHighPollen,
-		},
+	var results = make(map[entity.PollenType]entity.PollenIntensity)
+	for _, p := range pollens {
+		results[p.Type] = p.Intensity
 	}
-	err = repo.Create(inputPollens3, time.Now().Add(time.Hour))
-	assert.NoError(t, err)
-	repo.db.Find(&pollens)
-	assert.Len(t, pollens, 4)
-	repo.db.Find(&events)
-	assert.Len(t, events, 2)
+
+	s.Equal(expectedResult, results)
 }
 
-func TestFindPollenWithSeverity(t *testing.T) {
-	repo := initPollenTest(t)
+func (s *PollenRepoTestSuite) TestDoesExistAfter() {
+	t := time.Date(2017, 11, 3, 4, 0, 0, 0, time.UTC)
+	s.createEvent(t)
 
-	var events entity.PollenEvents
-	events = repo.FindPollenWithSeverity(1)
-	assert.Len(t, events, 0)
+	err := s.repo.DoesExistAfter(s.ctx, t.Add(time.Minute))
+	s.NoError(err)
 
-	// Fill db
-	var input = entity.Pollens{
-		entity.Pollen{Intensity: entity.HighPollen},
-		entity.Pollen{Intensity: entity.NoPollen},
-	}
-	err := repo.Create(input, time.Now())
-	assert.NoError(t, err)
-
-	events = repo.FindPollenWithSeverity(1)
-	assert.Len(t, events, 1)
-	pollens := events[0].Pollens
-	assert.Len(t, pollens, 1)
-
-	events = repo.FindPollenWithSeverity(0)
-	assert.Len(t, events, 1)
-	pollens = events[0].Pollens
-	assert.Len(t, pollens, 2)
+	err = s.repo.DoesExistAfter(s.ctx, t.Add(-time.Minute))
+	s.Error(err)
+	s.ErrorIs(err, errors.ErrorAlreadyExists)
 }

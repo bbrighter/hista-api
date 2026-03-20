@@ -1,10 +1,10 @@
 package internal
 
 import (
+	"context"
 	"testing"
 	"time"
 
-	"encore.app/errors"
 	"encore.app/hista/entity"
 	"encore.dev/rlog"
 )
@@ -12,7 +12,8 @@ import (
 type (
 	IPollenRepo interface {
 		FindPollenWithSeverity(severity int) entity.PollenEvents
-		Create(pollen entity.Pollens, lastUpdated time.Time) error
+		DoesExistAfter(ctx context.Context, time time.Time) error
+		Create(ctx context.Context, pollens entity.Pollens) error
 	}
 
 	IDWDRepo interface {
@@ -22,8 +23,8 @@ type (
 	}
 
 	IPollenUseCase interface {
-		List() entity.PollenEvents
-		Create() error
+		List(ctx context.Context) (entity.PollenEvents, error)
+		Create(ctx context.Context) error
 		UseTestQuery(*testing.T)
 	}
 )
@@ -37,28 +38,36 @@ func NewPollenUseCase(repo IPollenRepo, dwd IDWDRepo) PollenUseCase {
 	return PollenUseCase{repo: repo, dwd: dwd}
 }
 
-func (uc PollenUseCase) List() entity.PollenEvents {
-	return uc.repo.FindPollenWithSeverity(0)
+func (uc PollenUseCase) List(ctx context.Context) (entity.PollenEvents, error) {
+	return uc.repo.FindPollenWithSeverity(0), nil
 }
 
-func (uc PollenUseCase) Create() error {
+func (uc PollenUseCase) Create(ctx context.Context) error {
 	pollen, err := uc.dwd.GetKarlsruheData()
 	if err != nil {
-		return errors.MapError(err)
+		return err
 	}
 	updatedAt, err := uc.dwd.DwdStringToDate()
 	if err != nil {
-		return errors.MapError(err)
+		return err
 	}
+	if err := uc.repo.DoesExistAfter(ctx, updatedAt); err != nil {
+		return err
+	}
+
 	dwdPollen := pollen.ToPollen()
-	rlog.Info("found pollens",
-		"amount", len(dwdPollen),
-		"updated at", updatedAt.String(),
-	)
-	for _, p := range dwdPollen {
-		rlog.Info("pollen details", string(p.Type), p.Intensity.String())
+
+	args := []any{
+		"updatedAt", updatedAt,
 	}
-	return errors.MapError(uc.repo.Create(dwdPollen, updatedAt))
+
+	for _, p := range dwdPollen {
+		args = append(args, string(p.Type), p.Intensity.String())
+	}
+
+	rlog.Info("pollen to be saved", args...)
+
+	return uc.repo.Create(ctx, dwdPollen)
 }
 
 func (uc PollenUseCase) UseTestQuery(t *testing.T) {

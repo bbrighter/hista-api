@@ -3,6 +3,7 @@ package hista
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.app/hista/entity"
 	"encore.dev/cron"
 	"encore.dev/types/uuid"
@@ -10,8 +11,8 @@ import (
 
 // encore:api auth method=GET path=/piid/:piid/pollen
 func (service *Service) ListPollens(ctx context.Context, piid uuid.UUID) (entity.PollenEventsResponse, error) {
-	events := service.pollens.List()
-	return events.ToResponse(), nil
+	events, err := service.pollens.List(ctx)
+	return events.ToResponse(), errors.MapError(err)
 }
 
 var _ = cron.NewJob("pollen", cron.JobConfig{
@@ -22,5 +23,5 @@ var _ = cron.NewJob("pollen", cron.JobConfig{
 
 // encore:api private method=POST path=/pollen
 func (service *Service) UpdatePollen(ctx context.Context) error {
-	return service.pollens.Create()
+	return errors.MapError(service.pollens.Create(ctx))
 }
