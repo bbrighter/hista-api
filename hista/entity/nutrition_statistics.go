@@ -1,6 +1,9 @@
 package entity
 
-import "time"
+import (
+	"slices"
+	"time"
+)
 
 type NutritionStatistic struct {
 	Date      time.Time
@@ -26,5 +29,8 @@ func (ns NutritionStatistics) ToResp() NutritionStatisticsResponse {
 			Nutrition: n.Nutrition.toNutritionResp(),
 		})
 	}
+	slices.SortFunc(statistics, func(a, b NutritionStatisticResponse) int {
+		return a.Date.Compare(b.Date)
+	})
 	return NutritionStatisticsResponse{Statistics: statistics}
 }
