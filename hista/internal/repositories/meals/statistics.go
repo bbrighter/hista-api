@@ -28,7 +28,7 @@ func (r *MealRepository) SelectAggregatedNutrition(ctx context.Context, truncate
 	}
 
 	dateTrunc := fmt.Sprintf("date_trunc('%s', meals.date)", truncateUnit)
-	err := r.db.Debug().Model(&entity.Meal{}).
+	err := r.db.Model(&entity.Meal{}).
 		Joins("JOIN foods ON meals.id = foods.meal_id").
 		Joins("JOIN ingredients ON foods.ingredient_id = ingredients.id").
 		Where("ingredients.nutrition_protein IS NOT NULL").

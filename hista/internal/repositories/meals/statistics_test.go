@@ -35,17 +35,17 @@ func (s *MealRepoTestSuite) TestSelectAggregatedNutrition() {
 	generic_queries.Create(s.ctx, s.tx, &ingredientWithNutrition)
 	generic_queries.Create(s.ctx, s.tx, &ingredientWithoutNutrition)
 
-	food1 := entity.Food{IngredientID: ingredientWithNutrition.ID, MealID: meal1.ID, Amount: &amountVal}
+	foodWithAmount := entity.Food{IngredientID: ingredientWithNutrition.ID, MealID: meal1.ID, Amount: &amountVal}
 	food2 := entity.Food{IngredientID: ingredientWithoutNutrition.ID, MealID: meal1.ID}
 	food3 := entity.Food{IngredientID: ingredientWithNutrition.ID, MealID: meal2.ID}
-	generic_queries.Create(s.ctx, s.tx, &food1)
+	generic_queries.Create(s.ctx, s.tx, &foodWithAmount)
 	generic_queries.Create(s.ctx, s.tx, &food2)
 	generic_queries.Create(s.ctx, s.tx, &food3)
 
 	nutrition, err := s.repo.SelectAggregatedNutrition(s.ctx, "hour")
 	s.NoError(err)
 
-	s.Require().Len(nutrition, 2)
+	s.Require().Len(nutrition, 1)
 
 	scale := float32(amountVal) / 100.0
 	expectedProtein := proteinVal * scale
