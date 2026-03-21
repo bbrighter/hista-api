@@ -30,7 +30,7 @@ func (ns NutritionStatistics) ToResp() NutritionStatisticsResponse {
 		})
 	}
 	slices.SortFunc(statistics, func(a, b NutritionStatisticResponse) int {
-		return a.Date.Compare(b.Date)
+		return b.Date.Compare(a.Date)
 	})
 	return NutritionStatisticsResponse{Statistics: statistics}
 }
