@@ -29,3 +29,13 @@ func (service *Service) GetStatisticsByIngredientId(ctx context.Context, piid uu
 	stats, count, err := service.statistics.FindSymptomsForFoods(ctx, params.FromDate, params.ToDate, params.ID)
 	return stats.ToResponse(count), err
 }
+
+type NutritionStatisticsParams struct {
+	Interval string `query:"interval"`
+}
+
+// encore:api auth method=GET path=/piid/:piid/statistics/nutrition
+func (s *Service) GetNutritionByInterval(ctx context.Context, piid uuid.UUID, params NutritionStatisticsParams) (entity.NutritionStatisticsResponse, error) {
+	nutrition, err := s.statistics.FindNutrition(ctx, params.Interval)
+	return nutrition.ToResp(), errors.MapError(err)
+}

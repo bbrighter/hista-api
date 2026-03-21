@@ -55,11 +55,11 @@ func (s *MealRepoTestSuite) TearDownTest() {
 }
 
 func (s *MealRepoTestSuite) createIngredient() uint {
-	return s.createIngredientWithName("ingredient")
+	return s.createIngredientWithProps("ingredient", nil)
 }
 
-func (s *MealRepoTestSuite) createIngredientWithName(name string) uint {
-	ing := entity.Ingredient{Name: name}
+func (s *MealRepoTestSuite) createIngredientWithProps(name string, protein *float32) uint {
+	ing := entity.Ingredient{Name: name, Nutrition: entity.Nutrition{Protein: protein}}
 	err := generic_queries.Create(s.ctx, s.tx, &ing)
 	s.Require().NoError(err)
 	return ing.ID
@@ -70,7 +70,12 @@ func (s *MealRepoTestSuite) createFood(ingID uint) uint {
 	err := generic_queries.Create(s.ctx, s.tx, &meal)
 	s.Require().NoError(err)
 
-	food := entity.Food{Condition: entity.Cooked, MealID: meal.ID,
+	amount := 20
+
+	food := entity.Food{
+		Condition:  entity.Cooked,
+		MealID:     meal.ID,
+		Amount:     &amount,
 		Ingredient: entity.Ingredient{ID: ingID, PIID: s.piid},
 	}
 	err = generic_queries.Create(s.ctx, s.tx, &food)
