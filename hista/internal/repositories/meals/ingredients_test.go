@@ -22,7 +22,7 @@ func (s *MealRepoTestSuite) TestUpdateIngredientNameOk() {
 
 func (s *MealRepoTestSuite) TestUpdateIngredientNameDuplicate() {
 	ingId := s.createIngredient()
-	s.createIngredientWithName("existing")
+	s.createIngredientWithProps("existing", nil)
 
 	values := map[string]any{"name": "existing"}
 	err := s.repo.UpdateIngredient(s.ctx, ingId, values)

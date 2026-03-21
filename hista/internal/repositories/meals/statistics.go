@@ -1,0 +1,49 @@
+package meals
+
+import (
+	"context"
+	"fmt"
+
+	"encore.app/errors"
+	"encore.app/hista/entity"
+)
+
+var allowedTruncateUnits = map[string]bool{
+	"minute":  true,
+	"hour":    true,
+	"day":     true,
+	"week":    true,
+	"month":   true,
+	"quarter": true,
+	"year":    true,
+}
+
+// List nutrition per truncateUnit, which is a subset of the values allowed in Postgres.
+// See the map allowedTruncateUnits
+func (r *MealRepository) SelectAggregatedNutrition(ctx context.Context, truncateUnit string) (entity.NutritionStatistics, error) {
+	var nutrition entity.NutritionStatistics
+
+	if _, ok := allowedTruncateUnits[truncateUnit]; !ok {
+		return nutrition, errors.BadRequestf("invalid truncateUnit %s", truncateUnit)
+	}
+
+	dateTrunc := fmt.Sprintf("date_trunc('%s', meals.date)", truncateUnit)
+	err := r.db.Debug().Model(&entity.Meal{}).
+		Joins("JOIN foods ON meals.id = foods.meal_id").
+		Joins("JOIN ingredients ON foods.ingredient_id = ingredients.id").
+		Where("ingredients.nutrition_protein IS NOT NULL").
+		Where("ingredients.nutrition_carbohydrate IS NOT NULL").
+		Where("ingredients.nutrition_fat IS NOT NULL").
+		Where("ingredients.nutrition_fiber IS NOT NULL").
+		Where("foods.amount IS NOT NULL").
+		Select(
+			dateTrunc+" as date",
+			"sum(foods.amount * ingredients.nutrition_protein)/100 as protein",
+			"sum(foods.amount * ingredients.nutrition_carbohydrate)/100 as carbohydrate",
+			"sum(foods.amount * ingredients.nutrition_fat)/100 as fat",
+			"sum(foods.amount * ingredients.nutrition_fiber)/100 as fiber",
+		).Group(dateTrunc).
+		Scan(&nutrition).Error
+
+	return nutrition, err
+}
