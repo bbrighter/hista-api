@@ -14,7 +14,7 @@ import (
 
 // encore:middleware target=all
 func AddPiidMiddleware(req middleware.Request, next middleware.Next) middleware.Response {
-	if strings.HasPrefix(req.Data().Path, "/pollen") {
+	if req.Data().Path == "/pollen" {
 		return next(req)
 	}
 	if strings.HasPrefix(req.Data().Path, "/internal/product-instance/move/") {

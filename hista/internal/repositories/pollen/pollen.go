@@ -6,7 +6,6 @@ import (
 
 	"encore.app/errors"
 	"encore.app/hista/entity"
-	"encore.dev/rlog"
 
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -16,10 +15,6 @@ func (repo *PollenRepo) Create(ctx context.Context, pollens entity.Pollens) erro
 	return repo.db.Debug().Transaction(func(tx *gorm.DB) error {
 		var event = entity.PollenEvent{}
 		if err := gorm.G[entity.PollenEvent](tx).Create(ctx, &event); err != nil {
-			return err
-		}
-		rlog.Info("Pollen event", "id", event.ID, "created at", event.CreatedAt.String())
-		if _, err := gorm.G[entity.Pollen](tx).Where("pollen_event_id = ?", event.ID).Delete(ctx); err != nil {
 			return err
 		}
 
@@ -34,7 +29,6 @@ func (repo *PollenRepo) Create(ctx context.Context, pollens entity.Pollens) erro
 		return gorm.G[entity.Pollen](tx).CreateInBatches(ctx, &dbPollens, 100)
 	})
 }
-
 func (r *PollenRepo) DoesExistAfter(ctx context.Context, time time.Time) error {
 	count, err := gorm.G[entity.PollenEvent](r.db.Debug()).Where("created_at > ?", time).Count(ctx, "*")
 	if err != nil {
@@ -52,13 +46,18 @@ func (repo *PollenRepo) FindPollenWithSeverity(severity int) entity.PollenEvents
 	return pollenEvent
 }
 
-func (repo *PollenRepo) DeletePollenEvent(ctx context.Context, id uint) error {
-	return repo.db.Transaction(func(tx *gorm.DB) error {
-		_, err := gorm.G[entity.Pollen](repo.db).Where("pollen_event_id = ?", id).Delete(ctx)
+// Only temporary function! Remove once Staging and Prod are cleaned up
+func (repo *PollenRepo) DeleteAllPollens(ctx context.Context) error {
+	return repo.db.Debug().Transaction(func(tx *gorm.DB) error {
+		_, err := gorm.G[entity.Pollen](tx).Where("1 = 1").Delete(ctx)
 		if err != nil {
 			return err
 		}
-		_, err = gorm.G[entity.PollenEvent](repo.db).Where("id = ?", id).Delete(ctx)
-		return err
+		_, err = gorm.G[entity.PollenEvent](tx).Where("1 = 1").Delete(ctx)
+		if err != nil {
+			return err
+		}
+		return tx.Exec(`SELECT setval('"pollens_id_seq"', COALESCE(MAX("id"), 1)) FROM "pollens";`).Error
 	})
+
 }
