@@ -13,7 +13,7 @@ import (
 
 func (repo *PollenRepo) Create(ctx context.Context, pollens entity.Pollens) error {
 	var event = entity.PollenEvent{Pollens: pollens}
-	return gorm.G[entity.PollenEvent](repo.db).Create(ctx, &event)
+	return gorm.G[entity.PollenEvent](repo.db.Debug()).Create(ctx, &event)
 }
 
 func (r *PollenRepo) DoesExistAfter(ctx context.Context, time time.Time) error {
