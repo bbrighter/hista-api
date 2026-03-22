@@ -14,7 +14,6 @@ type (
 		FindPollenWithSeverity(severity int) entity.PollenEvents
 		DoesExistAfter(ctx context.Context, time time.Time) error
 		Create(ctx context.Context, pollens entity.Pollens) error
-		DeleteAllPollens(ctx context.Context) error
 	}
 
 	IDWDRepo interface {
@@ -27,7 +26,6 @@ type (
 		List(ctx context.Context) (entity.PollenEvents, error)
 		Create(ctx context.Context) error
 		UseTestQuery(*testing.T)
-		DeleteAll(ctx context.Context) error
 	}
 )
 
@@ -74,8 +72,4 @@ func (uc PollenUseCase) Create(ctx context.Context) error {
 
 func (uc PollenUseCase) UseTestQuery(t *testing.T) {
 	uc.dwd.UseTestQuery(t)
-}
-
-func (uc PollenUseCase) DeleteAll(ctx context.Context) error {
-	return uc.repo.DeleteAllPollens(ctx)
 }
