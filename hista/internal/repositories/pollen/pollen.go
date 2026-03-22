@@ -53,11 +53,17 @@ func (repo *PollenRepo) DeleteAllPollens(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		if err := tx.Exec(`SELECT setval('"pollens_id_seq"', COALESCE(MAX("id"), 1)) FROM "pollens";`).Error; err != nil {
+			return err
+		}
 		_, err = gorm.G[entity.PollenEvent](tx).Where("1 = 1").Delete(ctx)
 		if err != nil {
 			return err
 		}
-		return tx.Exec(`SELECT setval('"pollens_id_seq"', COALESCE(MAX("id"), 1)) FROM "pollens";`).Error
+		if err := tx.Exec(`SELECT setval('"pollen_events_id_seq"', COALESCE(MAX("id"), 1)) FROM "pollen_events";`).Error; err != nil {
+			return err
+		}
+		return nil
 	})
 
 }
