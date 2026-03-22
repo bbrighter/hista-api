@@ -25,3 +25,8 @@ var _ = cron.NewJob("pollen", cron.JobConfig{
 func (service *Service) UpdatePollen(ctx context.Context) error {
 	return errors.MapError(service.pollens.Create(ctx))
 }
+
+// encore:api private method=DELETE path=/pollen/:id
+func (s *Service) DeletePollen(ctx context.Context, id uint) error {
+	return errors.MapError(s.pollens.Delete(ctx, id))
+}

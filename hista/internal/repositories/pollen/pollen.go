@@ -45,3 +45,14 @@ func (repo *PollenRepo) FindPollenWithSeverity(severity int) entity.PollenEvents
 	repo.db.Preload(clause.Associations, "intensity > ?", severity).Find(&pollenEvent)
 	return pollenEvent
 }
+
+func (repo *PollenRepo) DeletePollenEvent(ctx context.Context, id uint) error {
+	return repo.db.Transaction(func(tx *gorm.DB) error {
+		_, err := gorm.G[entity.Pollen](repo.db).Where("pollen_event_id = ?", id).Delete(ctx)
+		if err != nil {
+			return err
+		}
+		_, err = gorm.G[entity.PollenEvent](repo.db).Where("id = ?", id).Delete(ctx)
+		return err
+	})
+}
