@@ -13,20 +13,26 @@ import (
 )
 
 func (repo *PollenRepo) Create(ctx context.Context, pollens entity.Pollens) error {
-	var event = entity.PollenEvent{}
-	if err := gorm.G[entity.PollenEvent](repo.db.Debug()).Create(ctx, &event); err != nil {
-		return err
-	}
-	rlog.Info("event created", "id", event.ID, "date", event.CreatedAt.String())
-	var dbPollens = []entity.Pollen{}
-	for _, p := range pollens {
-		dbPollens = append(dbPollens, entity.Pollen{
-			PollenEventID: event.ID,
-			Type:          p.Type,
-			Intensity:     p.Intensity,
-		})
-	}
-	return gorm.G[entity.Pollen](repo.db.Debug()).CreateInBatches(ctx, &dbPollens, 100)
+	return repo.db.Debug().Transaction(func(tx *gorm.DB) error {
+		var event = entity.PollenEvent{}
+		if err := gorm.G[entity.PollenEvent](tx).Create(ctx, &event); err != nil {
+			return err
+		}
+		rlog.Info("Pollen event", "id", event.ID, "created at", event.CreatedAt.String())
+		if _, err := gorm.G[entity.Pollen](tx).Where("pollen_event_id = ?", event.ID).Delete(ctx); err != nil {
+			return err
+		}
+
+		var dbPollens = []entity.Pollen{}
+		for _, p := range pollens {
+			dbPollens = append(dbPollens, entity.Pollen{
+				PollenEventID: event.ID,
+				Type:          p.Type,
+				Intensity:     p.Intensity,
+			})
+		}
+		return gorm.G[entity.Pollen](tx).CreateInBatches(ctx, &dbPollens, 100)
+	})
 }
 
 func (r *PollenRepo) DoesExistAfter(ctx context.Context, time time.Time) error {
