@@ -26,7 +26,7 @@ func (service *Service) UpdatePollen(ctx context.Context) error {
 	return errors.MapError(service.pollens.Create(ctx))
 }
 
-// encore:api private method=DELETE path=/pollen/:id
-func (s *Service) DeletePollen(ctx context.Context, id uint) error {
-	return errors.MapError(s.pollens.Delete(ctx, id))
+// encore:api private method=DELETE path=/pollen
+func (s *Service) DeletePollen(ctx context.Context) error {
+	return errors.MapError(s.pollens.DeleteAll(ctx))
 }
