@@ -17,6 +17,7 @@ import (
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 //encore:service
@@ -48,7 +49,10 @@ var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig
 func initDb() (*gorm.DB, error) {
 	db, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: HistaDB.Stdlib(),
-	}), &gorm.Config{TranslateError: true})
+	}), &gorm.Config{
+		TranslateError: true,
+		Logger:         EncoreLogger{level: logger.Silent},
+	})
 
 	if err != nil {
 		return nil, err
