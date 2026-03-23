@@ -14,12 +14,12 @@ type (
 		CountMealsWithIngredients(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientId uint) (int64, error)
 	}
 	INutritionRepo interface {
-		SelectAggregatedNutrition(ctx context.Context, truncateUnit string) (entity.NutritionStatistics, error)
+		SelectAggregatedNutrition(ctx context.Context, truncateUnit string, from *time.Time, to *time.Time) (entity.NutritionStatistics, error)
 	}
 
 	IStatisticsUseCase interface {
 		FindSymptomsForFoods(ctx context.Context, fromDate time.Time, toDate time.Time, ingredientId uint) (entity.FoodResults, int64, error)
-		FindNutrition(ctx context.Context, truncateUnit string) (entity.NutritionStatistics, error)
+		FindNutrition(ctx context.Context, truncateUnit string, from *time.Time, to *time.Time) (entity.NutritionStatistics, error)
 	}
 )
 
@@ -48,6 +48,6 @@ func (uc StatisticsUseCase) FindSymptomsForFoods(ctx context.Context, fromDate, 
 	return results, counts, nil
 }
 
-func (uc StatisticsUseCase) FindNutrition(ctx context.Context, truncateUnit string) (entity.NutritionStatistics, error) {
-	return uc.n.SelectAggregatedNutrition(ctx, truncateUnit)
+func (uc StatisticsUseCase) FindNutrition(ctx context.Context, truncateUnit string, from *time.Time, to *time.Time) (entity.NutritionStatistics, error) {
+	return uc.n.SelectAggregatedNutrition(ctx, truncateUnit, from, to)
 }

@@ -42,27 +42,49 @@ func (s *MealRepoTestSuite) TestSelectAggregatedNutrition() {
 	generic_queries.Create(s.ctx, s.tx, &food2)
 	generic_queries.Create(s.ctx, s.tx, &food3)
 
-	nutrition, err := s.repo.SelectAggregatedNutrition(s.ctx, "hour")
-	s.NoError(err)
+	tests := map[string]struct {
+		fromDate      *time.Time
+		toDate        *time.Time
+		interval      string
+		expectedError bool
+		expectedLen   int
+	}{
+		"no dates":           {interval: "hour", expectedLen: 1},
+		"invalid interval":   {interval: "something", expectedError: true},
+		"from date":          {interval: "hour", fromDate: new(meal1Date.Add(-time.Minute)), expectedLen: 1},
+		"from date too late": {interval: "hour", fromDate: new(meal1Date.Add(time.Minute)), expectedLen: 0},
+		"to date":            {interval: "hour", toDate: new(meal1Date.Add(24 * time.Hour)), expectedLen: 1},
+		"to date too early":  {interval: "hour", toDate: new(meal1Date.Add(-24 * time.Hour)), expectedLen: 0},
+	}
+	for name, test := range tests {
+		s.Run(name, func() {
+			nutrition, err := s.repo.SelectAggregatedNutrition(s.ctx, test.interval, test.fromDate, test.toDate)
+			if test.expectedError {
+				s.Error(err)
+				return
+			}
+			s.Len(nutrition, test.expectedLen)
+			if test.expectedLen == 0 {
+				return
+			}
 
-	s.Require().Len(nutrition, 1)
+			scale := float32(amountVal) / 100.0
+			expectedProtein := proteinVal * scale
+			expectedFat := fatVal * scale
+			expectedFiber := fiberVal * scale
+			expectedCarbs := carbsVal * scale
 
-	scale := float32(amountVal) / 100.0
-	expectedProtein := proteinVal * scale
-	expectedFat := fatVal * scale
-	expectedFiber := fiberVal * scale
-	expectedCarbs := carbsVal * scale
-
-	s.Equal(meal1Date, nutrition[0].Date.UTC())
-	s.InDelta(expectedProtein, *nutrition[0].Nutrition.Protein, 0.001)
-	s.InDelta(expectedFat, *nutrition[0].Nutrition.Fat, 0.001)
-	s.InDelta(expectedFiber, *nutrition[0].Nutrition.Fiber, 0.001)
-	s.InDelta(expectedCarbs, *nutrition[0].Nutrition.Carbohydrate, 0.001)
-
+			s.Equal(meal1Date, nutrition[0].Date.UTC())
+			s.InDelta(expectedProtein, *nutrition[0].Nutrition.Protein, 0.001)
+			s.InDelta(expectedFat, *nutrition[0].Nutrition.Fat, 0.001)
+			s.InDelta(expectedFiber, *nutrition[0].Nutrition.Fiber, 0.001)
+			s.InDelta(expectedCarbs, *nutrition[0].Nutrition.Carbohydrate, 0.001)
+		})
+	}
 }
 
 func (s *MealRepoTestSuite) TestSelectAggregatedNutritionInvalidInput() {
-	_, err := s.repo.SelectAggregatedNutrition(s.ctx, "one and a half hours")
+	_, err := s.repo.SelectAggregatedNutrition(s.ctx, "one and a half hours", nil, nil)
 	s.Error(err)
 	s.ErrorContains(err, "invalid truncateUnit")
 }

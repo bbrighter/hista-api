@@ -6,6 +6,7 @@ import (
 
 	"encore.app/errors"
 	"encore.app/hista/entity"
+	"encore.dev/types/option"
 	uuid "encore.dev/types/uuid"
 )
 
@@ -31,11 +32,15 @@ func (service *Service) GetStatisticsByIngredientId(ctx context.Context, piid uu
 }
 
 type NutritionStatisticsParams struct {
-	Interval string `query:"interval"`
+	Interval string                   `query:"interval"`
+	From     option.Option[time.Time] `query:"from"`
+	To       option.Option[time.Time] `query:"to"`
 }
 
 // encore:api auth method=GET path=/piid/:piid/statistics/nutrition
 func (s *Service) GetNutritionByInterval(ctx context.Context, piid uuid.UUID, params NutritionStatisticsParams) (entity.NutritionStatisticsResponse, error) {
-	nutrition, err := s.statistics.FindNutrition(ctx, params.Interval)
+	from := params.From.PtrOrNil()
+	to := params.To.PtrOrNil()
+	nutrition, err := s.statistics.FindNutrition(ctx, params.Interval, from, to)
 	return nutrition.ToResp(), errors.MapError(err)
 }
