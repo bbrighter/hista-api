@@ -6,6 +6,7 @@
             "https://hista-ui-git*bbrighters-projects.vercel.app*",
             "https://shopping-list-ui.vercel.app*", 
             "https://shopping-list-ui-git*bbrighters-projects.vercel.app*"],
-        "allow_headers": ["UserName", "Etag", "etag", "ETag"]
+        "allow_headers": ["UserName", "Etag", "etag", "ETag"],
+        "access_control_max_age": 86400
     },
 }
