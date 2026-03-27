@@ -16,7 +16,7 @@ func List[T Piider](ctx context.Context, db *gorm.DB) ([]T, error) {
 	if err != nil {
 		return []T{}, err
 	}
-	return gorm.G[T](db).Where("pi_id = ?", piid).Find(ctx)
+	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).Where("pi_id = ?", piid).Find(ctx)
 }
 
 func First[T Piider](ctx context.Context, db *gorm.DB, id uint) (T, error) {
@@ -25,7 +25,7 @@ func First[T Piider](ctx context.Context, db *gorm.DB, id uint) (T, error) {
 	if err != nil {
 		return t, err
 	}
-	return gorm.G[T](db).Where("id = ?", id).Where("pi_id = ?", piid).First(ctx)
+	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).Where("id = ?", id).Where("pi_id = ?", piid).First(ctx)
 }
 
 func Create[T Piider](ctx context.Context, db *gorm.DB, t T) error {
@@ -61,7 +61,7 @@ func Count[T Piider](ctx context.Context, db *gorm.DB, id uint) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	return gorm.G[T](db).Where("pi_id = ?", piid).Where("id = ?", id).Count(ctx, "*")
+	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).Where("pi_id = ?", piid).Where("id = ?", id).Count(ctx, "*")
 }
 
 func UpdateColumn[T Piider](ctx context.Context, db *gorm.DB, id uint, columnName string, newValue any) error {

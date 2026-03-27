@@ -48,7 +48,7 @@ func (repo *StatisticsRepo) SymptomsAfterIngredients(ctx context.Context, fromDa
 		"u.symptom_id as symptom_id",
 		"u.severity as severity"}
 	grouped_select_fields = append(grouped_select_fields, buildTimeWindowSum()...)
-	err = repo.db.
+	err = repo.db.Session(&gorm.Session{SkipDefaultTransaction: true}).
 		Table("(?) as u", subquery).
 		Select(grouped_select_fields).
 		Group("symptom_id").Group("severity").
@@ -63,7 +63,7 @@ func (r *StatisticsRepo) CountMealsWithIngredients(ctx context.Context, fromDate
 	}
 	var counts int64
 	err = r.db.
-		Model(entity.Meal{}).
+		Model(entity.Meal{}).Session(&gorm.Session{SkipDefaultTransaction: true}).
 		Joins("JOIN foods ON foods.meal_id = meals.id and foods.pi_id = meals.pi_id").
 		Scopes(mealDateBetween(fromDate, toDate), ingredientIdIs(ingredientId)).
 		Where("meals.pi_id = ?", piid).
