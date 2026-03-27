@@ -7,6 +7,7 @@ import (
 
 	"encore.app/errors"
 	"encore.app/hista/entity"
+	"gorm.io/gorm"
 )
 
 var allowedTruncateUnits = map[string]bool{
@@ -29,7 +30,7 @@ func (r *MealRepository) SelectAggregatedNutrition(ctx context.Context, truncate
 	}
 
 	dateTrunc := fmt.Sprintf("date_trunc('%s', meals.date)", truncateUnit)
-	tx := r.db.Model(&entity.Meal{}).
+	tx := r.db.Model(&entity.Meal{}).Session(&gorm.Session{SkipDefaultTransaction: true}).
 		Joins("JOIN foods ON meals.id = foods.meal_id").
 		Joins("JOIN ingredients ON foods.ingredient_id = ingredients.id").
 		Where("ingredients.nutrition_protein IS NOT NULL").
