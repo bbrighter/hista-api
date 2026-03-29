@@ -105,7 +105,7 @@ func deleteConditionAndSymptoms(ctx context.Context, db *gorm.DB, conditionId ui
 		if err := generic_queries.Delete[*entity.Condition](ctx, tx, conditionId); err != nil {
 			return err
 		}
-		countUsageOfCondition, err := gorm.G[entity.Condition](db).
+		countUsageOfCondition, err := gorm.G[entity.Condition](tx).
 			Where("pi_id = ?", piid).
 			Where("symptom_id = ?", con.SymptomID).
 			Count(ctx, "*")
