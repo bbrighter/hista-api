@@ -46,7 +46,7 @@ func (suite *MealRepoTestSuite) SetupSuite() {
 func (suite *MealRepoTestSuite) SetupTest() {
 	suite.tx = suite.db.Begin()
 	suite.Require().NoError(suite.tx.Error)
-	suite.repo = NewMealRepository(suite.tx.Debug())
+	suite.repo = NewMealRepository(suite.tx)
 }
 
 func (s *MealRepoTestSuite) TearDownTest() {

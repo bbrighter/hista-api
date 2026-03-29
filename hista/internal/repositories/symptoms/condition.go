@@ -72,28 +72,6 @@ func (repo *SymptomsRepo) DeleteCondition(ctx context.Context, conditionId uint)
 		return err
 	}
 	return deleteConditionAndSymptoms(ctx, repo.db, conditionId, piid)
-
-	// sym, err := gorm.G[entity.Condition](repo.db).
-	// 	Preload("Symptom", nil).
-	// 	Where("pi_id = ?", piid).
-	// 	Where("id = ?", conditionId).
-	// 	First(ctx)
-	// if err != nil {
-	// 	return err
-	// }
-	// countUsageOfCondition, err := gorm.G[entity.Symptom](repo.db).Where("pi_id = ?", piid).Where("id = ?", sym.SymptomID).Count(ctx, "*")
-	// if err != nil {
-	// 	return err
-	// }
-	// return repo.db.Transaction(func(tx *gorm.DB) error {
-	// 	if countUsageOfCondition == 1 {
-	// 		if err := generic_queries.Delete[*entity.Symptom](ctx, tx, sym.SymptomID); err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// 	return generic_queries.Delete[*entity.Condition](ctx, tx, conditionId)
-	// })
-
 }
 
 func (repo *SymptomsRepo) ChangeSeverity(ctx context.Context, conditionId uint, newSeverity entity.Severity) error {
@@ -122,15 +100,20 @@ func deleteConditionAndSymptoms(ctx context.Context, db *gorm.DB, conditionId ui
 	if err != nil {
 		return err
 	}
-	countUsageOfCondition, err := gorm.G[entity.Symptom](db).Where("pi_id = ?", piid).Where("id = ?", con.SymptomID).Count(ctx, "*")
-	if err != nil {
-		return err
-	}
+
 	return db.Transaction(func(tx *gorm.DB) error {
 		if err := generic_queries.Delete[*entity.Condition](ctx, tx, conditionId); err != nil {
 			return err
 		}
-		if countUsageOfCondition == 1 {
+		countUsageOfCondition, err := gorm.G[entity.Condition](db).
+			Where("pi_id = ?", piid).
+			Where("symptom_id = ?", con.SymptomID).
+			Count(ctx, "*")
+		if err != nil {
+			return err
+		}
+
+		if countUsageOfCondition == 0 {
 			return generic_queries.Delete[*entity.Symptom](ctx, tx, con.SymptomID)
 		}
 		return nil
