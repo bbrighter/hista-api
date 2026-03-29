@@ -80,6 +80,20 @@ func (s *SymptomRepoTestSuite) TestDeleteCondition() {
 	s.Error(err)
 }
 
+func (s *SymptomRepoTestSuite) TestDeleteConditionDoesNotDeleteOthersIfUsed() {
+	eventId, symptomId, conditionId, _ := s.createTestCondition()
+	_, err := s.repo.CreateConditionBySymptomID(s.ctx, eventId, symptomId)
+	s.Require().NoError(err)
+
+	err = s.repo.DeleteCondition(s.ctx, conditionId)
+	s.NoError(err)
+
+	rows, _ := gorm.G[entity.Condition](s.tx).Count(s.ctx, "*")
+	s.EqualValues(1, rows)
+	rows, _ = gorm.G[entity.Symptom](s.tx).Count(s.ctx, "*")
+	s.EqualValues(1, rows)
+}
+
 func (s *SymptomRepoTestSuite) TestChangeSeverity() {
 	var err error
 	err = s.repo.ChangeSeverity(s.ctx, 1, entity.HighSeverity)
