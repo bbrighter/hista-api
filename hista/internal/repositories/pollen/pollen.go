@@ -12,7 +12,7 @@ import (
 )
 
 func (repo *PollenRepo) Create(ctx context.Context, pollens entity.Pollens) error {
-	return repo.db.Debug().Transaction(func(tx *gorm.DB) error {
+	return repo.db.Transaction(func(tx *gorm.DB) error {
 		var event = entity.PollenEvent{}
 		if err := gorm.G[entity.PollenEvent](tx).Create(ctx, &event); err != nil {
 			return err
@@ -30,7 +30,7 @@ func (repo *PollenRepo) Create(ctx context.Context, pollens entity.Pollens) erro
 	})
 }
 func (r *PollenRepo) DoesExistAfter(ctx context.Context, time time.Time) error {
-	count, err := gorm.G[entity.PollenEvent](r.db.Debug()).Where("created_at > ?", time).Count(ctx, "*")
+	count, err := gorm.G[entity.PollenEvent](r.db).Where("created_at > ?", time).Count(ctx, "*")
 	if err != nil {
 		return err
 	}

@@ -107,3 +107,15 @@ func (repo *MealRepository) GetFood(ctx context.Context, foodId uint) (entity.Fo
 	repo.db.Preload(clause.Associations).First(&food)
 	return food, nil
 }
+
+func (repo *MealRepository) BatchCreateFoods(ctx context.Context, foods []entity.Food) ([]entity.Food, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return []entity.Food{}, err
+	}
+	for i := range foods {
+		foods[i].SetPiid(piid)
+	}
+	err = gorm.G[entity.Food](repo.db).CreateInBatches(ctx, &foods, 100)
+	return foods, err
+}

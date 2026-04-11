@@ -78,7 +78,7 @@ func (s *RepoTestSuite) TestDeleteItem() {
 			}
 			s.NoError(err)
 			var count int64
-			s.db.Unscoped().Debug().Model(&entity.Item{}).Count(&count)
+			s.db.Unscoped().Model(&entity.Item{}).Count(&count)
 			s.EqualValues(count, 0)
 		})
 	}

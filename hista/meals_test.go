@@ -122,3 +122,19 @@ func (s *ApiTestSuite) TestDeleteFoodAPI() {
 	s.NoError(err)
 	s.Len(ing.Ingredients, 0)
 }
+
+func (s *ApiTestSuite) TestPostFoodByTemplate() {
+	_, ingId := s.createTestFood()
+
+	template, err := s.service.PostTemplate(
+		s.ctx,
+		s.piid,
+		TemplateParams{
+			Name: "Template",
+			Items: []TemplateItemParams{
+				{IngredientId: ingId, Condition: entity.Cooked},
+			}},
+	)
+	s.NoError(err)
+	s.NotEqualValues(0, template.ID)
+}

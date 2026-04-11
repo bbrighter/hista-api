@@ -52,6 +52,7 @@ func (s *ApiTestSuite) cleanTables() {
 		"statuses",
 		"headaches",
 		"intakes", "medicines",
+		"templates", "template_items",
 	}
 	for _, table := range tables {
 		err := s.db.Exec(fmt.Sprintf(`DELETE FROM "%s"`, table)).Error
@@ -146,4 +147,13 @@ func (suite *ApiTestSuite) assertErrCode(err error, expectedCode errs.ErrCode) b
 	suite.Require().True(ok)
 	suite.Equal(encoreErr.Code, expectedCode, encoreErr)
 	return true
+}
+
+func (s *ApiTestSuite) createTestTemplate() uint {
+	_, ingId := s.createTestFood()
+	template, err := s.service.PostTemplate(s.ctx, s.piid, TemplateParams{Name: "Template", Items: []TemplateItemParams{
+		{IngredientId: ingId, Condition: entity.Cooked},
+	}})
+	s.Require().NoError(err)
+	return template.ID
 }

@@ -26,6 +26,8 @@ var models = []any{
 	&entity.Headache{},
 	&entity.Intake{},
 	&entity.Medicine{},
+	&entity.Template{},
+	&entity.TemplateItem{},
 }
 
 func main() {

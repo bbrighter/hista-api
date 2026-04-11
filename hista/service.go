@@ -13,6 +13,7 @@ import (
 	"encore.app/hista/internal/repositories/statistics"
 	"encore.app/hista/internal/repositories/status"
 	"encore.app/hista/internal/repositories/symptoms"
+	"encore.app/hista/internal/repositories/templates"
 	unitofwork "encore.app/hista/internal/unitOfWork"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
@@ -24,6 +25,7 @@ import (
 type Service struct {
 	DB                 *gorm.DB
 	meals              internal.IMealUseCase
+	mealTemplates      internal.TemplateService
 	foods              internal.IFoodUseCase
 	ingredients        internal.IIngredientUseCase
 	ingredientsManager internal.IIngredientManager
@@ -74,6 +76,7 @@ func initService() (*Service, error) {
 
 func initServiceWithDb(db *gorm.DB) *Service {
 	mealRepo := meals.NewMealRepository(db)
+	mealTemplateRepo := templates.NewTemplateStore(db)
 	symptomRepo := symptoms.NewSymptomsRepo(db)
 	noteRepo := notes.NewNotesRepository(db)
 	statsRepo := statistics.NewStatisticsRepo(db)
@@ -89,6 +92,7 @@ func initServiceWithDb(db *gorm.DB) *Service {
 	return &Service{
 		DB:                 db,
 		meals:              internal.NewMealUseCase(mealRepo, mealRepo),
+		mealTemplates:      internal.NewTemplateService(mealTemplateRepo, mealRepo),
 		ingredients:        internal.NewIngredientUseCase(mealRepo),
 		ingredientsManager: internal.NewIngredientsManager(mealRepo),
 		foods:              internal.NewFoodUseCase(mealRepo, mealRepo),

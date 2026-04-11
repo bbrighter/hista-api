@@ -65,7 +65,7 @@ func (suite *ApiTestSuite) createList() uint {
 
 func (suite *ApiTestSuite) createProduct() uint {
 	var product = entity.Product{Name: "name", PIID: suite.piid}
-	err := gorm.G[entity.Product](suite.db.Debug()).Create(suite.ctx, &product)
+	err := gorm.G[entity.Product](suite.db).Create(suite.ctx, &product)
 	suite.Require().NoError(err)
 	return product.ID
 }
