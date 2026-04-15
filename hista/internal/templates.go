@@ -16,6 +16,7 @@ type TemplateStore interface {
 
 type FoodBatchStore interface {
 	BatchCreateFoods(ctx context.Context, foods []entity.Food) ([]entity.Food, error)
+	ListFoodsByIds(ctx context.Context, ids []uint) ([]entity.Food, error)
 }
 
 type TemplateService interface {
@@ -68,9 +69,14 @@ func (m templateService) Apply(ctx context.Context, mealId uint, templateId uint
 
 	foods, err = m.f.BatchCreateFoods(ctx, foods)
 
-	var returnFoods = entity.Foods{}
-	for _, f := range foods {
-		returnFoods = append(returnFoods, &f)
+	var ids = []uint{}
+	for i := range foods {
+		ids = append(ids, foods[i].ID)
+	}
+	foods, err = m.f.ListFoodsByIds(ctx, ids)
+	var returnFoods = []*entity.Food{}
+	for i := range foods {
+		returnFoods = append(returnFoods, &foods[i])
 	}
 	return returnFoods, err
 }

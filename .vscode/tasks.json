@@ -227,7 +227,12 @@
 			"icon": {
 				"id": "code"
 			}
-		}
+		},
+        {
+            "type": "shell",
+            "label": "Dependencies",
+            "command": "$(go env GOPATH)/bin/godepgraph ./hista | dot -Tpng -o deps.png"
+        }
 	],
 	"inputs": [
 		{

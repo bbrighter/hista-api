@@ -119,3 +119,15 @@ func (repo *MealRepository) BatchCreateFoods(ctx context.Context, foods []entity
 	err = gorm.G[entity.Food](repo.db).CreateInBatches(ctx, &foods, 100)
 	return foods, err
 }
+
+func (repo *MealRepository) ListFoodsByIds(ctx context.Context, ids []uint) ([]entity.Food, error) {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return []entity.Food{}, err
+	}
+	return gorm.G[entity.Food](repo.db).
+		Where("pi_id = ?", piid).
+		Where("id IN ?", ids).
+		Preload("Ingredient", nil).
+		Find(ctx)
+}

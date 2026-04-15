@@ -105,5 +105,8 @@ func (s *MealRepoTestSuite) TestBatchCreateFood() {
 		s.NotEqualValues(r.ID, 0)
 		s.Equal(s.piid, r.PIID)
 		s.Equal(s.piid, r.IngredientPIID)
+		s.NotEqualValues(0, r.IngredientID)
+		s.EqualValues(0, r.Ingredient.ID, "does not return ingredients")
+		s.Equal("", r.Ingredient.Name, "does not return ingredients")
 	}
 }

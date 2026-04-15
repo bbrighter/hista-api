@@ -60,7 +60,7 @@ func (service *Service) PostFood(ctx context.Context, piid uuid.UUID, mealId uin
 	return PostFoodResponse{Food: food.ToFoodResponse(), Ingredients: ingredients.ToIngredientsResponse()}, errors.MapError(err)
 }
 
-// encore:api method=POST path=/piid/:piid/meal/:mealId/foods/by-template/:templateId
+// encore:api auth method=POST path=/piid/:piid/meal/:mealId/foods/by-template/:templateId
 func (service *Service) PostFoodByTemplate(ctx context.Context, piid uuid.UUID, mealId uint, templateId uint) (entity.FoodsResponse, error) {
 	foods, err := service.mealTemplates.Apply(ctx, mealId, templateId)
 	return entity.FoodsResponse{Foods: foods.ToFoodsResponse()}, errors.MapError(err)
