@@ -16,11 +16,13 @@ import (
 
 type MealRepoTestSuite struct {
 	suite.Suite
-	ctx  context.Context
-	db   *gorm.DB // DB connection
-	tx   *gorm.DB // Transaction
-	repo *MealRepository
-	piid uuid.UUID
+	ctx          context.Context
+	db           *gorm.DB // DB connection
+	tx           *gorm.DB // Transaction
+	repo         *MealRepository
+	piid         uuid.UUID
+	mealId       uint
+	ingredientId uint
 }
 
 const GUID_STR = "cf0d4408-8db5-4572-b5d9-4ed873d1341f"
@@ -62,24 +64,31 @@ func (s *MealRepoTestSuite) createIngredientWithProps(name string, protein *floa
 	ing := entity.Ingredient{Name: name, Nutrition: entity.Nutrition{Protein: protein}}
 	err := generic_queries.Create(s.ctx, s.tx, &ing)
 	s.Require().NoError(err)
+	s.ingredientId = ing.ID
 	return ing.ID
 }
 
 func (s *MealRepoTestSuite) createFood(ingID uint) uint {
-	meal := entity.Meal{}
-	err := generic_queries.Create(s.ctx, s.tx, &meal)
-	s.Require().NoError(err)
+	s.createMeal()
 
 	amount := 20
 
 	food := entity.Food{
 		Condition:  entity.Cooked,
-		MealID:     meal.ID,
+		MealID:     s.mealId,
 		Amount:     &amount,
 		Ingredient: entity.Ingredient{ID: ingID, PIID: s.piid},
 	}
-	err = generic_queries.Create(s.ctx, s.tx, &food)
+	err := generic_queries.Create(s.ctx, s.tx, &food)
+	s.Require().NoError(err)
 	return food.ID
+}
+
+func (s *MealRepoTestSuite) createMeal() {
+	meal := entity.Meal{}
+	err := generic_queries.Create(s.ctx, s.tx, &meal)
+	s.Require().NoError(err)
+	s.mealId = meal.ID
 }
 
 func TestMealRepoTestSuite(t *testing.T) {

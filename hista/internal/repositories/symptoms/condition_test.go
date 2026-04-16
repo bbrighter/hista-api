@@ -16,7 +16,7 @@ var GUID = uuid.FromStringOrNil("cf0d4408-8db5-4572-b5d9-4ed873d1341f")
 
 func initTest(t *testing.T) (*SymptomsRepo, context.Context) {
 	db, _ := gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-	err := db.Debug().AutoMigrate(&entity.Symptom{}, &entity.ConditionEvent{}, &entity.Condition{}, &entity.SymptomCategory{})
+	err := db.AutoMigrate(&entity.Symptom{}, &entity.ConditionEvent{}, &entity.Condition{}, &entity.SymptomCategory{})
 	assert.NoError(t, err)
 
 	ctx := context.WithValue(t.Context(), contextKeys.Piid, GUID)

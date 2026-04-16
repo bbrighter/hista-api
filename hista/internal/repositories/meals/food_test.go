@@ -9,18 +9,17 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestGetFood(t *testing.T) {
-	repo, ctx := initTest(t)
+func (s *MealRepoTestSuite) TestGetFood() {
+	foods, err := s.repo.ListFoods(s.ctx, 10)
+	s.NoError(err)
+	s.Len(foods, 0)
 
-	foods, err := repo.ListFoods(ctx, 10)
-	assert.NoError(t, err)
-	assert.Len(t, foods, 0)
+	id := s.createIngredient()
+	s.createFood(id)
 
-	repo.db.Create(&entity.Food{ID: 1, MealID: 10, PIID: GUID})
-
-	foods, err = repo.ListFoods(ctx, 10)
-	assert.NoError(t, err)
-	assert.Len(t, foods, 1)
+	foods, err = s.repo.ListFoods(s.ctx, s.mealId)
+	s.NoError(err)
+	s.Len(foods, 1)
 }
 
 func TestCreateFoodByName(t *testing.T) {
@@ -87,4 +86,27 @@ func TestDeleteFoodKeepsUsedIngredients(t *testing.T) {
 	assert.NoError(t, err)
 	count, _ := gorm.G[entity.Ingredient](repo.db).Where("id = 10").Count(ctx, "*")
 	assert.EqualValues(t, 1, count)
+}
+
+func (s *MealRepoTestSuite) TestBatchCreateFood() {
+	id1 := s.createIngredientWithProps("name 1", nil)
+	id2 := s.createIngredientWithProps("name 2", nil)
+	s.createMeal()
+
+	var foods = []entity.Food{
+		{IngredientID: id1, MealID: s.mealId, Condition: entity.Cooked},
+		{IngredientID: id2, MealID: s.mealId, Condition: entity.Raw},
+	}
+	results, err := s.repo.BatchCreateFoods(s.ctx, foods)
+
+	s.NoError(err)
+	s.Len(results, 2)
+	for _, r := range results {
+		s.NotEqualValues(r.ID, 0)
+		s.Equal(s.piid, r.PIID)
+		s.Equal(s.piid, r.IngredientPIID)
+		s.NotEqualValues(0, r.IngredientID)
+		s.EqualValues(0, r.Ingredient.ID, "does not return ingredients")
+		s.Equal("", r.Ingredient.Name, "does not return ingredients")
+	}
 }

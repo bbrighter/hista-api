@@ -6,10 +6,11 @@ import (
 
 type Ingredient struct {
 	ID         uint      `gorm:"primaryKey"`
-	PIID       uuid.UUID `gorm:"type:uuid;primaryKey"`
-	Name       string    `gorm:"uniqueIndex"`
+	PIID       uuid.UUID `gorm:"type:uuid;primaryKey;uniqueIndex:idx_name_piid"`
+	Name       string    `gorm:"uniqueIndex:idx_name_piid"`
 	IsArchived bool      `gorm:"not null"`
 	Nutrition  `gorm:"embeddedPrefix:nutrition_"`
+	Items      []TemplateItem `gorm:"constraint:OnDelete:CASCADE"`
 }
 
 func (i *Ingredient) SetPiid(id uuid.UUID) {
