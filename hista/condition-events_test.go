@@ -3,10 +3,11 @@ package hista
 import (
 	"time"
 
-	"encore.app/hista/entity"
-	"encore.app/shared/generic_queries"
+	"encore.app/hista/internal/symptoms"
+	"gorm.io/gorm"
 
 	"encore.dev/beta/errs"
+	"encore.dev/types/option"
 )
 
 func (s *ApiTestSuite) TestCreateConditionEvent() {
@@ -66,7 +67,6 @@ func (s *ApiTestSuite) TestPatchConditionEvent() {
 }
 
 func (s *ApiTestSuite) TestDeleteConditionEvent() {
-
 	_, err := s.service.DeleteConditionEvent(s.ctx, s.piid, 10)
 	s.assertErrCode(err, errs.NotFound)
 
@@ -86,7 +86,7 @@ func (s *ApiTestSuite) TestPostCondition() {
 	}{
 		"ok, symptom name": {symptomName: true},
 		"ok, use Ids":      {symptomId: true},
-		"not found":        {expectErrCode: errs.NotFound, eventId: 1000, symptomName: true},
+		"not found":        {expectErrCode: errs.InvalidArgument, eventId: 1000, symptomName: true},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
@@ -102,18 +102,19 @@ func (s *ApiTestSuite) TestPostCondition() {
 				idResp, err := s.service.PostSymptomCategory(s.ctx, s.piid, PostSymptomCategoryRequest{Name: "name"})
 				s.NoError(err)
 				var name string = "name"
-				params.SymptomName = &name
-				params.CategoryID = &idResp.ID
+				params.SymptomName = option.Some(name)
+				params.CategoryID = option.Some(idResp.ID)
 			}
 			if test.symptomId {
 				idResp, err := s.service.PostSymptomCategory(s.ctx, s.piid, PostSymptomCategoryRequest{Name: "name"})
 				s.NoError(err)
 
-				params.CategoryID = &idResp.ID
+				params.CategoryID = option.Some(idResp.ID)
 
-				var symptom = entity.Symptom{Name: "symptom", SymptomCategoryID: idResp.ID, PIID: s.piid}
-				generic_queries.Create(s.ctx, s.service.DB, &symptom)
-				params.SymptomID = &symptom.ID
+				var symptom = symptoms.Symptom{Name: "symptom", SymptomCategoryID: idResp.ID}
+				gorm.G[symptoms.Symptom](s.service.DB).Create(s.ctx, &symptom)
+
+				params.SymptomID = option.Some(symptom.ID)
 			}
 
 			_, err := s.service.PostCondition(s.ctx, s.piid, eventId, params)

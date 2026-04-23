@@ -5,29 +5,35 @@ import (
 	"io"
 	"os"
 
-	_ "ariga.io/atlas-go-sdk/recordriver"
+	// _ "ariga.io/atlas-go-sdk/recordriver"
 	gormSchema "ariga.io/atlas-provider-gorm/gormschema"
-	"encore.app/hista/entity"
+	"encore.app/hista/internal/headaches"
+	"encore.app/hista/internal/meals"
+	"encore.app/hista/internal/medicines"
+	"encore.app/hista/internal/notes"
+	"encore.app/hista/internal/pollen"
+	"encore.app/hista/internal/status"
+	"encore.app/hista/internal/symptoms"
 )
 
 // Define the models to generate migrations for.
 var models = []any{
-	&entity.Food{},
-	&entity.Ingredient{},
-	&entity.Meal{},
-	&entity.Condition{},
-	&entity.SymptomCategory{},
-	&entity.Symptom{},
-	&entity.ConditionEvent{},
-	&entity.Note{},
-	&entity.Pollen{},
-	&entity.PollenEvent{},
-	&entity.Status{},
-	&entity.Headache{},
-	&entity.Intake{},
-	&entity.Medicine{},
-	&entity.Template{},
-	&entity.TemplateItem{},
+	&meals.Food{},
+	&meals.Ingredient{},
+	&meals.Meal{},
+	&meals.Template{},
+	&meals.TemplateItem{},
+	&symptoms.Condition{},
+	&symptoms.SymptomCategory{},
+	&symptoms.Symptom{},
+	&symptoms.ConditionEvent{},
+	&notes.Note{},
+	&pollen.Pollen{},
+	&pollen.PollenEvent{},
+	&status.Status{},
+	&headaches.Headache{},
+	&medicines.Intake{},
+	&medicines.Medicine{},
 }
 
 func main() {

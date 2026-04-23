@@ -3,17 +3,20 @@ package hista
 import (
 	"context"
 
-	"encore.app/hista/entity"
+	"encore.app/errors"
+	"encore.app/hista/internal/diary"
 	"encore.dev/types/uuid"
 )
 
 type DiaryResp struct {
-	Diaries []entity.RawDiary `json:"diaries"`
+	Diaries []diary.Diary `json:"diaries"`
 }
 
 // encore:api auth method=GET path=/piid/:piid/diary
 func (service *Service) GetDiary(ctx context.Context, piid uuid.UUID) (DiaryResp, error) {
-	meals, events, cats, notes, pollens, intakes := service.diary.Get(ctx)
-	diaries := entity.CreateRawDiary(meals, events, cats, notes, pollens, intakes)
+	diaries, err := service.diary.CreateDiary(ctx)
+	if err != nil {
+		return DiaryResp{}, errors.MapError(err)
+	}
 	return DiaryResp{Diaries: diaries}, nil
 }

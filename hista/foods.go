@@ -4,30 +4,37 @@ import (
 	"context"
 
 	"encore.app/errors"
-	"encore.app/hista/entity"
 	"encore.dev/types/uuid"
 )
 
 // encore:api auth method=DELETE path=/piid/:piid/foods/:foodId
-func (service *Service) DeleteFood(ctx context.Context, piid uuid.UUID, foodId uint) (entity.IngredientsResponse, error) {
-	ingredients, err := service.foods.Delete(ctx, foodId)
-	return ingredients.ToIngredientsResponse(), errors.MapError(err)
+func (service *Service) DeleteFood(ctx context.Context, piid uuid.UUID, foodId uint) (IngredientsResponse, error) {
+	err := service.meals.DeleteFood(ctx, foodId)
+	if err != nil {
+		return IngredientsResponse{}, errors.MapError(err)
+	}
+	ingredients, err := service.meals.ListIngredients(ctx)
+	if err != nil {
+		return IngredientsResponse{}, errors.MapError(err)
+	}
+	return toIngredientsResponse(ingredients), nil
 }
 
 type PatchFoodConditionParams struct {
-	Condition entity.FoodCondition `json:"condition"`
+	Condition string `json:"condition"`
 }
 
 func (f PatchFoodConditionParams) Validate() error {
-	if f.Condition != entity.Cooked && f.Condition != entity.Raw {
-		return errors.BadRequestf("invalid condition: %s; valid are %s and %s", f.Condition, entity.Cooked, entity.Raw)
+	if f.Condition != "cooked" && f.Condition != "raw" {
+		return errors.BadRequestf("invalid condition: %s; valid are %s and %s", f.Condition, "cooked", "raw")
 	}
 	return nil
 }
 
 // encore:api auth method=PATCH path=/piid/:piid/foods/:foodId/condition
 func (service *Service) PatchFoodCondition(ctx context.Context, piid uuid.UUID, foodId uint, params PatchFoodConditionParams) error {
-	return errors.MapError(service.foods.ChangeCondition(ctx, foodId, params.Condition))
+	err := service.meals.ChangeFoodCondition(ctx, foodId, params.Condition)
+	return errors.MapError(err)
 }
 
 type PatchFoodAmountParams struct {
@@ -43,5 +50,6 @@ func (f PatchFoodAmountParams) Validate() error {
 
 // encore:api auth method=PATCH path=/piid/:piid/foods/:foodId/amount
 func (service *Service) PatchFoodAmount(ctx context.Context, piid uuid.UUID, foodId uint, params PatchFoodAmountParams) error {
-	return errors.MapError(service.foods.ChangeAmount(ctx, foodId, params.Amount))
+	err := service.meals.ChangeFoodAmount(ctx, foodId, params.Amount)
+	return errors.MapError(err)
 }

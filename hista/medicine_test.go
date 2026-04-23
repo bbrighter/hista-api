@@ -2,8 +2,6 @@ package hista
 
 import (
 	"slices"
-
-	"encore.app/hista/entity"
 )
 
 func (s *ApiTestSuite) TestMedicine() {
@@ -50,7 +48,7 @@ func (s *ApiTestSuite) TestMedicine() {
 	listResp, err = s.service.ListMedicines(s.ctx, s.piid)
 	s.NoError(err)
 	s.Len(listResp.Medicines, 3)
-	slices.SortFunc(listResp.Medicines, func(a, b entity.MedicineResponse) int {
+	slices.SortFunc(listResp.Medicines, func(a, b MedicineResponse) int {
 		return a.SortOrder - b.SortOrder
 	})
 	s.Equal(100, listResp.Medicines[0].SortOrder)
@@ -66,7 +64,7 @@ func (s *ApiTestSuite) TestMedicine() {
 	listResp, err = s.service.ListMedicines(s.ctx, s.piid)
 	s.NoError(err)
 	s.Len(listResp.Medicines, 3)
-	slices.SortFunc(listResp.Medicines, func(a, b entity.MedicineResponse) int {
+	slices.SortFunc(listResp.Medicines, func(a, b MedicineResponse) int {
 		return a.SortOrder - b.SortOrder
 	})
 	s.Equal(medicine2Id, listResp.Medicines[0].ID)
@@ -82,7 +80,7 @@ func (s *ApiTestSuite) TestMedicine() {
 	listResp, err = s.service.ListMedicines(s.ctx, s.piid)
 	s.NoError(err)
 	s.Len(listResp.Medicines, 3)
-	slices.SortFunc(listResp.Medicines, func(a, b entity.MedicineResponse) int {
+	slices.SortFunc(listResp.Medicines, func(a, b MedicineResponse) int {
 		return a.SortOrder - b.SortOrder
 	})
 	s.Equal(medicine2Id, listResp.Medicines[0].ID)

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"encore.dev/beta/errs"
+	"encore.dev/types/option"
 )
 
 func (s *ApiTestSuite) TestGetNotes() {
@@ -46,9 +47,9 @@ func (s *ApiTestSuite) TestPatchNote() {
 		params            NoteParams
 		expectedErrorCode errs.ErrCode
 	}{
-		"ok, date":  {params: NoteParams{Date: &date}},
-		"ok, text":  {params: NoteParams{Text: &text}},
-		"not found": {useWrongId: true, params: NoteParams{Text: &text}, expectedErrorCode: errs.NotFound},
+		"ok, date":  {params: NoteParams{Date: option.Some(date)}},
+		"ok, text":  {params: NoteParams{Text: option.Some(text)}},
+		"not found": {useWrongId: true, params: NoteParams{Text: option.Some(text)}, expectedErrorCode: errs.NotFound},
 		"no params": {expectedErrorCode: errs.InvalidArgument},
 	}
 

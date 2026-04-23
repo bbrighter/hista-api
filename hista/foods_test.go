@@ -3,12 +3,11 @@ package hista
 import (
 	"testing"
 
-	"encore.app/hista/entity"
 	"encore.dev/beta/errs"
 	"github.com/stretchr/testify/assert"
 )
 
-func (s *ApiTestSuite) TestDeleteFood() {
+func (s *ApiTestSuite) TestDeleteFoodAPI() {
 	tests := map[string]struct {
 		useWrongId      bool
 		expectedErrCode errs.ErrCode
@@ -22,15 +21,15 @@ func (s *ApiTestSuite) TestDeleteFood() {
 			if test.useWrongId {
 				foodId = 1000
 			}
-			ing, err := s.service.DeleteFood(s.ctx, s.piid, foodId)
+			resp, err := s.service.DeleteFood(s.ctx, s.piid, foodId)
 			s.assertErrCode(err, test.expectedErrCode)
-			s.Len(ing.Ingredients, 0)
+			s.Len(resp.Ingredients, 0)
 		})
 	}
 }
 
 func (s *ApiTestSuite) TestPatchFoodCondition() {
-	var params = PatchFoodConditionParams{Condition: entity.Raw}
+	var params = PatchFoodConditionParams{Condition: "raw"}
 	tests := map[string]struct {
 		useWrongId      bool
 		params          PatchFoodConditionParams
@@ -60,7 +59,7 @@ func TestFoodParamValidation(t *testing.T) {
 	}{}
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			params := PatchFoodConditionParams{Condition: entity.FoodCondition(test.condition)}
+			params := PatchFoodConditionParams{Condition: test.condition}
 			err := params.Validate()
 			if test.expectedError {
 				assert.Error(t, err)
