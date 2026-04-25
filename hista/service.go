@@ -3,18 +3,18 @@ package hista
 import (
 	"time"
 
-	"encore.app/hista/internal"
-	"encore.app/hista/internal/repositories/headaches"
-	"encore.app/hista/internal/repositories/meals"
-	"encore.app/hista/internal/repositories/medicine"
-	"encore.app/hista/internal/repositories/move"
-	"encore.app/hista/internal/repositories/notes"
-	"encore.app/hista/internal/repositories/pollen"
-	"encore.app/hista/internal/repositories/statistics"
-	"encore.app/hista/internal/repositories/status"
-	"encore.app/hista/internal/repositories/symptoms"
-	"encore.app/hista/internal/repositories/templates"
-	unitofwork "encore.app/hista/internal/unitOfWork"
+	"encore.app/hista/internal/diary"
+	"encore.app/hista/internal/dwd"
+	"encore.app/hista/internal/dwdPollen"
+	"encore.app/hista/internal/headaches"
+	"encore.app/hista/internal/meals"
+	"encore.app/hista/internal/medicines"
+	"encore.app/hista/internal/notes"
+	"encore.app/hista/internal/pollen"
+	"encore.app/hista/internal/statistics"
+	"encore.app/hista/internal/status"
+	"encore.app/hista/internal/symptoms"
+
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -23,25 +23,17 @@ import (
 
 //encore:service
 type Service struct {
-	DB                 *gorm.DB
-	meals              internal.IMealUseCase
-	mealTemplates      internal.TemplateService
-	foods              internal.IFoodUseCase
-	ingredients        internal.IIngredientUseCase
-	ingredientsManager internal.IIngredientManager
-	notes              internal.INotesUseCase
-	symptoms           internal.ISymptomsUseCase
-	conditionEvents    internal.IConditionEventUseCase
-	conditions         internal.IConditionUseCase
-	diary              internal.IDiaryUseCase
-	statistics         internal.IStatisticsUseCase
-	pollens            internal.IPollenUseCase
-	status             internal.IStatusUseCase
-	headaches          internal.IHeadacheUseCase
-	move               internal.PiidMover
-	medicineList       internal.MedicineLister
-	medicine           internal.MedicineManager
-	intake             internal.IntakeManager
+	DB *gorm.DB
+
+	meals     *meals.MealService
+	stats     *statistics.StatisticsService
+	meds      *medicines.MedicinesService
+	syms      *symptoms.SymptomService
+	notes     *notes.NotesService
+	headaches *headaches.HeadacheService
+	status    *status.StatusService
+	pollens   *dwdPollen.DWDPollenService
+	diary     *diary.DiaryService
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -71,43 +63,29 @@ func initService() (*Service, error) {
 	if err != nil {
 		return nil, err
 	}
-	return initServiceWithDb(db), nil
+	dwdClient := dwd.NewDWDClient()
+	return initServiceWithDb(db, dwdClient), nil
 }
 
-func initServiceWithDb(db *gorm.DB) *Service {
+func initServiceWithDb(db *gorm.DB, dwdClient dwdPollen.KarlsruheDataGetter) *Service {
+	medRepo := medicines.NewMedicineRepo(db)
 	mealRepo := meals.NewMealRepository(db)
-	mealTemplateRepo := templates.NewTemplateStore(db)
-	symptomRepo := symptoms.NewSymptomsRepo(db)
-	noteRepo := notes.NewNotesRepository(db)
-	statsRepo := statistics.NewStatisticsRepo(db)
+	symptomRepo := symptoms.NewSymptomRepo(db)
+	condRepo := symptoms.NewConditionRepo(db)
+	notesRepo := notes.NewNotesRepo(db)
 	pollenRepo := pollen.NewPollenRepo(db)
-	dwdRepo := pollen.NewDWDRepo()
-	statusRepo := status.NewStatusRepo(db)
-	headacheRepo := headaches.NewHeadacheRepository(db)
-	moveRepo := move.NewMoveRepo(db)
-	medicineRepo := medicine.NewMedicineRepo(db)
-	intakeRepo := medicine.NewIntakeRepo(db)
-	uow := unitofwork.NewUnitOfWork(db)
 
 	return &Service{
-		DB:                 db,
-		meals:              internal.NewMealUseCase(mealRepo, mealRepo),
-		mealTemplates:      internal.NewTemplateService(mealTemplateRepo, mealRepo),
-		ingredients:        internal.NewIngredientUseCase(mealRepo),
-		ingredientsManager: internal.NewIngredientsManager(mealRepo),
-		foods:              internal.NewFoodUseCase(mealRepo, mealRepo),
-		notes:              internal.NewNoteUseCase(noteRepo),
-		symptoms:           internal.NewSymptomsUseCase(symptomRepo, symptomRepo),
-		conditionEvents:    internal.NewConditionEventUseCase(symptomRepo, symptomRepo),
-		conditions:         internal.NewConditionsUseCase(symptomRepo, symptomRepo),
-		diary:              internal.NewDiaryUseCase(mealRepo, symptomRepo, symptomRepo, noteRepo, pollenRepo, intakeRepo),
-		statistics:         internal.NewStatisticsUseCase(statsRepo, mealRepo),
-		pollens:            internal.NewPollenUseCase(pollenRepo, dwdRepo),
-		status:             internal.NewStatusUseCase(statusRepo),
-		headaches:          internal.NewHeadacheUseCase(headacheRepo),
-		move:               internal.NewPiidMoveUseCase(moveRepo),
-		medicineList:       internal.NewMedicineListUseCase(medicineRepo),
-		medicine:           internal.NewMedicineMgtmUseCase(medicineRepo, uow),
-		intake:             internal.NewIntakeMgmtUseCase(intakeRepo),
+		DB: db,
+
+		meals:     meals.NewMealService(db),
+		stats:     statistics.NewStatisticsService(db),
+		meds:      medicines.NewMedicineService(db),
+		syms:      symptoms.NewSymptomService(db),
+		notes:     notes.NewNotesService(db),
+		headaches: headaches.NewHeadacheService(db),
+		status:    status.NewStatusService(db),
+		pollens:   dwdPollen.NewDWDPollenService(db, dwdClient),
+		diary:     diary.NewDiaryService(mealRepo, condRepo, symptomRepo, notesRepo, pollenRepo, medRepo),
 	}
 }

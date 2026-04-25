@@ -2,18 +2,44 @@ package hista
 
 import (
 	"context"
+	"time"
 
-	"encore.app/hista/entity"
+	"encore.app/errors"
+	"encore.app/hista/internal/diary"
 	"encore.dev/types/uuid"
 )
 
 type DiaryResp struct {
-	Diaries []entity.RawDiary `json:"diaries"`
+	Date     time.Time `json:"date"`
+	Type     string    `json:"type"`
+	Content  string    `json:"content"`
+	Severity string    `json:"severity"`
+	Category string    `json:"category"`
+}
+
+type DiaryRespList struct {
+	Diaries []DiaryResp `json:"diaries"`
+}
+
+func toDiaryRespList(diaries []diary.Diary) DiaryRespList {
+	var list = []DiaryResp{}
+	for _, d := range diaries {
+		list = append(list, DiaryResp{
+			Date:     d.Date,
+			Type:     string(d.Type),
+			Content:  d.Content,
+			Severity: d.Severity,
+			Category: d.Category,
+		})
+	}
+	return DiaryRespList{Diaries: list}
 }
 
 // encore:api auth method=GET path=/piid/:piid/diary
-func (service *Service) GetDiary(ctx context.Context, piid uuid.UUID) (DiaryResp, error) {
-	meals, events, cats, notes, pollens, intakes := service.diary.Get(ctx)
-	diaries := entity.CreateRawDiary(meals, events, cats, notes, pollens, intakes)
-	return DiaryResp{Diaries: diaries}, nil
+func (service *Service) GetDiary(ctx context.Context, piid uuid.UUID) (DiaryRespList, error) {
+	diaries, err := service.diary.CreateDiary(ctx)
+	if err != nil {
+		return DiaryRespList{}, errors.MapError(err)
+	}
+	return toDiaryRespList(diaries), nil
 }

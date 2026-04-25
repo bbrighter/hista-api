@@ -2,6 +2,8 @@ package hista
 
 import (
 	"time"
+
+	"encore.dev/types/option"
 )
 
 func (s *ApiTestSuite) TestCreateStatus() {
@@ -101,21 +103,21 @@ func (s *ApiTestSuite) TestUpdateStatus() {
 
 			var params = PatchStatusParams{}
 			if test.date {
-				params.Date = time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC)
+				params.Date = option.Some(time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC))
 			}
 			morningFitness := 1
 			if test.morning {
-				params.MorningFitness = &morningFitness
+				params.MorningFitness = option.Some(morningFitness)
 			}
 			eveningFitness := 3
 			if test.evening {
-				params.EveningFitness = &eveningFitness
+				params.EveningFitness = option.Some(eveningFitness)
 			}
 
 			err := s.service.PatchStatus(s.ctx, s.piid, statusId, params)
 			s.NoError(err)
 
-			statuses, err := s.service.status.Find(s.ctx)
+			statuses, err := s.service.status.ListStatuses(s.ctx)
 			s.NoError(err)
 			status := statuses[0]
 			if test.date {

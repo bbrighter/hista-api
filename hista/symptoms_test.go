@@ -1,7 +1,7 @@
 package hista
 
 import (
-	"encore.app/hista/entity"
+	"encore.app/hista/internal/symptoms"
 )
 
 func (s *ApiTestSuite) TestGetSymptoms() {
@@ -30,7 +30,7 @@ func (s *ApiTestSuite) TestPatchSymptomName() {
 	err := s.service.PatchSymptomName(s.ctx, s.piid, symptomId, PatchSymptomNameParams{Name: "new name"})
 	s.NoError(err)
 
-	var symptom entity.Symptom
+	var symptom symptoms.Symptom
 	s.service.DB.Take(&symptom, symptomId)
 	s.Equal("new name", symptom.Name)
 }
@@ -44,7 +44,7 @@ func (s *ApiTestSuite) TestPatchSymptomCategory() {
 	err = s.service.PatchSymptomCategory(s.ctx, s.piid, symptomId, PatchSymptomCategoryParams{ToCategoryID: resp.ID})
 	s.NoError(err)
 
-	var symptom entity.Symptom
+	var symptom symptoms.Symptom
 	s.service.DB.Take(&symptom, symptomId)
 	s.Equal(resp.ID, symptom.SymptomCategoryID)
 }
@@ -55,7 +55,7 @@ func (s *ApiTestSuite) TestPatchCategoryName() {
 	err := s.service.PatchCategoryName(s.ctx, s.piid, catId, PatchCategoryNameParams{Name: "new cat name"})
 	s.NoError(err)
 
-	var cat entity.SymptomCategory
+	var cat symptoms.SymptomCategory
 	s.service.DB.Take(&cat, catId)
 	s.Equal("new cat name", cat.Name)
 }
@@ -65,13 +65,13 @@ func (s *ApiTestSuite) TestDeleteSymptomCategory() {
 
 	err := s.service.DeleteSymptomCategory(s.ctx, s.piid, catId)
 	s.Error(err)
-	rows := s.service.DB.Take(&entity.SymptomCategories{}, catId).RowsAffected
+	rows := s.service.DB.Take(&symptoms.SymptomCategories{}, catId).RowsAffected
 	s.EqualValues(1, rows)
 
 	resp, err := s.service.PostSymptomCategory(s.ctx, s.piid, PostSymptomCategoryRequest{Name: "new cat"})
 	s.NoError(err)
 	err = s.service.DeleteSymptomCategory(s.ctx, s.piid, resp.ID)
 	s.NoError(err)
-	rows = s.service.DB.Take(&entity.SymptomCategories{}, resp.ID).RowsAffected
+	rows = s.service.DB.Take(&symptoms.SymptomCategories{}, resp.ID).RowsAffected
 	s.EqualValues(0, rows)
 }

@@ -1,8 +1,8 @@
 package hista
 
 import (
-	"encore.app/hista/entity"
 	"encore.dev/beta/errs"
+	"encore.dev/types/option"
 )
 
 func (s *ApiTestSuite) TestPatchCondition() {
@@ -11,17 +11,17 @@ func (s *ApiTestSuite) TestPatchCondition() {
 	id := s.createTestEvent()
 
 	var err error
-	err = s.service.PatchCondition(s.ctx, s.piid, 100, PatchSeverityRequestParams{Severity: entity.HighSeverity})
+	err = s.service.PatchCondition(s.ctx, s.piid, 100, PatchSeverityRequestParams{Severity: 5})
 	s.assertErrCode(err, errs.NotFound)
 
-	catId, err := s.service.symptoms.CreateCategory(s.ctx, "cat")
+	catId, err := s.service.syms.CreateCategory(s.ctx, "cat")
 	s.NoError(err)
-	symtpomName := "name"
-	resp, err := s.service.PostCondition(s.ctx, s.piid, id, ConditionRequestParams{SymptomName: &symtpomName, CategoryID: &catId})
+	symptomName := "name"
+	resp, err := s.service.PostCondition(s.ctx, s.piid, id, ConditionRequestParams{SymptomName: option.Some(symptomName), CategoryID: option.Some(catId)})
 	s.NoError(err)
 	conditionId := resp.Condition.ID
 
-	err = s.service.PatchCondition(s.ctx, s.piid, conditionId, PatchSeverityRequestParams{Severity: entity.HighSeverity})
+	err = s.service.PatchCondition(s.ctx, s.piid, conditionId, PatchSeverityRequestParams{Severity: 5})
 	s.NoError(err)
 }
 

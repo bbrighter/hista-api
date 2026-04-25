@@ -3,70 +3,70 @@ package hista
 import (
 	"time"
 
-	"encore.app/hista/entity"
+	"encore.app/hista/internal/headaches"
 	"encore.dev/beta/errs"
 	"encore.dev/types/option"
 )
 
 func (s *ApiTestSuite) TestHeadaches() {
 	var err error
-	var headaches entity.HeadachesResponse
-	headaches, err = s.service.ListHeadaches(s.ctx, s.piid)
+	var headachesResp HeadacheListResponse
+	headachesResp, err = s.service.ListHeadaches(s.ctx, s.piid)
 	s.NoError(err)
-	s.Len(headaches.Headaches, 0)
+	s.Len(headachesResp.Headaches, 0)
 
 	// Create one headache
 	date := time.Date(2018, 1, 2, 3, 4, 5, 0, time.Local)
-	var severity entity.HeadacheSeverity = 5
+	var severity uint8 = 5
 	idResp, err := s.service.PostHeadache(s.ctx, s.piid, PostHeadacheParams{Date: date, Severity: severity})
 	id := idResp.ID
 	s.NoError(err)
 	s.Greater(id, uint(0))
 
 	// Get headache
-	headaches, err = s.service.ListHeadaches(s.ctx, s.piid)
+	headachesResp, err = s.service.ListHeadaches(s.ctx, s.piid)
 	s.NoError(err)
-	s.Len(headaches.Headaches, 1)
+	s.Len(headachesResp.Headaches, 1)
 
 	headache, err := s.service.GetHeadache(s.ctx, s.piid, id)
 	s.NoError(err)
 	s.Equal(date, headache.Date)
 	s.Equal(severity, headache.Severity)
-	s.Nil(headache.Positions)
+	s.Equal([]string{}, headache.Positions)
 
 	// Patch and verify
 	newDate := time.Date(2019, 1, 2, 3, 4, 5, 0, time.Local)
-	err = s.service.PatchHeadacheDate(s.ctx, s.piid, id, PatchHeadacheDateParams{Date: newDate})
+	err = s.service.PatchHeadache(s.ctx, s.piid, id, PatchHeadacheParams{Date: option.Some(newDate)})
 	s.NoError(err)
-	var newSeverity entity.HeadacheSeverity = 1
-	err = s.service.PatchHeadacheSeverity(s.ctx, s.piid, id, PatchHeadacheSeverityParams{Severity: newSeverity})
+	var newSeverity uint8 = 1
+	err = s.service.PatchHeadache(s.ctx, s.piid, id, PatchHeadacheParams{Severity: option.Some(newSeverity)})
 	s.NoError(err)
-	newTypes := entity.HeadacheTypes{entity.Dull}
-	err = s.service.PatchHeadacheTypes(s.ctx, s.piid, id, PatchHeadacheTypesParams{Types: newTypes})
+	newTypes := headaches.HeadacheTypes{headaches.Dull}
+	err = s.service.PatchHeadache(s.ctx, s.piid, id, PatchHeadacheParams{Types: option.Some(newTypes)})
 	s.NoError(err)
-	newPositions := entity.HeadachePositions{entity.Back, entity.Ear}
-	err = s.service.PatchHeadachePositions(s.ctx, s.piid, id, PatchHeadachePositionsParams{Positions: newPositions})
+	newPositions := headaches.HeadachePositions{headaches.Back, headaches.Ear}
+	err = s.service.PatchHeadache(s.ctx, s.piid, id, PatchHeadacheParams{Positions: option.Some(newPositions)})
 	s.NoError(err)
-	newSymptoms := entity.HeadacheSymptoms{entity.Dizziness}
-	err = s.service.PatchHeadacheSymptoms(s.ctx, s.piid, id, PatchHeadacheSymptomsParams{Symptoms: newSymptoms})
+	newSymptoms := headaches.HeadacheSymptoms{headaches.Dizziness}
+	err = s.service.PatchHeadache(s.ctx, s.piid, id, PatchHeadacheParams{Symptoms: option.Some(newSymptoms)})
 	s.NoError(err)
 
 	headache, err = s.service.GetHeadache(s.ctx, s.piid, id)
 	s.NoError(err)
 	s.Equal(newDate, headache.Date)
-	s.Equal(newPositions, headache.Positions)
+	s.Equal([]string{"back", "ear"}, headache.Positions)
 	s.Equal(newSeverity, headache.Severity)
-	s.Equal(newSymptoms, headache.Symptoms)
-	s.Equal(newTypes, headache.Types)
+	s.Equal([]string{"dizziness"}, headache.Symptoms)
+	s.Equal([]string{"dull-pressing"}, headache.Types)
 
 	// Delete and verify
 	err = s.service.DeleteHeadache(s.ctx, s.piid, idResp.ID)
 	s.NoError(err)
 	headache, err = s.service.GetHeadache(s.ctx, s.piid, idResp.ID)
 	s.Error(err)
-	headaches, err = s.service.ListHeadaches(s.ctx, s.piid)
+	headachesResp, err = s.service.ListHeadaches(s.ctx, s.piid)
 	s.NoError(err)
-	s.Len(headaches.Headaches, 0)
+	s.Len(headachesResp.Headaches, 0)
 }
 
 func (s *ApiTestSuite) TestSymptoms() {
@@ -82,7 +82,7 @@ func (s *ApiTestSuite) TestSymptoms() {
 	event, err := s.service.CreateConditionEvent(s.ctx, s.piid)
 	s.NoError(err)
 	symptomName := "symptom"
-	_, err = s.service.PostCondition(s.ctx, s.piid, event.ID, ConditionRequestParams{SymptomName: &symptomName, CategoryID: &catId.ID})
+	_, err = s.service.PostCondition(s.ctx, s.piid, event.ID, ConditionRequestParams{SymptomName: option.Some(symptomName), CategoryID: option.Some(catId.ID)})
 	s.NoError(err)
 
 	symptoms, err = s.service.ListSymptoms(s.ctx, s.piid)
@@ -134,7 +134,7 @@ func (s *ApiTestSuite) TestMeals() {
 	s.NoError(err)
 	s.Len(mealsResp.Meals, 0)
 
-	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, entity.PostMealParams{Date: time.Now()}) // Why does POSt have so many params? I don't use them.
+	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, PostMealParams{Date: time.Now()}) // Why does POSt have so many params? I don't use them.
 	s.NoError(err)
 	mealId := postMealResp.ID
 
@@ -150,23 +150,24 @@ func (s *ApiTestSuite) TestMeals() {
 	s.NoError(err)
 	foodId := foodResp.Food.ID
 	s.Len(foodResp.Ingredients.Ingredients, 1)
-	s.Equal("ing", foodResp.Food.Ingredient.Name)
+	s.NotEqualValues(0, foodResp.Food.IngredientId)
+	s.Equal("cooked", foodResp.Food.Condition)
 
 	ingResp, err := s.service.ListIngredients(s.ctx, s.piid)
 	s.NoError(err)
 	s.Len(ingResp.Ingredients, 1)
 
-	err = s.service.PatchFoodCondition(s.ctx, s.piid, foodId, PatchFoodConditionParams{Condition: entity.Raw})
+	err = s.service.PatchFoodCondition(s.ctx, s.piid, foodId, PatchFoodConditionParams{Condition: "raw"})
 	s.NoError(err)
 
-	var freshness entity.Freshness = entity.Fresh
+	var freshness uint8 = 0
 	var stressLevel uint8 = 3
 	var isAlone bool = false
-	err = s.service.PatchMeal(s.ctx, s.piid, mealId, entity.PatchMealParams{Freshness: &freshness, StressLevel: &stressLevel, IsAlone: &isAlone})
+	err = s.service.PatchMeal(s.ctx, s.piid, mealId, PatchMealParams{Freshness: &freshness, StressLevel: &stressLevel, IsAlone: &isAlone})
 	s.NoError(err)
 	mealResp, err = s.service.GetMeal(s.ctx, s.piid, mealId)
 	s.NoError(err)
-	s.Equal(entity.Raw, mealResp.Foods[0].Condition)
+	s.Equal("raw", mealResp.Foods[0].Condition)
 	s.Equal(freshness, mealResp.Freshness)
 	s.Equal(stressLevel, mealResp.StressLevel)
 	s.Equal(isAlone, mealResp.IsAlone)
@@ -183,7 +184,7 @@ func (s *ApiTestSuite) TestMeals() {
 }
 
 func (s *ApiTestSuite) TestManageIngredients() {
-	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, entity.PostMealParams{Date: time.Now()})
+	postMealResp, err := s.service.PostMeal(s.ctx, s.piid, PostMealParams{Date: time.Now()})
 	foodResp, err := s.service.PostFood(s.ctx, s.piid, postMealResp.ID, FoodParams{IngredientName: "ing"})
 
 	ingredients, err := s.service.ListIngredients(s.ctx, s.piid)
@@ -202,7 +203,7 @@ func (s *ApiTestSuite) TestManageIngredients() {
 	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Archived: archived})
 	s.NoError(err)
 
-	nutrition := entity.PatchNutritionParams{Protein: 100, Carbohydrate: 10, Fat: 0.2, Fiber: 2}
+	nutrition := PatchNutritionParams{Protein: 100, Carbohydrate: 10, Fat: 0.2, Fiber: 2}
 	nutritionParams := option.Some(nutrition)
 	err = s.service.PatchIngredient(s.ctx, s.piid, ing.ID, PatchIngredientParams{Nutrition: nutritionParams})
 	s.NoError(err)
@@ -218,15 +219,11 @@ func (s *ApiTestSuite) TestManageIngredients() {
 	s.EqualValues(float32(0.2), ing.Nutrition.Fat)
 	s.EqualValues(2, ing.Nutrition.Fiber)
 
-	// Ingredient is still in use in food
-	err = s.service.DeleteIngredient(s.ctx, s.piid, ing.ID)
-	s.assertErrCode(err, errs.InvalidArgument)
-	ingredients, err = s.service.DeleteFood(s.ctx, s.piid, foodResp.Food.ID)
+	// Deleting foods deletes ingredients as well
+	_, err = s.service.DeleteFood(s.ctx, s.piid, foodResp.Food.ID)
 	s.NoError(err)
 
 	ingredients, err = s.service.ListIngredients(s.ctx, s.piid)
 	s.NoError(err)
 	s.Len(ingredients.Ingredients, 0)
-
-	// Todo: Can I test DeleteIngredient here?
 }

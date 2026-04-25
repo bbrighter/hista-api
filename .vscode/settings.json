@@ -7,4 +7,9 @@
     },
     "editor.formatOnSave": true,
     "editor.defaultFormatter": "golang.go",
+    "cSpell.words": [
+        "gorm",
+        "hista",
+        "PIID"
+    ],
 }

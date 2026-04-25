@@ -232,6 +232,11 @@
             "type": "shell",
             "label": "Dependencies",
             "command": "$(go env GOPATH)/bin/godepgraph ./hista | dot -Tpng -o deps.png"
+        },
+        {
+            "type": "shell",
+            "label": "Test coverage",
+            "command": "encore test ./... -coverprofile=coverage.out && go tool cover -html=coverage.out -o coverage.html",
         }
 	],
 	"inputs": [

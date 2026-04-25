@@ -1,7 +1,6 @@
 package hista
 
 import (
-	"encore.app/hista/entity"
 	"encore.dev/beta/errs"
 )
 
@@ -35,7 +34,7 @@ func (s *ApiTestSuite) TestPostTemplate() {
 				TemplateParams{
 					Name: "Template",
 					Items: []TemplateItemParams{
-						{Condition: entity.Cooked, IngredientId: ingredientId},
+						{Condition: "cooked", IngredientId: ingredientId},
 					}})
 			if s.assertErrCode(err, test.expErrCode) {
 				return
@@ -73,7 +72,7 @@ func (s *ApiTestSuite) TestPutTemplate() {
 				TemplateParams{
 					Name: "New name",
 					Items: []TemplateItemParams{
-						{Condition: entity.Raw, IngredientId: ingredientId},
+						{Condition: "raw", IngredientId: ingredientId},
 					}})
 			if s.assertErrCode(err, test.expErrCode) {
 				return

@@ -11,21 +11,28 @@ type Piider interface {
 	SetPiid(uuid.UUID)
 }
 
-func List[T Piider](ctx context.Context, db *gorm.DB) ([]T, error) {
-	piid, err := PiidFromCtx(ctx)
-	if err != nil {
-		return []T{}, err
+func WherePiid(ctx context.Context) func(tx *gorm.Statement) {
+	return func(tx *gorm.Statement) {
+		piid, err := PiidFromCtx(ctx)
+		if err != nil {
+			tx.AddError(err)
+			return
+		}
+		tx.Where("pi_id = ?", piid)
 	}
-	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).Where("pi_id = ?", piid).Find(ctx)
+}
+
+func List[T Piider](ctx context.Context, db *gorm.DB) ([]T, error) {
+	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).
+		Scopes(WherePiid(ctx)).
+		Find(ctx)
 }
 
 func First[T Piider](ctx context.Context, db *gorm.DB, id uint) (T, error) {
-	var t T
-	piid, err := PiidFromCtx(ctx)
-	if err != nil {
-		return t, err
-	}
-	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).Where("id = ?", id).Where("pi_id = ?", piid).First(ctx)
+	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).
+		Where("id = ?", id).
+		Scopes(WherePiid(ctx)).
+		First(ctx)
 }
 
 func Create[T Piider](ctx context.Context, db *gorm.DB, t T) error {
@@ -42,11 +49,10 @@ func Delete[T Piider](ctx context.Context, db *gorm.DB, id uint) error {
 }
 
 func BatchDelete[T Piider](ctx context.Context, db *gorm.DB, ids []uint) error {
-	piid, err := PiidFromCtx(ctx)
-	if err != nil {
-		return err
-	}
-	rows, err := gorm.G[T](db).Where("id IN ?", ids).Where("pi_id = ?", piid).Delete(ctx)
+	rows, err := gorm.G[T](db).
+		Where("id IN ?", ids).
+		Scopes(WherePiid(ctx)).
+		Delete(ctx)
 	if err != nil {
 		return err
 	}
@@ -57,22 +63,32 @@ func BatchDelete[T Piider](ctx context.Context, db *gorm.DB, ids []uint) error {
 }
 
 func Count[T Piider](ctx context.Context, db *gorm.DB, id uint) (int64, error) {
-	piid, err := PiidFromCtx(ctx)
-	if err != nil {
-		return 0, err
-	}
-	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).Where("pi_id = ?", piid).Where("id = ?", id).Count(ctx, "*")
+	return gorm.G[T](db.Session(&gorm.Session{SkipDefaultTransaction: true})).
+		Scopes(WherePiid(ctx)).
+		Where("id = ?", id).
+		Count(ctx, "*")
 }
 
 func UpdateColumn[T Piider](ctx context.Context, db *gorm.DB, id uint, columnName string, newValue any) error {
-	piid, err := PiidFromCtx(ctx)
+	rows, err := gorm.G[T](db).
+		Where("id = ?", id).
+		Scopes(WherePiid(ctx)).
+		Update(ctx, columnName, newValue)
 	if err != nil {
 		return err
 	}
-	rows, err := gorm.G[T](db).
+	if rows == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+func Updates(ctx context.Context, db *gorm.DB, tableName string, id uint, values map[string]any) error {
+	rows, err := gorm.G[map[string]any](db).
+		Table(tableName).
 		Where("id = ?", id).
-		Where("pi_id = ?", piid).
-		Update(ctx, columnName, newValue)
+		Scopes(WherePiid(ctx)).
+		Updates(ctx, values)
 	if err != nil {
 		return err
 	}
