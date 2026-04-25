@@ -15,11 +15,11 @@ type IntakeResponse struct {
 	Count      int64     `json:"count"`
 }
 
-type IntakeResponseList struct {
+type IntakeListResponse struct {
 	Intakes []IntakeResponse `json:"intakes"`
 }
 
-func toIntakeResponseList(gil medicines.GroupedIntakeList) IntakeResponseList {
+func toIntakeListResponse(gil medicines.GroupedIntakeList) IntakeListResponse {
 	intakes := []IntakeResponse{}
 	for _, gi := range gil {
 		intakes = append(intakes,
@@ -29,16 +29,16 @@ func toIntakeResponseList(gil medicines.GroupedIntakeList) IntakeResponseList {
 				Count:      gi.Count,
 			})
 	}
-	return IntakeResponseList{Intakes: intakes}
+	return IntakeListResponse{Intakes: intakes}
 }
 
 // encore:api auth method=GET path=/piid/:piid/intakes
-func (s *Service) ListIntakes(ctx context.Context, piid uuid.UUID) (IntakeResponseList, error) {
+func (s *Service) ListIntakes(ctx context.Context, piid uuid.UUID) (IntakeListResponse, error) {
 	list, err := s.meds.ListGroupedIntakes(ctx)
 	if err != nil {
-		return IntakeResponseList{}, errors.MapError(err)
+		return IntakeListResponse{}, errors.MapError(err)
 	}
-	return toIntakeResponseList(list), nil
+	return toIntakeListResponse(list), nil
 }
 
 // encore:api auth method=POST path=/piid/:piid/intakes/medicines/:medicineId/increment

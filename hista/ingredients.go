@@ -10,10 +10,10 @@ import (
 )
 
 // encore:api auth method=GET path=/piid/:piid/ingredients
-func (service *Service) ListIngredients(ctx context.Context, piid uuid.UUID) (IngredientsResponse, error) {
+func (service *Service) ListIngredients(ctx context.Context, piid uuid.UUID) (IngredientListResponse, error) {
 	ings, err := service.meals.ListIngredients(ctx)
 	if err != nil {
-		return IngredientsResponse{}, errors.MapError(err)
+		return IngredientListResponse{}, errors.MapError(err)
 	}
 	return toIngredientsResponse(ings), nil
 }

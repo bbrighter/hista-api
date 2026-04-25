@@ -20,7 +20,8 @@ type ConditionEventMetaResponse struct {
 }
 
 type ConditionEventResponse struct {
-	ConditionEventMetaResponse
+	ID         uint                `json:"id"`
+	Date       time.Time           `json:"date"`
 	Conditions []ConditionResponse `json:"conditions"`
 }
 
@@ -58,10 +59,7 @@ func toConditionEventResponse(c symptoms.ConditionEvent) ConditionEventResponse 
 	for _, con := range c.Conditions {
 		conditionResp = append(conditionResp, toConditionResponse(con))
 	}
-	var resp = ConditionEventResponse{
-		ConditionEventMetaResponse: ConditionEventMetaResponse{ID: c.ID, Date: c.Date},
-		Conditions:                 conditionResp,
-	}
+	var resp = ConditionEventResponse{ID: c.ID, Date: c.Date, Conditions: conditionResp}
 	return resp
 }
 

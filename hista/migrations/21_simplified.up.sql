@@ -1,3 +1,4 @@
+BEGIN;
 ---- Symptoms ----
 -- Drop FK
 ALTER TABLE "conditions" DROP CONSTRAINT "fk_condition_events_conditions", DROP CONSTRAINT "fk_conditions_symptom";
@@ -113,3 +114,5 @@ ALTER TABLE "statuses" DROP CONSTRAINT "statuses_pkey";
 ALTER TABLE "statuses" ADD PRIMARY KEY ("id");
 -- Add index
 CREATE INDEX "idx_statuses_pi_id" ON "statuses" ("pi_id");
+
+COMMIT;

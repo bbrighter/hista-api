@@ -1,9 +1,5 @@
 package hista
 
-import (
-	"encore.app/hista/internal/diary"
-)
-
 func (s *ApiTestSuite) TestGetDiary() {
 	tests := map[string]struct {
 		createCondition bool
@@ -39,28 +35,28 @@ func (s *ApiTestSuite) TestGetDiary() {
 			resp, err := s.service.GetDiary(s.ctx, s.piid)
 			s.NoError(err)
 			s.Len(resp.Diaries, test.expectedLen)
-			var types []diary.DiaryType
+			var types []string
 			var contents []string
 			for _, d := range resp.Diaries {
 				types = append(types, d.Type)
 				contents = append(contents, d.Content)
 			}
 			if test.createCondition {
-				s.Contains(types, diary.DiarySymptom)
+				s.Contains(types, "Symptom")
 				s.Contains(contents, "name")
 			}
 			if test.createFood {
-				s.Contains(types, diary.DiaryFood)
+				s.Contains(types, "Food")
 				s.Contains(contents, "ingredient")
 			}
 			if test.createNote {
-				s.Contains(types, diary.DiaryNote)
+				s.Contains(types, "Note")
 			}
 			if test.createPollen {
-				s.Contains(types, diary.DiaryPollen)
+				s.Contains(types, "Pollen")
 			}
 			if test.createIntake {
-				s.Contains(types, diary.DiaryIntake)
+				s.Contains(types, "Intake")
 				s.Contains(contents, "Medicine No. 1")
 			}
 		},

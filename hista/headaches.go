@@ -30,7 +30,7 @@ func toStringSlice[T ~string](input []T) []string {
 	return result
 }
 
-func toHeadacheResp(h *headaches.Headache) HeadacheResponse {
+func toHeadacheResponse(h *headaches.Headache) HeadacheResponse {
 	return HeadacheResponse{
 		ID:          h.ID,
 		Date:        h.Date,
@@ -46,10 +46,10 @@ type HeadacheListResponse struct {
 	Headaches []HeadacheResponse `json:"headaches"`
 }
 
-func toHeadacheListResp(hs headaches.Headaches) HeadacheListResponse {
+func toHeadacheListResponse(hs headaches.Headaches) HeadacheListResponse {
 	var headaches = []HeadacheResponse{}
 	for _, h := range hs {
-		headaches = append(headaches, toHeadacheResp(h))
+		headaches = append(headaches, toHeadacheResponse(h))
 	}
 	sort.Slice(headaches, func(i, j int) bool {
 		return headaches[i].Date.After(headaches[j].Date)
@@ -63,7 +63,7 @@ func (service *Service) ListHeadaches(ctx context.Context, piid uuid.UUID) (Head
 	if err != nil {
 		return HeadacheListResponse{}, errors.MapError(err)
 	}
-	return toHeadacheListResp(headaches), nil
+	return toHeadacheListResponse(headaches), nil
 }
 
 // encore:api auth method=GET path=/piid/:piid/headaches/:id
@@ -72,7 +72,7 @@ func (service *Service) GetHeadache(ctx context.Context, piid uuid.UUID, id uint
 	if err != nil {
 		return HeadacheResponse{}, errors.MapError(err)
 	}
-	return toHeadacheResp(headache), nil
+	return toHeadacheResponse(headache), nil
 }
 
 // encore:api auth method=DELETE path=/piid/:piid/headaches/:id

@@ -8,14 +8,14 @@ import (
 )
 
 // encore:api auth method=DELETE path=/piid/:piid/foods/:foodId
-func (service *Service) DeleteFood(ctx context.Context, piid uuid.UUID, foodId uint) (IngredientsResponse, error) {
+func (service *Service) DeleteFood(ctx context.Context, piid uuid.UUID, foodId uint) (IngredientListResponse, error) {
 	err := service.meals.DeleteFood(ctx, foodId)
 	if err != nil {
-		return IngredientsResponse{}, errors.MapError(err)
+		return IngredientListResponse{}, errors.MapError(err)
 	}
 	ingredients, err := service.meals.ListIngredients(ctx)
 	if err != nil {
-		return IngredientsResponse{}, errors.MapError(err)
+		return IngredientListResponse{}, errors.MapError(err)
 	}
 	return toIngredientsResponse(ingredients), nil
 }

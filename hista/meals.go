@@ -9,11 +9,11 @@ import (
 	"encore.dev/types/uuid"
 )
 
-type MealsResponse struct {
+type MealListResponse struct {
 	Meals []MealMetaResponse `json:"meals"`
 }
 
-func toMealsResponse(meals meals.Meals) MealsResponse {
+func toMealsResponse(meals meals.Meals) MealListResponse {
 	var resps []MealMetaResponse
 	for _, m := range meals {
 		resps = append(resps, MealMetaResponse{
@@ -21,7 +21,7 @@ func toMealsResponse(meals meals.Meals) MealsResponse {
 			Date: m.Date,
 		})
 	}
-	return MealsResponse{Meals: resps}
+	return MealListResponse{Meals: resps}
 }
 
 type MealMetaResponse struct {
@@ -30,31 +30,30 @@ type MealMetaResponse struct {
 }
 
 type MealResponse struct {
-	MealMetaResponse
-	Freshness     uint8 `json:"freshness"`
-	StressLevel   uint8 `json:"stressLevel"`
-	IsAlone       bool  `json:"isAlone"`
-	FoodsResponse `json:"foods"`
+	ID          uint           `json:"id"`
+	Date        time.Time      `json:"date"`
+	Freshness   uint8          `json:"freshness"`
+	StressLevel uint8          `json:"stressLevel"`
+	IsAlone     bool           `json:"isAlone"`
+	Foods       []FoodResponse `json:"foods"`
 }
 
 func toMealResponse(meal meals.Meal) MealResponse {
 	return MealResponse{
-		MealMetaResponse: MealMetaResponse{
-			ID:   meal.ID,
-			Date: meal.Date,
-		},
-		Freshness:     uint8(meal.Freshness),
-		StressLevel:   meal.StressLevel,
-		IsAlone:       meal.IsAlone,
-		FoodsResponse: toFoodsResponse(meal.Foods),
+		ID:          meal.ID,
+		Date:        meal.Date,
+		Freshness:   uint8(meal.Freshness),
+		StressLevel: meal.StressLevel,
+		IsAlone:     meal.IsAlone,
+		Foods:       toFoodResponseList(meal.Foods),
 	}
 }
 
 // encore:api auth method=GET path=/piid/:piid/meals
-func (service *Service) ListMeals(ctx context.Context, piid uuid.UUID) (MealsResponse, error) {
+func (service *Service) ListMeals(ctx context.Context, piid uuid.UUID) (MealListResponse, error) {
 	meals, err := service.meals.ListMeals(ctx)
 	if err != nil {
-		return MealsResponse{}, errors.MapError(err)
+		return MealListResponse{}, errors.MapError(err)
 	}
 	return toMealsResponse(meals), nil
 }
@@ -81,7 +80,7 @@ func (service *Service) GetMeal(ctx context.Context, piid uuid.UUID, id uint) (M
 	return toMealResponse(meal), err
 }
 
-type IngredientsResponse struct {
+type IngredientListResponse struct {
 	Ingredients []IngredientResponse `json:"ingredients"`
 }
 
@@ -111,7 +110,7 @@ func toNutritionResponse(n meals.Nutrition) *NutritionResponse {
 	}
 }
 
-func toIngredientsResponse(ingredients meals.Ingredients) IngredientsResponse {
+func toIngredientsResponse(ingredients meals.Ingredients) IngredientListResponse {
 	var resp = []IngredientResponse{}
 	for _, i := range ingredients {
 		resp = append(resp, IngredientResponse{
@@ -121,14 +120,14 @@ func toIngredientsResponse(ingredients meals.Ingredients) IngredientsResponse {
 			Nutrition:  toNutritionResponse(i.Nutrition),
 		})
 	}
-	return IngredientsResponse{Ingredients: resp}
+	return IngredientListResponse{Ingredients: resp}
 }
 
 // encore:api auth method=DELETE path=/piid/:piid/meals/:id
-func (service *Service) DeleteMeal(ctx context.Context, piid uuid.UUID, id uint) (IngredientsResponse, error) {
+func (service *Service) DeleteMeal(ctx context.Context, piid uuid.UUID, id uint) (IngredientListResponse, error) {
 	ings, err := service.meals.DeleteMeal(ctx, id)
 	if err != nil {
-		return IngredientsResponse{}, errors.MapError(err)
+		return IngredientListResponse{}, errors.MapError(err)
 	}
 	return toIngredientsResponse(ings), nil
 }
@@ -162,16 +161,20 @@ func toFoodResponse(f meals.Food) FoodResponse {
 	}
 }
 
+func toFoodResponseList(foods meals.Foods) []FoodResponse {
+	var resps []FoodResponse
+	for _, f := range foods {
+		resps = append(resps, toFoodResponse(f))
+	}
+	return resps
+}
+
 type FoodsResponse struct {
 	Foods []FoodResponse `json:"foods"`
 }
 
 func toFoodsResponse(foods meals.Foods) FoodsResponse {
-	var resps []FoodResponse
-	for _, f := range foods {
-		resps = append(resps, toFoodResponse(f))
-	}
-	return FoodsResponse{Foods: resps}
+	return FoodsResponse{Foods: toFoodResponseList(foods)}
 }
 
 // encore:api auth method=GET path=/piid/:piid/meal/:mealId/foods
@@ -189,8 +192,8 @@ type FoodParams struct {
 }
 
 type PostFoodResponse struct {
-	Food        FoodResponse        `json:"food"`
-	Ingredients IngredientsResponse `json:"ingredients"`
+	Food        FoodResponse           `json:"food"`
+	Ingredients IngredientListResponse `json:"ingredients"`
 }
 
 // encore:api auth method=POST path=/piid/:piid/meal/:mealId/foods

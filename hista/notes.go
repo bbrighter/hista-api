@@ -11,30 +11,30 @@ import (
 	"encore.dev/types/uuid"
 )
 
-type NoteListResp struct {
-	Notes []NoteResp `json:"notes"`
+type NoteListResponse struct {
+	Notes []NoteResponse `json:"notes"`
 }
 
-type NoteResp struct {
+type NoteResponse struct {
 	ID   uint      `json:"id"`
 	Date time.Time `json:"date"`
 	Text string    `json:"text"`
 }
 
-func toNoteListResp(notes []*notes.Note) NoteListResp {
-	var resps = []NoteResp{}
+func toNoteListResponse(notes []*notes.Note) NoteListResponse {
+	var resps = []NoteResponse{}
 	for _, note := range notes {
-		var resp NoteResp = toNoteResp(note)
+		var resp NoteResponse = toNoteResponse(note)
 		resps = append(resps, resp)
 	}
 	sort.Slice(resps, func(i, j int) bool {
 		return resps[i].Date.Sub(resps[j].Date) > 0
 	})
-	return NoteListResp{Notes: resps}
+	return NoteListResponse{Notes: resps}
 }
 
-func toNoteResp(note *notes.Note) NoteResp {
-	return NoteResp{
+func toNoteResponse(note *notes.Note) NoteResponse {
+	return NoteResponse{
 		ID:   note.ID,
 		Date: note.Date,
 		Text: note.Text,
@@ -42,22 +42,22 @@ func toNoteResp(note *notes.Note) NoteResp {
 }
 
 // encore:api auth method=GET path=/piid/:piid/notes
-func (service *Service) ListNotes(ctx context.Context, piid uuid.UUID) (NoteListResp, error) {
+func (service *Service) ListNotes(ctx context.Context, piid uuid.UUID) (NoteListResponse, error) {
 	notes, err := service.notes.ListNotes(ctx)
 	if err != nil {
-		return NoteListResp{}, errors.MapError(err)
+		return NoteListResponse{}, errors.MapError(err)
 	}
-	return toNoteListResp(notes), nil
+	return toNoteListResponse(notes), nil
 }
 
 // encore:api auth method=POST path=/piid/:piid/notes
-func (service *Service) PostNote(ctx context.Context, piid uuid.UUID) (NoteResp, error) {
+func (service *Service) PostNote(ctx context.Context, piid uuid.UUID) (NoteResponse, error) {
 	date := time.Now()
 	id, err := service.notes.CreateNote(ctx, date)
 	if err != nil {
-		return NoteResp{}, errors.MapError(err)
+		return NoteResponse{}, errors.MapError(err)
 	}
-	return toNoteResp(&notes.Note{ID: id, Date: date}), nil
+	return toNoteResponse(&notes.Note{ID: id, Date: date}), nil
 }
 
 // encore:api auth method=DELETE path=/piid/:piid/notes/:noteId
