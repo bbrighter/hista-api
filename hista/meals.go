@@ -162,7 +162,7 @@ func toFoodResponse(f meals.Food) FoodResponse {
 }
 
 func toFoodResponseList(foods meals.Foods) []FoodResponse {
-	var resps []FoodResponse
+	var resps = []FoodResponse{}
 	for _, f := range foods {
 		resps = append(resps, toFoodResponse(f))
 	}

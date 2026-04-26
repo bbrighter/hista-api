@@ -26,16 +26,16 @@ type ConditionEventResponse struct {
 }
 
 type ConditionResponse struct {
-	ID       uint            `json:"id"`
-	Symptom  SymptomResponse `json:"symptom"`
-	Severity uint            `json:"severity"`
+	ID        uint `json:"id"`
+	SymptomID uint `json:"symptomId"`
+	Severity  uint `json:"severity"`
 }
 
 func toConditionResponse(c symptoms.Condition) ConditionResponse {
 	return ConditionResponse{
-		ID:       c.ID,
-		Symptom:  toSymptomResponse(c.Symptom),
-		Severity: uint(c.Severity),
+		ID:        c.ID,
+		SymptomID: c.SymptomID,
+		Severity:  uint(c.Severity),
 	}
 }
 
