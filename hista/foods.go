@@ -38,7 +38,7 @@ func (service *Service) PatchFoodCondition(ctx context.Context, piid uuid.UUID, 
 }
 
 type PatchFoodAmountParams struct {
-	Amount *int `json:"amount"`
+	Amount *int `json:"amount" encore:"optional"`
 }
 
 func (f PatchFoodAmountParams) Validate() error {
