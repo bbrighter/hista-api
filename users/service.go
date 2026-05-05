@@ -1,8 +1,7 @@
 package users
 
 import (
-	"encore.app/users/internal"
-	"encore.app/users/internal/repository"
+	"encore.app/users/users"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -10,10 +9,8 @@ import (
 
 // encore:service
 type Service struct {
-	db   *gorm.DB
-	user internal.IUser
-	mgmt internal.IUserManagement
-	auth internal.IAuth
+	db *gorm.DB
+	u  *users.UserService
 }
 
 var usersDB = sqldb.NewDatabase("users_db", sqldb.DatabaseConfig{
@@ -27,16 +24,10 @@ func initDB() (*gorm.DB, error) {
 }
 
 func setupService(db *gorm.DB, cost int) *Service {
-	r := repository.NewUserRepo(db, cost)
-	user := internal.NewUserUseCase(r)
-	mgmt := internal.NewUserManagement(r)
-	auth := internal.NewAuthUseCase(r)
+	u := users.NewUserService(db, cost)
 
 	var service = &Service{
-		db:   db,
-		user: user,
-		mgmt: mgmt,
-		auth: auth,
+		u: u,
 	}
 	return service
 }

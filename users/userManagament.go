@@ -3,7 +3,8 @@ package users
 import (
 	"context"
 
-	"encore.app/users/entity"
+	"encore.app/errors"
+	"encore.app/users/users"
 	"encore.dev/types/uuid"
 )
 
@@ -16,27 +17,48 @@ type UserIdResponse struct {
 	UserId uuid.UUID `json:"userId"`
 }
 
+type UserResponse struct {
+	ID   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
+type UserListResponse struct {
+	Users []UserResponse `json:"users"`
+}
+
+func toUserListResponse(us []users.User) UserListResponse {
+	var resp = []UserResponse{}
+	for _, u := range us {
+		resp = append(resp, UserResponse{
+			ID:   u.ID,
+			Name: u.Name,
+		})
+	}
+	return UserListResponse{Users: resp}
+}
+
 // encore:api private method=POST path=/internal/user
 func (s *Service) CreateUser(ctx context.Context, params UserParams) (UserIdResponse, error) {
-	user, err := s.mgmt.Create(ctx, params.Name, params.Password)
-	return UserIdResponse{UserId: user.ID}, err
+	user, err := s.u.CreateUser(ctx, params.Name, params.Password)
+	return UserIdResponse{UserId: user.ID}, errors.MapError(err)
 }
 
 // encore:api private method=DELETE path=/internal/user/:id
 func (s *Service) DeleteUser(ctx context.Context, id uuid.UUID) error {
-	return s.mgmt.Delete(ctx, id)
+	err := s.u.DeleteUser(ctx, id)
+	return errors.MapError(err)
 }
 
 // encore:api private method=GET path=/internal/user
-func (s *Service) ListUsers(ctx context.Context) (entity.UserListResponse, error) {
-	users := s.mgmt.List(ctx)
-	return users.ToResponse(), nil
+func (s *Service) ListUsers(ctx context.Context) (UserListResponse, error) {
+	users, err := s.u.ListUsers(ctx)
+	return toUserListResponse(users), errors.MapError(err)
 }
 
 // encore:api private method=GET path=/internal/user/:name
 func (s *Service) Exists(ctx context.Context, name string) (UserIdResponse, error) {
-	user, err := s.mgmt.Find(ctx, name)
-	return UserIdResponse{UserId: user.ID}, err
+	user, err := s.u.FindUserByName(ctx, name)
+	return UserIdResponse{UserId: user.ID}, errors.MapError(err)
 }
 
 type AddUserToProductInstanceParams struct {
@@ -46,16 +68,18 @@ type AddUserToProductInstanceParams struct {
 
 // encore:api private method=POST path=/internal/user/:userId/product-instance/:productInstanceId
 func (s *Service) AddUserToProductInstance(ctx context.Context, userId uuid.UUID, productInstanceId uuid.UUID, params AddUserToProductInstanceParams) error {
-	return s.mgmt.AddUserToInstance(ctx, productInstanceId, params.ProductId, userId, params.AppIds)
+	err := s.u.AddUserToInstance(ctx, productInstanceId, params.ProductId, userId, params.AppIds)
+	return errors.MapError(err)
 }
 
 // encore:api private method=DELETE path=/internal/user/:userId/product-instance/:productInstanceId
 func (s *Service) RemoveUserFromProductInstance(ctx context.Context, userId uuid.UUID, productInstanceId uuid.UUID) error {
-	return s.mgmt.RemoveUserFromInstance(ctx, productInstanceId, userId)
+	err := s.u.RemoveUserFromInstance(ctx, productInstanceId, userId)
+	return errors.MapError(err)
 }
 
 // encore:api private method=GET path=/internal/product-instance/:productInstanceId/users
-func (s *Service) ListUsersForProductInstance(ctx context.Context, productInstanceId uuid.UUID) (entity.UserListResponse, error) {
-	users, err := s.mgmt.ListForInstance(ctx, productInstanceId)
-	return users.ToResponse(), err
+func (s *Service) ListUsersForProductInstance(ctx context.Context, productInstanceId uuid.UUID) (UserListResponse, error) {
+	users, err := s.u.ListForInstance(ctx, productInstanceId)
+	return toUserListResponse(users), errors.MapError(err)
 }

@@ -1,4 +1,4 @@
-package entity
+package users
 
 import "encore.dev/types/uuid"
 
@@ -31,17 +31,17 @@ type UserProductInstanceList []UserProductInstance
 
 type UserAppPermissionList []UserAppPermission
 
-func (u User) ToResponse() UserResponse {
-	return UserResponse{ID: u.ID, Name: u.Name}
-}
+// func (u User) ToResponse() UserResponse {
+// 	return UserResponse{ID: u.ID, Name: u.Name}
+// }
 
-func (us Users) ToResponse() UserListResponse {
-	var users = []UserResponse{}
-	for _, u := range us {
-		users = append(users, u.ToResponse())
-	}
-	return UserListResponse{Users: users}
-}
+// func (us Users) ToResponse() UserListResponse {
+// 	var users = []UserResponse{}
+// 	for _, u := range us {
+// 		users = append(users, u.ToResponse())
+// 	}
+// 	return UserListResponse{Users: users}
+// }
 
 func (uapl UserAppPermissionList) ToMap() map[uuid.UUID][]string {
 	permMap := make(map[uuid.UUID][]string)
