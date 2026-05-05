@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 
+	"encore.app/errors"
 	"encore.dev/types/uuid"
 )
 
@@ -13,7 +14,8 @@ type UserPasswordChangeParams struct {
 
 // encore:api auth method=PATCH path=/user/:id
 func (s *Service) PatchPassword(ctx context.Context, id uuid.UUID, params UserPasswordChangeParams) error {
-	return s.user.ChangePassword(ctx, id, params.NewPassword, params.OldPassword)
+	err := s.u.ChangePassword(ctx, id, params.NewPassword, params.OldPassword)
+	return errors.MapError(err)
 }
 
 type NewUserPasswordParams struct {
@@ -22,5 +24,6 @@ type NewUserPasswordParams struct {
 
 // encore:api private method=PATH path=/user/:id
 func (s *Service) PatchPasswordWithoutValidation(ctx context.Context, id uuid.UUID, params NewUserPasswordParams) error {
-	return s.user.ChangePasswordForced(ctx, id, params.NewPassword)
+	err := s.u.ChangePasswordForced(ctx, id, params.NewPassword)
+	return errors.MapError(err)
 }

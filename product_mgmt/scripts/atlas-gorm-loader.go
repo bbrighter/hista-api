@@ -7,11 +7,11 @@ import (
 
 	_ "ariga.io/atlas-go-sdk/recordriver"
 	gormSchema "ariga.io/atlas-provider-gorm/gormschema"
-	"encore.app/product_mgmt/entity"
+	"encore.app/product_mgmt/instances"
 )
 
 var models = []any{
-	&entity.ProductInstance{},
+	&instances.Instance{},
 }
 
 func main() {

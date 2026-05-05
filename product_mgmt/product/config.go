@@ -1,6 +1,8 @@
-package entity
+package product
 
-import "encore.dev/config"
+import (
+	"encore.dev/config"
+)
 
 type Config struct {
 	Products config.Values[ProductConfig]

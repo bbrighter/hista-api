@@ -6,3 +6,10 @@ encore.gen.cue
 
 coverage.out
 coverage.html
+
+
+
+# Temporary files
+local.sql
+prod.sql
+staging.sql

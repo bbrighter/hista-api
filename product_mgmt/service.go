@@ -1,9 +1,8 @@
 package product_mgmt
 
 import (
-	"encore.app/product_mgmt/entity"
-	"encore.app/product_mgmt/internal"
-	"encore.app/product_mgmt/internal/repository"
+	"encore.app/product_mgmt/product"
+	"encore.app/product_mgmt/product_instance"
 	"encore.dev/config"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
@@ -12,19 +11,19 @@ import (
 
 // encore:service
 type Service struct {
-	instance internal.InstanceStore
-	product  internal.ProductFinder
+	prod *product.ProductService
+	pi   *product_instance.ProductInstanceService
 }
 
-var usersDB = sqldb.NewDatabase("product_mgmt_db", sqldb.DatabaseConfig{
+var prodMgmtDb = sqldb.NewDatabase("product_mgmt_db", sqldb.DatabaseConfig{
 	Migrations: "./migrations",
 })
 
-var cfg *entity.Config = config.Load[*entity.Config]()
+var cfg *product.Config = config.Load[*product.Config]()
 
 func initDB() (*gorm.DB, error) {
 	return gorm.Open(postgres.New(postgres.Config{
-		Conn: usersDB.Stdlib(),
+		Conn: prodMgmtDb.Stdlib(),
 	}))
 }
 
@@ -34,15 +33,12 @@ func initService() (*Service, error) {
 		return nil, err
 	}
 
-	p := repository.NewProductRepo(cfg.ToProducts(), cfg.ToApps())
-	i := repository.NewInstanceRepo(db)
-
-	instance := internal.NewInstanceUseCase(i, p)
-	product := internal.NewProductFinder(p)
+	pi := product_instance.NewProductInstanceService(db, cfg.ToProducts(), cfg.ToApps())
+	prod := product.NewProductService(product.NewProductRepo(cfg.ToProducts(), cfg.ToApps()))
 
 	var service = &Service{
-		instance: instance,
-		product:  product,
+		pi:   pi,
+		prod: prod,
 	}
 	return service, nil
 }

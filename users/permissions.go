@@ -3,7 +3,8 @@ package users
 import (
 	"context"
 
-	"encore.app/users/entity"
+	"encore.app/errors"
+	"encore.app/users/users"
 )
 
 type LoginParams struct {
@@ -12,15 +13,15 @@ type LoginParams struct {
 }
 
 type PermissionResponse struct {
-	User        entity.User                  `json:"user"`
-	Permissions entity.UserAppPermissionList `json:"permissions"`
+	User        users.User                  `json:"user"`
+	Permissions users.UserAppPermissionList `json:"permissions"`
 }
 
 // encore:api private method=POST path=/internal/permissions
 func (service *Service) GetPermissions(ctx context.Context, params LoginParams) (*PermissionResponse, error) {
-	user, perm, err := service.auth.Login(ctx, params.UserName, params.Password)
+	user, perm, err := service.u.Login(ctx, params.UserName, params.Password)
 	if err != nil {
-		return &PermissionResponse{}, err
+		return &PermissionResponse{}, errors.MapError(err)
 	}
 	return &PermissionResponse{User: user, Permissions: perm}, nil
 }
