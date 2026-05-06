@@ -6,8 +6,6 @@ import (
 )
 
 func (s *ApiTestSuite) TestPatchCondition() {
-	s.T().Skip()
-
 	id := s.createTestEvent()
 
 	var err error
