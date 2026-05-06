@@ -64,5 +64,12 @@ func (r *ConditionRepo) DeleteCondition(ctx context.Context, id uint) error {
 }
 
 func (r *ConditionRepo) UpdateCondition(ctx context.Context, id uint, values map[string]any) error {
-	return generic_queries.Updates(ctx, r.db, "conditions", id, values)
+	rows, err := gorm.G[map[string]any](r.db).Table("conditions").Where("id = ?", id).Updates(ctx, values)
+	if err != nil {
+		return err
+	}
+	if rows == 0 {
+		return gorm.ErrRecordNotFound
+	}
+	return nil
 }
