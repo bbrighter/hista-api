@@ -1,4 +1,5 @@
-h1:QdTqnx1M3BIgXJv2nMVbJudGyxpEoFZp15xmDPZ7uGI=
+h1:s8zO1PoZwBVHxKYH+OdCzb3yuaBPYW1feaRMPNMnGpE=
 1_initial.up.sql h1:1g7SjY1vZjC42ynLQBfGYo4uhqta8i7uSXVMV2K+kE0=
-2_moments.up.sql h1:jGxs5aLcMqezcyK5d0BHXPMI7DHtvJOAkELxGdp0qCE=
-3_archive.up.sql h1:zTG4eSJr7ii1uCL5mWTgdf02UtAkYvT55vhOeyQJlaM=
+20260508184834_4_remove_moments.up.sql h1:6jISgWQ3xCb8YhjI9ovJAuy5UZCT/qtfrrgq/CzJuoY=
+2_moments.up.sql h1:v8jRxdthaCuwdeTgDvP8QZFLj9r47q+dCVVCudLEAC8=
+3_archive.up.sql h1:oTA21HBZz3t3RoV0cdR3vy5EZ0RqBerqudSpD0GvNaE=

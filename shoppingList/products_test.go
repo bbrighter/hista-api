@@ -1,54 +1,34 @@
 package shoppinglist
 
-import "encore.dev/beta/errs"
+import (
+	"encore.dev/beta/errs"
+	"encore.dev/types/option"
+)
 
-func (s *ApiTestSuite) TestPatchProductName() {
-	s.T().Skip()
+func (s *ApiTestSuite) TestPatchProduct() {
 	tests := map[string]struct {
 		useWrongProductId bool
 		useWrongPiid      bool
-		name              string
+		name              option.Option[string]
+		archived          option.Option[bool]
 		expectedErrCode   errs.ErrCode
 	}{
-		"ok":              {name: "new name"},
-		"name not unique": {name: "name", expectedErrCode: errs.InvalidArgument},
+		"ok":              {name: option.Some("new name")},
+		"name not unique": {name: option.Some("existing name"), expectedErrCode: errs.AlreadyExists},
+		"archived":        {archived: option.Some(true)},
 		"wrong product":   {useWrongProductId: true, expectedErrCode: errs.NotFound},
 		"wrong piid":      {useWrongPiid: true, expectedErrCode: errs.NotFound},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
+			s.createProduct("existing name")
 			var productId uint = 1000
 			if !test.useWrongProductId {
-				productId = s.createProduct()
+				productId = s.createProduct("name")
 			}
 			ctx := s.GetCtx(test.useWrongPiid)
 
-			err := s.service.PatchProductName(ctx, s.piid, productId, PatchProductNameParams{Name: test.name})
-			s.assertErrCode(err, test.expectedErrCode)
-		})
-	}
-}
-
-func (s *ApiTestSuite) TestPatchProductArchive() {
-	s.T().Skip()
-	tests := map[string]struct {
-		useWrongProductId bool
-		useWrongPiid      bool
-		expectedErrCode   errs.ErrCode
-	}{
-		"ok":            {},
-		"wrong product": {useWrongProductId: true, expectedErrCode: errs.NotFound},
-		"wrong piid":    {useWrongPiid: true, expectedErrCode: errs.NotFound},
-	}
-	for name, test := range tests {
-		s.Run(name, func() {
-			var productId uint = 1000
-			if !test.useWrongProductId {
-				productId = s.createProduct()
-			}
-			ctx := s.GetCtx(test.useWrongPiid)
-
-			err := s.service.PatchArchiveProduct(ctx, s.piid, productId, PatchProductArchiveParams{Archive: true})
+			err := s.service.PatchProduct(ctx, s.piid, productId, PatchProductParams{Name: test.name})
 			s.assertErrCode(err, test.expectedErrCode)
 		})
 	}
@@ -71,7 +51,7 @@ func (s *ApiTestSuite) TestDeleteProduct() {
 		s.Run(name, func() {
 			var productId uint = 1000
 			if !test.useWrongProductId {
-				productId = s.createProduct()
+				productId = s.createProduct("name")
 			}
 			if test.isUsedInItem {
 				listId := s.createList()

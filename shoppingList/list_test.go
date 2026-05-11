@@ -48,7 +48,7 @@ func (s *ApiTestSuite) TestCreateList() {
 		expectedErrorCode errs.ErrCode
 	}{
 		"no list exists": {listExists: false},
-		"list exists":    {listExists: true, newIdIsOldId: true, expectedErrorCode: errs.AlreadyExists},
+		"list exists":    {listExists: true, newIdIsOldId: true},
 		"wrong piid":     {useWrongPiid: true},
 	}
 	for name, test := range tests {
@@ -58,7 +58,7 @@ func (s *ApiTestSuite) TestCreateList() {
 				listId = s.createList()
 			}
 			ctx := s.GetCtx(test.useWrongPiid)
-			list, err := s.service.PostList(ctx, s.piid)
+			list, err := s.service.PostOrGetList(ctx, s.piid)
 			if test.expectedErrorCode > 0 {
 				s.assertErrCode(err, test.expectedErrorCode)
 				return
