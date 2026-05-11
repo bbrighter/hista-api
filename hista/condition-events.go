@@ -113,18 +113,37 @@ type PostConditionResponse struct {
 
 // encore:api auth method=POST path=/piid/:piid/condition-events/:eventId/conditions
 func (service *Service) PostCondition(ctx context.Context, piid uuid.UUID, eventId uint, params ConditionRequestParams) (PostConditionResponse, error) {
-	var err error = errors.BadRequest("params empty")
-	var id uint
-	var cats symptoms.SymptomCategories
-	if symptomId, ok := params.SymptomID.Get(); ok {
-		id, err = service.syms.CreateConditionById(ctx, eventId, symptomId)
-	} else if params.SymptomName.IsSome() && params.CategoryID.IsSome() {
-		symptomName := params.SymptomName.GetOrElse("")
-		categoryId := params.CategoryID.GetOrElse(0)
-		id, cats, err = service.syms.CreateConditionWithNewIngredient(ctx, eventId, symptomName, categoryId)
-	}
-	if err != nil {
-		return PostConditionResponse{}, errors.MapError(err)
+	var (
+		id        uint
+		symptomId uint
+		cats      symptoms.SymptomCategories
+	)
+
+	switch {
+	case params.SymptomID.IsSome():
+		sid := params.SymptomID.MustGet()
+		createdId, err := service.syms.CreateConditionById(ctx, eventId, sid)
+		if err != nil {
+			return PostConditionResponse{}, errors.MapError(err)
+		}
+
+		id = createdId
+		symptomId = sid
+
+	case params.SymptomName.IsSome() && params.CategoryID.IsSome():
+		symptomName := params.SymptomName.MustGet()
+		categoryId := params.CategoryID.MustGet()
+		condition, categories, err := service.syms.CreateConditionWithNewSymptom(ctx, eventId, symptomName, categoryId)
+		if err != nil {
+			return PostConditionResponse{}, errors.MapError(err)
+		}
+
+		id = condition.ID
+		symptomId = condition.SymptomID
+		cats = categories
+
+	default:
+		return PostConditionResponse{}, errors.BadRequest("params empty")
 	}
 
 	var symptomOpts option.Option[SymptomCategoryListResponse]
@@ -135,7 +154,7 @@ func (service *Service) PostCondition(ctx context.Context, piid uuid.UUID, event
 	}
 
 	return PostConditionResponse{
-		Condition: ConditionResponse{ID: id},
+		Condition: ConditionResponse{ID: id, SymptomID: symptomId},
 		Symptoms:  symptomOpts,
 	}, nil
 
