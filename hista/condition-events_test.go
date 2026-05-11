@@ -117,9 +117,14 @@ func (s *ApiTestSuite) TestPostCondition() {
 				params.SymptomID = option.Some(symptom.ID)
 			}
 
-			_, err := s.service.PostCondition(s.ctx, s.piid, eventId, params)
+			resp, err := s.service.PostCondition(s.ctx, s.piid, eventId, params)
 
-			s.assertErrCode(err, test.expectErrCode)
+			if s.assertErrCode(err, test.expectErrCode) {
+				return
+			}
+
+			s.NotEqualValues(0, resp.Condition.SymptomID)
+			s.NotEqualValues(0, resp.Condition.ID)
 		})
 	}
 }

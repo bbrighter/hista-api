@@ -57,7 +57,7 @@ func (uc SymptomService) CreateConditionById(ctx context.Context, eventId uint, 
 	return condition.ID, err
 }
 
-func (uc SymptomService) CreateConditionWithNewIngredient(ctx context.Context, eventId uint, symptomName string, symptomCategoryId uint) (uint, SymptomCategories, error) {
+func (uc SymptomService) CreateConditionWithNewSymptom(ctx context.Context, eventId uint, symptomName string, symptomCategoryId uint) (Condition, SymptomCategories, error) {
 	var condition = Condition{
 		ConditionEventID: eventId,
 		Symptom: Symptom{
@@ -66,10 +66,10 @@ func (uc SymptomService) CreateConditionWithNewIngredient(ctx context.Context, e
 		}}
 	err := uc.c.CreateCondition(ctx, &condition)
 	if err != nil {
-		return 0, SymptomCategories{}, err
+		return Condition{}, SymptomCategories{}, err
 	}
 	cats, err := uc.s.ListSymptomCategoriesAndSymptoms(ctx)
-	return condition.ID, cats, err
+	return condition, cats, err
 
 }
 

@@ -5,6 +5,7 @@ import (
 
 	"encore.app/shared/generic_queries"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ConditionRepo struct {
@@ -49,7 +50,8 @@ func (r *ConditionRepo) ListConditions(ctx context.Context, eventId uint) ([]Con
 }
 
 func (r *ConditionRepo) CreateCondition(ctx context.Context, condition *Condition) error {
-	return gorm.G[Condition](r.db).Create(ctx, condition)
+	tx := r.db.Clauses(clause.Returning{Columns: []clause.Column{{Name: "id"}, {Name: "symptom_id"}}}).Create(condition)
+	return tx.Error
 }
 
 func (r *ConditionRepo) DeleteCondition(ctx context.Context, id uint) error {
