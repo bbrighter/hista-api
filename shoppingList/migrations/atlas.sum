@@ -1,6 +1,6 @@
-h1:NPR0HYBA/IF3NzECW9txb5M9jbvS4Alr6VnJccms8hs=
+h1:TsDFkMvXYTRyj/8CbN8vywgfaBYmsLSgtW2XnlMgsKw=
 1_initial.up.sql h1:1g7SjY1vZjC42ynLQBfGYo4uhqta8i7uSXVMV2K+kE0=
 2_moments.up.sql h1:jGxs5aLcMqezcyK5d0BHXPMI7DHtvJOAkELxGdp0qCE=
 3_archive.up.sql h1:zTG4eSJr7ii1uCL5mWTgdf02UtAkYvT55vhOeyQJlaM=
-4_remove_moments.up.sql h1:nrU5Kh/AihJmU62oVv2qtPDqE1EwXAl0ma2qD0iDggE=
-5_allow_deleting_items.up.sql h1:DN4IC1CSLm9QtO9etgYJZpfmAANQfmm128VHJDzyueM=
+4_remove_moments.up.sql h1:CySQeLa58ylMnnUAXT25RiFYtoyaRyAFHUN6p9z4NJQ=
+5_allow_deleting_items.up.sql h1:8ATIV5SA6UStZ/YyC51kbdrq54C4CkPK3QuDLi5dbUw=

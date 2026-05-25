@@ -46,10 +46,10 @@ func (i *Item) SetPiid(piid uuid.UUID) {
 
 type List struct {
 	ID        uint      `gorm:"primaryKey;autoIncrement"`
-	PIID      uuid.UUID `gorm:"type:uuid;primaryKey"`
+	PIID      uuid.UUID `gorm:"type:uuid;primaryKey;uniqueIndex:idx_list_singleton,where:deleted_at IS NULL"`
 	DeletedAt gorm.DeletedAt
 	Items     []Item `gorm:"foreignKey:ListId,ListPiid;references:ID,PIID"`
-	Singleton bool   `gorm:"not null;default:true;uniqueIndex:,where:deleted_at IS NULL"`
+	Singleton bool   `gorm:"not null;default:true;uniqueIndex:idx_list_singleton,where:deleted_at IS NULL"`
 }
 
 func (l *List) SetPiid(piid uuid.UUID) {
