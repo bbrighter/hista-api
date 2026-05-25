@@ -9,8 +9,7 @@ import (
 
 // encore:service
 type Service struct {
-	db *gorm.DB
-	u  *users.UserService
+	u *users.UserService
 }
 
 var usersDB = sqldb.NewDatabase("users_db", sqldb.DatabaseConfig{

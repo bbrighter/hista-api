@@ -6,15 +6,14 @@ import (
 	"os"
 
 	gormSchema "ariga.io/atlas-provider-gorm/gormschema"
-	"encore.app/shoppingList/entity"
+	shoppinglist "encore.app/shoppingList/internal/shoppingList"
 )
 
 // Define the models to generate migrations for.
 var models = []any{
-	&entity.List{},
-	&entity.Item{},
-	&entity.Product{},
-	&entity.Moment{},
+	&shoppinglist.List{},
+	&shoppinglist.Item{},
+	&shoppinglist.Product{},
 }
 
 func main() {

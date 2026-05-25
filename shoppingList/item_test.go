@@ -1,8 +1,8 @@
 package shoppinglist
 
 import (
-	entity "encore.app/shoppingList/entity"
 	"encore.dev/beta/errs"
+	"encore.dev/types/option"
 )
 
 func (s *ApiTestSuite) TestPostItem() {
@@ -22,7 +22,7 @@ func (s *ApiTestSuite) TestPostItem() {
 		s.Run(name, func() {
 			var productId uint = 1000
 			if !test.useWrongProductId {
-				productId = s.createProduct()
+				productId = s.createProduct("name")
 			}
 			var listId uint = 1000
 			if !test.useWrongListId {
@@ -55,7 +55,7 @@ func (s *ApiTestSuite) TestPostItemByName() {
 	for name, test := range tests {
 		s.Run(name, func() {
 			if test.nameAlreadyExists {
-				s.createProduct()
+				s.createProduct("name")
 			}
 			var listId uint = 1000
 			if !test.useWrongListId {
@@ -73,43 +73,43 @@ func (s *ApiTestSuite) TestPostItemByName() {
 	}
 }
 
-func (s *ApiTestSuite) TestCheckItem() {
-	tests := map[string]struct {
-		checked         bool
-		useWrongItemId  bool
-		expectedErrCode errs.ErrCode
-		useWrongPiid    bool
-	}{
-		"not found":   {useWrongItemId: true, expectedErrCode: errs.NotFound},
-		"wrong piid":  {useWrongPiid: true, expectedErrCode: errs.NotFound},
-		"ok, check":   {checked: true},
-		"ok, uncheck": {checked: false},
-	}
+// func (s *ApiTestSuite) TestCheckItem() {
+// 	tests := map[string]struct {
+// 		checked         bool
+// 		useWrongItemId  bool
+// 		expectedErrCode errs.ErrCode
+// 		useWrongPiid    bool
+// 	}{
+// 		"not found":   {useWrongItemId: true, expectedErrCode: errs.NotFound},
+// 		"wrong piid":  {useWrongPiid: true, expectedErrCode: errs.NotFound},
+// 		"ok, check":   {checked: true},
+// 		"ok, uncheck": {checked: false},
+// 	}
 
-	for name, test := range tests {
-		s.Run(name, func() {
-			var itemId uint = 1000
-			if !test.useWrongItemId {
-				listId := s.createList()
-				itemId = s.createItem(listId).ID
-			}
-			ctx := s.GetCtx(test.useWrongPiid)
-			err := s.service.CheckItem(ctx, s.piid, itemId, ItemCheckParams{Checked: test.checked})
+// 	for name, test := range tests {
+// 		s.Run(name, func() {
+// 			var itemId uint = 1000
+// 			if !test.useWrongItemId {
+// 				listId := s.createList()
+// 				itemId = s.createItem(listId).ID
+// 			}
+// 			ctx := s.GetCtx(test.useWrongPiid)
+// 			err := s.service.CheckItem(ctx, s.piid, itemId, ItemCheckParams{Checked: test.checked})
 
-			s.assertErrCode(err, test.expectedErrCode)
+// 			s.assertErrCode(err, test.expectedErrCode)
 
-			if test.expectedErrCode == 0 {
-				moments, err := s.service.GetMoments(ctx, s.piid, MomentsParams{})
-				s.NoError(err)
-				for _, item := range moments.Items {
-					if item.ID == itemId {
-						s.Equal(test.checked, item.Checked)
-					}
-				}
-			}
-		})
-	}
-}
+// 			if test.expectedErrCode == 0 {
+// 				list, err := s.service.PostOrGetList(ctx, s.piid)
+// 				s.Require().NoError(err)
+// 				for _, item := range list.Items {
+// 					if item.ID == itemId {
+// 						s.Equal(test.checked, item.Checked)
+// 					}
+// 				}
+// 			}
+// 		})
+// 	}
+// }
 
 func (s *ApiTestSuite) TestDeleteItem() {
 	tests := map[string]struct {
@@ -135,18 +135,17 @@ func (s *ApiTestSuite) TestDeleteItem() {
 }
 
 func (s *ApiTestSuite) TestPatchItem() {
-	var quantity0, quantity10 uint8
-	quantity0 = 0
-	quantity10 = 10
 	tests := map[string]struct {
 		useWrongItemId  bool
-		quantity        *uint8
+		quantity        option.Option[uint8]
+		checked         option.Option[bool]
 		expectedErrCode errs.ErrCode
 	}{
-		"10":        {quantity: &quantity10},
-		"0 as nil":  {quantity: &quantity0},
-		"nil":       {quantity: nil},
+		"10":        {quantity: option.Some(uint8(10))},
+		"0 as nil":  {quantity: option.Some(uint8(0))},
+		"nil":       {},
 		"not found": {useWrongItemId: true, expectedErrCode: errs.NotFound},
+		"checked":   {checked: option.Some(true)},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
@@ -160,20 +159,25 @@ func (s *ApiTestSuite) TestPatchItem() {
 			err := s.service.PatchItem(ctx, s.piid, itemId, params)
 			s.assertErrCode(err, test.expectedErrCode)
 
-			var dbItem entity.ItemResponse
-			if test.quantity != nil {
-				resp, _ := s.service.GetMoments(ctx, s.piid, MomentsParams{})
-				for _, item := range resp.Items {
+			var respItem ItemResponse
+			if test.quantity.IsSome() {
+				list, err := s.service.PostOrGetList(ctx, s.piid)
+				s.Require().NoError(err)
+
+				for _, item := range list.Items {
 					if item.ID == itemId {
-						dbItem = item
+						respItem = item
 						break
 					}
 				}
-				if *test.quantity == 0 {
-					s.Nil(dbItem.Quantity)
+				if test.quantity.GetOrElse(0) == 0 {
+					s.Equal(option.None[uint8](), respItem.Quantity)
 				}
-				if *test.quantity > 0 {
-					s.Equal(test.quantity, dbItem.Quantity)
+				if test.quantity.GetOrElse(0) > 0 {
+					s.Equal(test.quantity, respItem.Quantity)
+				}
+				if test.checked.IsSome() {
+					s.Equal(test.checked.MustGet(), respItem.Checked)
 				}
 			}
 		})

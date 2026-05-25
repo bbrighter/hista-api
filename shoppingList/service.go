@@ -3,9 +3,7 @@ package shoppinglist
 import (
 	"time"
 
-	"encore.app/shoppingList/internal"
-	"encore.app/shoppingList/internal/repository"
-	unitofwork "encore.app/shoppingList/internal/unitOfWork"
+	shoppingmoments "encore.app/shoppingList/internal/shopping_moments"
 	"encore.dev/storage/sqldb"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -13,10 +11,7 @@ import (
 
 // encore:service
 type Service struct {
-	item internal.IItemUseCase
-	list internal.IListUseCase
-	mom  internal.IMomentUseCase
-	prod internal.IProductManager
+	sm *shoppingmoments.ShoppingMomentsService
 }
 
 var shoppingListDb *sqldb.Database = sqldb.NewDatabase("shopping_list", sqldb.DatabaseConfig{
@@ -47,14 +42,6 @@ func initService() (*Service, error) {
 }
 
 func initServiceWithDb(db *gorm.DB) *Service {
-	uow := unitofwork.NewUnitOfWork(db)
-	itemRepo := repository.NewItemRepo(db)
-	productRepo := repository.NewProductRepo(db)
-	listRepo := repository.NewListRepo(db)
-	momRepo := repository.NewMomentRepo(db)
-	uc := internal.NewItemUseCase(itemRepo, productRepo, uow, momRepo)
-	list := internal.NewListUseCase(listRepo, itemRepo, uow, momRepo)
-	moments := internal.NewMomentsUseCase(momRepo, listRepo, productRepo)
-	prod := internal.NewProductManager(productRepo)
-	return &Service{item: uc, list: list, mom: moments, prod: prod}
+	sm := shoppingmoments.NewShoppingMomentsService(db)
+	return &Service{sm: sm}
 }

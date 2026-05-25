@@ -4,26 +4,23 @@ import (
 	"context"
 
 	"encore.app/errors"
-	"encore.app/shoppingList/entity"
 	"encore.dev/types/uuid"
 )
 
-type MomentsParams struct {
-	IfNoneMatch string `header:"If-None-Match"`
+type MomentsResponse struct {
+	Items    int `json:"itemsVersion"`
+	Products int `json:"productsVersion"`
 }
 
 // encore:api auth method=GET path=/piid/:piid/moments
-func (s *Service) GetMoments(ctx context.Context, piid uuid.UUID, params MomentsParams) (entity.MomentsResponse, error) {
-	mom, err := s.mom.GetMoments(ctx)
+func (s *Service) GetMoments(ctx context.Context, piid uuid.UUID) (MomentsResponse, error) {
+	mom, err := s.sm.GetMoment(ctx)
 	if err != nil {
-		return entity.MomentsResponse{}, errors.MapError(err)
+		return MomentsResponse{}, errors.MapError(err)
 	}
-	if params.IfNoneMatch == mom.ETag() {
-		return mom.To304Response(), nil
-	}
-	list, prods, err := s.mom.GetData(ctx)
-	if err != nil {
-		return entity.MomentsResponse{}, errors.MapError(err)
-	}
-	return mom.ToResponse(list, prods), nil
+
+	return MomentsResponse{
+		Items:    mom.ItemsVersion,
+		Products: mom.ProductsVersion,
+	}, nil
 }
