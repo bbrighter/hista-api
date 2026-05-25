@@ -1,7 +1,14 @@
 package shoppinglist
 
 import (
+	"testing"
+	"time"
+
+	sl "encore.app/shoppingList/internal/shoppingList"
 	"encore.dev/beta/errs"
+	"encore.dev/types/uuid"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func (s *ApiTestSuite) TestDeleteList() {
@@ -71,4 +78,23 @@ func (s *ApiTestSuite) TestCreateList() {
 			}
 		})
 	}
+}
+
+func TestToListResponse(t *testing.T) {
+	created := time.Now()
+	beforeCreated := time.Now().Add(-time.Minute)
+
+	list := sl.List{ID: 3, PIID: uuid.UUID{}, Items: []sl.Item{
+		{ID: 1, ProductId: 3, Checked: false, CreatedAt: created},
+		{ID: 2, ProductId: 4, Checked: true, CreatedAt: beforeCreated},
+	}}
+
+	resp := toListResponse(list)
+
+	require.Len(t, resp.Items, 2)
+	item1 := resp.Items[0]
+	assert.EqualValues(t, item1.ID, 1)
+	item2 := resp.Items[1]
+	assert.EqualValues(t, item2.ID, 2)
+
 }

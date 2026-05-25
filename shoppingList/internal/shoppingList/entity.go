@@ -23,7 +23,6 @@ type Item struct {
 	Quantity *uint8
 
 	CreatedAt time.Time
-	DeletedAt gorm.DeletedAt
 }
 
 type Product struct {

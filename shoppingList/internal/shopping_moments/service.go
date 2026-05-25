@@ -103,12 +103,13 @@ func (s *ShoppingMomentsService) AddItemByProductId(ctx context.Context, listId 
 
 func (s *ShoppingMomentsService) AddItemByName(ctx context.Context, listId uint, name string) (sl.Item, sl.Product, error) {
 	var product = sl.Product{Name: name}
-	var item = sl.Item{ListId: listId, Product: sl.Product{Name: name}}
+	var item = sl.Item{ListId: listId}
 
 	err := s.uow.WithTransaction(ctx, func(uow *UnitOfWork) error {
 		if err := uow.ShoppingList().CreateProduct(ctx, &product); err != nil {
 			return err
 		}
+		item.ProductId = product.ID
 		return uow.ShoppingList().CreateItem(ctx, &item)
 	})
 	if err != nil {

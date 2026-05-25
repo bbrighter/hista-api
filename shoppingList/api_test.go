@@ -47,6 +47,14 @@ func (suite *ApiTestSuite) TearDownSubTest() {
 	}
 }
 
+func (suite *ApiTestSuite) TearDownTest() {
+	tables := []string{"items", "lists", "products"}
+	for _, table := range tables {
+		err := suite.db.Exec(fmt.Sprintf(`DELETE FROM "%s"`, table)).Error
+		suite.Require().NoError(err)
+	}
+}
+
 func (s *ApiTestSuite) SetupTest() {
 	s.service = initServiceWithDb(s.db)
 }
@@ -136,6 +144,17 @@ func (s *ApiTestSuite) TestShoppingListWorkflow() {
 	s.NoError(err)
 	s.Equal(2, moments.Items)
 	s.Equal(1, moments.Products)
+
+	// Validate item and product exist
+	productsResp, err := s.service.GetProducts(s.ctx, s.piid)
+	s.NoError(err)
+	s.Len(productsResp.Products, 1)
+	s.Equal(productId, productsResp.Products[0].ID)
+
+	listResp, err := s.service.PostOrGetList(s.ctx, s.piid)
+	s.NoError(err)
+	s.Len(listResp.Items, 1)
+	s.Equal(itemId, listResp.Items[0].ID)
 
 	// Increase item quantity
 	var newQuantity uint8 = 3

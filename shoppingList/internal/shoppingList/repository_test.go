@@ -76,3 +76,19 @@ func (s *repoTestSuite) TestCreateListEnforcesUniquenessAfterDeletionOk() {
 	err = s.repo.CreateShoppingList(s.ctx, newList)
 	s.NoError(err)
 }
+
+func (s *repoTestSuite) TestDeleteShoppingListKeepsChildren() {
+	var list = &List{}
+	err := s.repo.CreateShoppingList(s.ctx, list)
+	s.NoError(err)
+	var item = &Item{ListId: list.ID, Product: Product{Name: "Name"}}
+	err = s.repo.CreateItem(s.ctx, item)
+	s.NoError(err)
+
+	err = s.repo.DeleteShoppingList(s.ctx, list.ID)
+	s.NoError(err)
+
+	count, err := gorm.G[Item](s.tx).Where("list_id = ?", list.ID).Count(s.ctx, "*")
+	s.NoError(err)
+	s.EqualValues(1, count)
+}

@@ -2,6 +2,7 @@ package shoppinglist
 
 import (
 	"context"
+	"time"
 
 	"encore.app/errors"
 	shoppinglist "encore.app/shoppingList/internal/shoppingList"
@@ -13,8 +14,9 @@ type ItemResponse struct {
 	ID        uint `json:"id"`
 	ProductId uint `json:"productId"`
 
-	Checked  bool                 `json:"checked"`
-	Quantity option.Option[uint8] `json:"quantity"`
+	Checked   bool                 `json:"checked"`
+	Quantity  option.Option[uint8] `json:"quantity"`
+	createdAt time.Time
 }
 
 func toItemResponse(i shoppinglist.Item) ItemResponse {
@@ -27,6 +29,7 @@ func toItemResponse(i shoppinglist.Item) ItemResponse {
 		ProductId: i.ProductId,
 		Checked:   i.Checked,
 		Quantity:  quantity,
+		createdAt: i.CreatedAt,
 	}
 }
 
