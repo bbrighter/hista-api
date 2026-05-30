@@ -92,3 +92,18 @@ func (s *repoTestSuite) TestDeleteShoppingListKeepsChildren() {
 	s.NoError(err)
 	s.EqualValues(1, count)
 }
+
+func (s *repoTestSuite) TestUpdateProductOk() {
+	var product = Product{Name: "Name"}
+	err := s.repo.CreateProduct(s.ctx, &product)
+	s.Require().NoError(err)
+
+	err = s.repo.UpdateProduct(
+		s.ctx,
+		product.ID,
+		map[string]any{
+			"archived": true,
+			"name":     "new name",
+		})
+	s.NoError(err)
+}

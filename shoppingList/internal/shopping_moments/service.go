@@ -78,7 +78,7 @@ func (s *ShoppingMomentsService) UpdateProduct(ctx context.Context, id uint, nam
 		values["name"] = *name
 	}
 	if archive != nil {
-		values["archive"] = *archive
+		values["archived"] = *archive
 	}
 	if err := s.List().UpdateProduct(ctx, id, values); err != nil {
 		return err
