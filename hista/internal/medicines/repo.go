@@ -65,7 +65,7 @@ func (r *MedicineRepo) ListIntakes(ctx context.Context) ([]Intake, error) {
 	if err != nil {
 		return []Intake{}, err
 	}
-	return gorm.G[Intake](r.db.Debug()).
+	return gorm.G[Intake](r.db).
 		Joins(clause.JoinTarget{Association: "Medicine"}, func(db gorm.JoinBuilder, joinTable, curTable clause.Table) error {
 			db.Where("pi_id = ?", piid)
 			return nil

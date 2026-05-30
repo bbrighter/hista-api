@@ -12,7 +12,7 @@ type UnitOfWork struct {
 }
 
 func NewUnitOfWork(db *gorm.DB) *UnitOfWork {
-	return &UnitOfWork{db: db.Debug()}
+	return &UnitOfWork{db: db}
 }
 
 func (uow *UnitOfWork) ShoppingList() *sl.ShoppingListRepo {
