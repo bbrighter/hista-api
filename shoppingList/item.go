@@ -47,8 +47,8 @@ type ItemNameParams struct {
 	Name string `json:"name"`
 }
 
-// encore:api auth method=POST path=/piid/:piid/list/:listId/item
-func (s *Service) PostItemByName(ctx context.Context, piid uuid.UUID, listId uint, params ItemNameParams) (ItemResponse, error) {
+// encore:api auth method=PUT path=/piid/:piid/list/:listId/item
+func (s *Service) PutItemByName(ctx context.Context, piid uuid.UUID, listId uint, params ItemNameParams) (ItemResponse, error) {
 	item, _, err := s.sm.AddItemByName(ctx, listId, params.Name)
 	return toItemResponse(item), errors.MapError(err)
 }

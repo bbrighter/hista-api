@@ -3,7 +3,7 @@ package shoppingmoments
 import (
 	"context"
 
-	"encore.app/errors"
+	appError "encore.app/errors"
 	"encore.app/shoppingList/internal/moments"
 	sl "encore.app/shoppingList/internal/shoppingList"
 	"gorm.io/gorm"
@@ -50,7 +50,7 @@ func (s *ShoppingMomentsService) DeleteList(ctx context.Context, id uint) error 
 
 		for _, item := range items {
 			if !item.Checked {
-				return errors.ErrCannotDelete
+				return appError.ErrCannotDelete
 			}
 		}
 
@@ -106,7 +106,8 @@ func (s *ShoppingMomentsService) AddItemByName(ctx context.Context, listId uint,
 	var item = sl.Item{ListId: listId}
 
 	err := s.uow.WithTransaction(ctx, func(uow *UnitOfWork) error {
-		if err := uow.ShoppingList().CreateProduct(ctx, &product); err != nil {
+		err := uow.ShoppingList().UpsertProduct(ctx, &product)
+		if err != nil {
 			return err
 		}
 		item.ProductId = product.ID

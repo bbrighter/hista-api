@@ -132,7 +132,7 @@ func (s *ApiTestSuite) TestShoppingListWorkflow() {
 	s.Equal(0, moments.Products)
 
 	// Add products and item
-	itemResp, err := s.service.PostItemByName(s.ctx, s.piid, listId, ItemNameParams{Name: "product"})
+	itemResp, err := s.service.PutItemByName(s.ctx, s.piid, listId, ItemNameParams{Name: "product"})
 	s.NoError(err)
 	productId := itemResp.ProductId
 	s.NotEqual(0, productId)

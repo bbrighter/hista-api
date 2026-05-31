@@ -48,6 +48,13 @@ func (s *repoTestSuite) TearDownTest() {
 	s.Require().NoError(err)
 }
 
+func (s *repoTestSuite) createProduct(name string) uint {
+	var product = Product{Name: name}
+	err := s.repo.UpsertProduct(s.ctx, &product)
+	s.Require().NoError(err)
+	return product.ID
+}
+
 func TestShoppingListRepo(t *testing.T) {
 	suite.Run(t, new(repoTestSuite))
 }
@@ -94,16 +101,80 @@ func (s *repoTestSuite) TestDeleteShoppingListKeepsChildren() {
 }
 
 func (s *repoTestSuite) TestUpdateProductOk() {
-	var product = Product{Name: "Name"}
-	err := s.repo.CreateProduct(s.ctx, &product)
-	s.Require().NoError(err)
+	id := s.createProduct("Name")
 
-	err = s.repo.UpdateProduct(
+	err := s.repo.UpdateProduct(
 		s.ctx,
-		product.ID,
+		id,
 		map[string]any{
 			"archived": true,
 			"name":     "new name",
 		})
 	s.NoError(err)
+}
+func (s *repoTestSuite) TestUpsertProductNew() {
+	var product = Product{Name: "name"}
+
+	err := s.repo.UpsertProduct(s.ctx, &product)
+	s.NoError(err)
+	s.False(product.Archived)
+	s.Equal("name", product.Name)
+
+	prods, err := s.repo.ListProducts(s.ctx)
+	s.Require().NoError(err)
+	s.Len(prods, 1)
+}
+
+func (s *repoTestSuite) TestUpsertProductWithSameNameUnarchives() {
+	id := s.createProduct("name")
+	err := s.repo.UpdateProduct(s.ctx, id, map[string]any{"archived": true})
+	s.Require().NoError(err)
+
+	var product = Product{Name: "name"}
+
+	err = s.repo.UpsertProduct(s.ctx, &product)
+	s.NoError(err)
+	s.False(product.Archived)
+	s.Equal("name", product.Name)
+
+	prods, err := s.repo.ListProducts(s.ctx)
+	s.Require().NoError(err)
+	s.Len(prods, 1)
+	s.False(prods[0].Archived)
+}
+
+func (s *repoTestSuite) TestCreateProductWithOtherName() {
+	id := s.createProduct("name")
+
+	var product = Product{Name: "other name"}
+
+	err := s.repo.UpsertProduct(s.ctx, &product)
+	s.NoError(err)
+	s.False(product.Archived)
+	s.Equal("other name", product.Name)
+	s.NotEqual(id, product.ID)
+
+	prods, err := s.repo.ListProducts(s.ctx)
+	s.Require().NoError(err)
+	s.Len(prods, 2)
+}
+
+func (s *repoTestSuite) TestCreateProductWithSameNameAndOtherPiid() {
+	id := s.createProduct("name")
+
+	ctx := context.WithValue(s.ctx, contextKeys.Piid, uuid.FromStringOrNil("843a1ba3-f4b6-4786-9a8c-4914f5d353d3"))
+	var product = Product{Name: "name"}
+
+	err := s.repo.UpsertProduct(ctx, &product)
+	s.NoError(err)
+	s.False(product.Archived)
+	s.NotEqual(id, product.ID, "Product is created with different PIID")
+
+	prods, err := s.repo.ListProducts(ctx)
+	s.Require().NoError(err)
+	s.Len(prods, 1)
+
+	prods, err = s.repo.ListProducts(s.ctx)
+	s.Require().NoError(err)
+	s.Len(prods, 1)
 }

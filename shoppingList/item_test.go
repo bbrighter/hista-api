@@ -39,7 +39,7 @@ func (s *ApiTestSuite) TestPostItem() {
 	}
 }
 
-func (s *ApiTestSuite) TestPostItemByName() {
+func (s *ApiTestSuite) TestPutItemByName() {
 	tests := map[string]struct {
 		nameAlreadyExists bool
 		useWrongListId    bool
@@ -48,7 +48,7 @@ func (s *ApiTestSuite) TestPostItemByName() {
 	}{
 		"ok":              {},
 		"list not found":  {useWrongListId: true, expectedErrorCode: errs.NotFound},
-		"name not exists": {nameAlreadyExists: true, expectedErrorCode: errs.AlreadyExists},
+		"name not exists": {nameAlreadyExists: true},
 		"use wrong piid":  {useWrongPiid: true, expectedErrorCode: errs.NotFound},
 	}
 
@@ -64,7 +64,7 @@ func (s *ApiTestSuite) TestPostItemByName() {
 
 			ctx := s.GetCtx(test.useWrongPiid)
 
-			resp, err := s.service.PostItemByName(ctx, s.piid, listId, ItemNameParams{Name: "name"})
+			resp, err := s.service.PutItemByName(ctx, s.piid, listId, ItemNameParams{Name: "name"})
 			s.assertErrCode(err, test.expectedErrorCode)
 			if test.expectedErrorCode == 0 {
 				s.Greater(resp.ID, uint(0))
@@ -72,44 +72,6 @@ func (s *ApiTestSuite) TestPostItemByName() {
 		})
 	}
 }
-
-// func (s *ApiTestSuite) TestCheckItem() {
-// 	tests := map[string]struct {
-// 		checked         bool
-// 		useWrongItemId  bool
-// 		expectedErrCode errs.ErrCode
-// 		useWrongPiid    bool
-// 	}{
-// 		"not found":   {useWrongItemId: true, expectedErrCode: errs.NotFound},
-// 		"wrong piid":  {useWrongPiid: true, expectedErrCode: errs.NotFound},
-// 		"ok, check":   {checked: true},
-// 		"ok, uncheck": {checked: false},
-// 	}
-
-// 	for name, test := range tests {
-// 		s.Run(name, func() {
-// 			var itemId uint = 1000
-// 			if !test.useWrongItemId {
-// 				listId := s.createList()
-// 				itemId = s.createItem(listId).ID
-// 			}
-// 			ctx := s.GetCtx(test.useWrongPiid)
-// 			err := s.service.CheckItem(ctx, s.piid, itemId, ItemCheckParams{Checked: test.checked})
-
-// 			s.assertErrCode(err, test.expectedErrCode)
-
-// 			if test.expectedErrCode == 0 {
-// 				list, err := s.service.PostOrGetList(ctx, s.piid)
-// 				s.Require().NoError(err)
-// 				for _, item := range list.Items {
-// 					if item.ID == itemId {
-// 						s.Equal(test.checked, item.Checked)
-// 					}
-// 				}
-// 			}
-// 		})
-// 	}
-// }
 
 func (s *ApiTestSuite) TestDeleteItem() {
 	tests := map[string]struct {

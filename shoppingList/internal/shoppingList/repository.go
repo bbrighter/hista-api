@@ -5,6 +5,7 @@ import (
 
 	"encore.app/shared/generic_queries"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ShoppingListRepo struct {
@@ -34,8 +35,23 @@ func (r *ShoppingListRepo) FirstShoppingList(ctx context.Context) (List, error) 
 	return returnedList, err
 }
 
-func (r *ShoppingListRepo) CreateProduct(ctx context.Context, product *Product) error {
-	return generic_queries.Create(ctx, r.db, product)
+func (r *ShoppingListRepo) UpsertProduct(ctx context.Context, product *Product) error {
+	piid, err := generic_queries.PiidFromCtx(ctx)
+	if err != nil {
+		return err
+	}
+	product.PIID = piid
+
+	return gorm.G[Product](
+		r.db,
+		clause.OnConflict{
+			Columns: []clause.Column{{Name: "name"}, {Name: "pi_id"}},
+			DoUpdates: clause.Assignments(map[string]any{
+				"archived": false,
+			}),
+		},
+		clause.Returning{},
+	).Create(ctx, product)
 }
 func (r *ShoppingListRepo) ListProducts(ctx context.Context) ([]*Product, error) {
 	return generic_queries.List[*Product](ctx, r.db)
