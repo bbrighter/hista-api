@@ -24,13 +24,14 @@ const (
 	Side     HeadachePosition = "side"
 	Eye      HeadachePosition = "eye"
 	FrontTop HeadachePosition = "front top"
+	Face     HeadachePosition = "face"
 )
 
 var ValidHeadachePositions = map[HeadachePosition]struct{}{
 	Front: {}, Back: {}, Top: {},
 	Left: {}, Right: {}, Neck: {},
 	Ear: {}, Temple: {}, Side: {},
-	Eye: {}, FrontTop: {},
+	Eye: {}, FrontTop: {}, Face: {},
 }
 
 func IsValidHeadachePosition(s HeadachePosition) bool {
