@@ -39,7 +39,7 @@ func (s *ServiceTest) SetupSuite() {
 }
 
 func (s *ServiceTest) SetupTest() {
-	err := s.db.Exec(`TRUNCATE product_instances;`).Error
+	err := s.db.Exec(`DELETE FROM product_instances;`).Error
 	s.Require().NoError(err)
 }
 

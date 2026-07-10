@@ -1,9 +1,35 @@
 {
 	"version": "2.0.0",
 	"tasks": [
+ {
+			"type": "shell",
+			"label": "OpenApi Spec Shopping List Android",
+			"command": "encore",
+			"args": [
+				"gen",
+				"client",
+				"-l",
+				"openapi",
+				"--services",
+				"shoppinglist,authentication",
+				"-e",
+				"local",
+				"-o",
+				"~/AndroidStudioProjects/ShoppingList/app/scripts/OpenAPI.json",
+			],
+			"icon": {
+				"id": "broadcast"
+			},
+			"group": "build",
+			"presentation": {
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"close": true,
+			},
+		},
 		{
 			"type": "shell",
-			"label": "OpenApi Spec Hista",
+			"label": "OpenApi Spec Hista TS",
 			"command": "encore",
 			"args": [
 				"gen",

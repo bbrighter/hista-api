@@ -13,7 +13,7 @@ func (f *Food) AfterDelete(tx *gorm.DB) error {
 		return err
 	}
 	print("COUNT:", count)
-	if count > 1 {
+	if count > 0 {
 		return nil
 	}
 	return tx.Delete(&Ingredient{}, f.IngredientID).Error
