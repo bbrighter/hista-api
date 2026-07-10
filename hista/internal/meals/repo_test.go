@@ -256,6 +256,23 @@ func (s *MealRepoTestSuite) TestDeleteFood() {
 	foods, err := s.m.ListFoodsByIds(s.ctx, []uint{foodId})
 	s.NoError(err)
 	s.Len(foods, 0)
+
+	ings, err := s.i.ListIngredients(s.ctx)
+	s.NoError(err)
+	s.Len(ings, 0)
+
+}
+
+func (s *MealRepoTestSuite) TestDeleteFoodButOneExistsStill() {
+	mealId, foodId, ingredientId := s.createFullMeal()
+	s.createTestFood(mealId, ingredientId)
+
+	err := s.m.DeleteFood(s.ctx, foodId)
+
+	s.NoError(err)
+	ings, err := s.i.ListIngredients(s.ctx)
+	s.NoError(err)
+	s.Len(ings, 1)
 }
 
 func (s *MealRepoTestSuite) TestFirstFood() {
