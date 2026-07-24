@@ -178,7 +178,7 @@ func (s *ApiTestSuite) TestShoppingListWorkflow() {
 	s.Equal(1, moments.Products)
 
 	// Delete list
-	err = s.service.DeleteList(s.ctx, s.piid, listId, DeleteListForceDeleteParam{Force: true})
+	err = s.service.ForceDeleteList(s.ctx, s.piid, listId)
 	s.NoError(err)
 
 	// Moments for items are +1
