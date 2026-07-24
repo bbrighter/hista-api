@@ -55,6 +55,20 @@ func (s *repoTestSuite) createProduct(name string) uint {
 	return product.ID
 }
 
+func (s *repoTestSuite) createList() uint {
+	var list = &List{}
+	err := s.repo.CreateShoppingList(s.ctx, list)
+	s.Require().NoError(err)
+	return list.ID
+}
+
+func (s *repoTestSuite) createItem(listId uint, productId uint) uint {
+	var item = &Item{ListId: listId, ProductId: productId}
+	err := s.repo.CreateItem(s.ctx, item)
+	s.Require().NoError(err)
+	return item.ID
+}
+
 func TestShoppingListRepo(t *testing.T) {
 	suite.Run(t, new(repoTestSuite))
 }

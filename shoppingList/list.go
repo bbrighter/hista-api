@@ -6,21 +6,31 @@ import (
 
 	"encore.app/errors"
 	shoppinglist "encore.app/shoppingList/internal/shoppingList"
+	"encore.dev/types/option"
 	"encore.dev/types/uuid"
 )
 
 type DeleteListForceDeleteParam struct {
-	Force bool `query:"force"`
+	Force        bool `query:"force"` // Deprecated
+	DeleteOption option.Option[string]
 }
 
 // encore:api auth method=DELETE path=/piid/:piid/list/:listId
 func (s *Service) DeleteList(ctx context.Context, piid uuid.UUID, listId uint, params DeleteListForceDeleteParam) error {
 	var err error
 	if params.Force {
+		return errors.MapError(s.sm.ForceDeleteList(ctx, listId))
+	}
+
+	switch params.DeleteOption.GetOrElse("") {
+	case "force":
 		err = s.sm.ForceDeleteList(ctx, listId)
-	} else {
+	case "move":
+		err = nil // TODO
+	default:
 		err = s.sm.DeleteList(ctx, listId)
 	}
+
 	return errors.MapError(err)
 }
 
