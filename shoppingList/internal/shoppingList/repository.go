@@ -82,3 +82,8 @@ func (r *ShoppingListRepo) ListItemsForList(ctx context.Context, listId uint) ([
 		Where("list_id = ?", listId).
 		Find(ctx)
 }
+
+func (r *ShoppingListRepo) UpdateItemsList(ctx context.Context, ids []uint, newListId uint) error {
+	_, err := gorm.G[Item](r.db).Where("id IN ?", ids).Update(ctx, "list_id", newListId)
+	return err
+}

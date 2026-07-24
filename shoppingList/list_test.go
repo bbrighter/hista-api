@@ -6,6 +6,7 @@ import (
 
 	sl "encore.app/shoppingList/internal/shoppingList"
 	"encore.dev/beta/errs"
+	"encore.dev/types/option"
 	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,12 +19,15 @@ func (s *ApiTestSuite) TestDeleteList() {
 		statusCode        errs.ErrCode
 		hasUncheckedItems bool
 		forceDelete       bool
+		deleteParams      option.Option[string]
 	}{
-		"ok":             {},
-		"not found":      {useWrongId: true, statusCode: errs.NotFound},
-		"has items left": {hasUncheckedItems: true, statusCode: errs.InvalidArgument},
-		"wrong piid":     {useWrongPiid: true, statusCode: errs.NotFound},
-		"force delete":   {hasUncheckedItems: true, forceDelete: true},
+		"ok":               {},
+		"not found":        {useWrongId: true, statusCode: errs.NotFound},
+		"has items left":   {hasUncheckedItems: true, statusCode: errs.InvalidArgument},
+		"wrong piid":       {useWrongPiid: true, statusCode: errs.NotFound},
+		"old force delete": {hasUncheckedItems: true, forceDelete: true},
+		"force delete":     {hasUncheckedItems: true, deleteParams: option.Some("force")},
+		"move delete":      {hasUncheckedItems: true, deleteParams: option.Some("move")},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
@@ -35,7 +39,7 @@ func (s *ApiTestSuite) TestDeleteList() {
 				s.createItem(listId)
 			}
 			ctx := s.GetCtx(test.useWrongPiid)
-			err := s.service.DeleteList(ctx, s.piid, listId, DeleteListForceDeleteParam{Force: test.forceDelete})
+			err := s.service.DeleteList(ctx, s.piid, listId, DeleteListForceDeleteParam{Force: test.forceDelete, DeleteOption: test.deleteParams})
 			if test.statusCode != 0 {
 				encoreErr, ok := err.(*errs.Error)
 				s.True(ok)
@@ -45,6 +49,28 @@ func (s *ApiTestSuite) TestDeleteList() {
 			}
 		})
 	}
+}
+
+func (s *ApiTestSuite) TestMoveDeleteList_checkResults() {
+	listId := s.createList()
+	s.createItem(listId)
+
+	err := s.service.DeleteList(s.ctx, s.piid, listId, DeleteListForceDeleteParam{DeleteOption: option.Some("move")})
+	s.NoError(err)
+	list, err := s.service.PostOrGetList(s.ctx, s.piid)
+	s.Require().NoError(err)
+	s.Len(list.Items, 1)
+}
+
+func (s *ApiTestSuite) TestForceDeleteList_checkResults() {
+	listId := s.createList()
+	s.createItem(listId)
+
+	err := s.service.DeleteList(s.ctx, s.piid, listId, DeleteListForceDeleteParam{DeleteOption: option.Some("force")})
+	s.NoError(err)
+	list, err := s.service.PostOrGetList(s.ctx, s.piid)
+	s.Require().NoError(err)
+	s.Len(list.Items, 0)
 }
 
 func (s *ApiTestSuite) TestCreateList() {

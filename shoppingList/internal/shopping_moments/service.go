@@ -72,6 +72,40 @@ func (s *ShoppingMomentsService) ForceDeleteList(ctx context.Context, id uint) e
 	return s.mom.UpdateItems(ctx)
 }
 
+func (s *ShoppingMomentsService) DeleteListCreateNewAndMoveItems(ctx context.Context, id uint) error {
+	return s.uow.WithTransaction(ctx, func(uow *UnitOfWork) error {
+		items, err := uow.ShoppingList().ListItemsForList(ctx, id)
+		if err != nil {
+			return err
+		}
+
+		var uncheckedItemIds []uint
+		for i := range items {
+			if !items[i].Checked {
+				items[i].ListId = id
+				uncheckedItemIds = append(uncheckedItemIds, items[i].ID)
+			}
+		}
+
+		if err := uow.ShoppingList().DeleteShoppingList(ctx, id); err != nil {
+			return err
+		}
+
+		var newList = &sl.List{}
+		if err := uow.ShoppingList().CreateShoppingList(ctx, newList); err != nil {
+			return err
+		}
+
+		if len(uncheckedItemIds) > 0 {
+			if err := uow.ShoppingList().UpdateItemsList(ctx, uncheckedItemIds, newList.ID); err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+}
+
 func (s *ShoppingMomentsService) UpdateProduct(ctx context.Context, id uint, name *string, archive *bool) error {
 	values := make(map[string]any)
 	if name != nil {
