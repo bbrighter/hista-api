@@ -6,32 +6,18 @@ import (
 
 	"encore.app/errors"
 	shoppinglist "encore.app/shoppingList/internal/shoppingList"
-	"encore.dev/types/option"
 	"encore.dev/types/uuid"
 )
 
-type DeleteListForceDeleteParam struct {
-	Force        bool `query:"force"` // Deprecated
-	DeleteOption option.Option[string]
+// encore:api auth method=DELETE path=/piid/:piid/list/:listId
+func (s *Service) DeleteList(ctx context.Context, piid uuid.UUID, listId uint) error {
+	err := s.sm.DeleteList(ctx, listId)
+	return errors.MapError(err)
 }
 
-// encore:api auth method=DELETE path=/piid/:piid/list/:listId
-func (s *Service) DeleteList(ctx context.Context, piid uuid.UUID, listId uint, params DeleteListForceDeleteParam) error {
-	var err error
-	if params.Force {
-		return errors.MapError(s.sm.ForceDeleteList(ctx, listId))
-	}
-
-	switch params.DeleteOption.GetOrElse("") {
-	case "force":
-		err = s.sm.ForceDeleteList(ctx, listId)
-	case "move":
-		err = nil // TODO
-	default:
-		err = s.sm.DeleteList(ctx, listId)
-	}
-
-	return errors.MapError(err)
+// encore:api auth method=DELETE path=/piid/:piid/list/:listId/force
+func (s *Service) ForceDeleteList(ctx context.Context, piid uuid.UUID, listId uint) error {
+	return errors.MapError(s.sm.ForceDeleteList(ctx, listId))
 }
 
 type ListResponse struct {
@@ -51,6 +37,12 @@ func toListResponse(l shoppinglist.List) ListResponse {
 		ID:    l.ID,
 		Items: items,
 	}
+}
+
+// encore:api auth method=DELETE path=/piid/:piid/list/:listId/move
+func (s *Service) DeleteListAndMoveItems(ctx context.Context, piid uuid.UUID, listId uint) (ListResponse, error) {
+	list, err := s.sm.DeleteListCreateNewAndMoveItems(ctx, listId)
+	return toListResponse(list), errors.MapError(err)
 }
 
 // encore:api auth method=POST path=/piid/:piid/list

@@ -18,16 +18,13 @@ func (s *ApiTestSuite) TestDeleteList() {
 		useWrongPiid      bool
 		statusCode        errs.ErrCode
 		hasUncheckedItems bool
-		forceDelete       bool
+		forceDelete       option.Option[bool]
 		deleteParams      option.Option[string]
 	}{
-		"ok":               {},
-		"not found":        {useWrongId: true, statusCode: errs.NotFound},
-		"has items left":   {hasUncheckedItems: true, statusCode: errs.InvalidArgument},
-		"wrong piid":       {useWrongPiid: true, statusCode: errs.NotFound},
-		"old force delete": {hasUncheckedItems: true, forceDelete: true},
-		"force delete":     {hasUncheckedItems: true, deleteParams: option.Some("force")},
-		"move delete":      {hasUncheckedItems: true, deleteParams: option.Some("move")},
+		"ok":             {},
+		"not found":      {useWrongId: true, statusCode: errs.NotFound},
+		"has items left": {hasUncheckedItems: true, statusCode: errs.InvalidArgument},
+		"wrong piid":     {useWrongPiid: true, statusCode: errs.NotFound},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
@@ -39,7 +36,7 @@ func (s *ApiTestSuite) TestDeleteList() {
 				s.createItem(listId)
 			}
 			ctx := s.GetCtx(test.useWrongPiid)
-			err := s.service.DeleteList(ctx, s.piid, listId, DeleteListForceDeleteParam{Force: test.forceDelete, DeleteOption: test.deleteParams})
+			err := s.service.DeleteList(ctx, s.piid, listId)
 			if test.statusCode != 0 {
 				encoreErr, ok := err.(*errs.Error)
 				s.True(ok)
@@ -55,8 +52,10 @@ func (s *ApiTestSuite) TestMoveDeleteList_checkResults() {
 	listId := s.createList()
 	s.createItem(listId)
 
-	err := s.service.DeleteList(s.ctx, s.piid, listId, DeleteListForceDeleteParam{DeleteOption: option.Some("move")})
+	resp, err := s.service.DeleteListAndMoveItems(s.ctx, s.piid, listId)
 	s.NoError(err)
+	s.Len(resp.Items, 1)
+
 	list, err := s.service.PostOrGetList(s.ctx, s.piid)
 	s.Require().NoError(err)
 	s.Len(list.Items, 1)
@@ -66,7 +65,7 @@ func (s *ApiTestSuite) TestForceDeleteList_checkResults() {
 	listId := s.createList()
 	s.createItem(listId)
 
-	err := s.service.DeleteList(s.ctx, s.piid, listId, DeleteListForceDeleteParam{DeleteOption: option.Some("force")})
+	err := s.service.ForceDeleteList(s.ctx, s.piid, listId)
 	s.NoError(err)
 	list, err := s.service.PostOrGetList(s.ctx, s.piid)
 	s.Require().NoError(err)
