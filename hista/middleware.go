@@ -3,11 +3,13 @@ package hista
 import (
 	"context"
 	"strings"
+	"time"
 
 	"encore.app/errors"
 	"encore.app/shared/contextKeys"
 	"encore.app/shared/entity"
 	"encore.dev/beta/auth"
+	"encore.dev/metrics"
 	"encore.dev/middleware"
 	"encore.dev/types/uuid"
 )
@@ -39,4 +41,18 @@ func AddPiidMiddleware(req middleware.Request, next middleware.Next) middleware.
 	}
 	reqWithCtx := req.WithContext(ctx)
 	return next(reqWithCtx)
+}
+
+var ResponseTime = metrics.NewGauge[int64]("response_time_ms", metrics.GaugeConfig{})
+
+// encore:middleware target=all
+func MeasureExecutionTime(req middleware.Request, next middleware.Next) middleware.Response {
+	start := time.Now()
+
+	resp := next(req)
+
+	duration := time.Since(start)
+
+	ResponseTime.Set(duration.Milliseconds())
+	return resp
 }
