@@ -2,6 +2,7 @@
     "id": "hista-api-dpc2",
     "global_cors": {
         "allow_origins_with_credentials": [
+            "http://localhost:*",
             "https://hista-ui.vercel.app*", 
             "https://hista-ui-git*bbrighters-projects.vercel.app*",
             "https://shopping-list-ui.vercel.app*", 
