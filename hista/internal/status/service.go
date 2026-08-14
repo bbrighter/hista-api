@@ -2,7 +2,10 @@ package status
 
 import (
 	"context"
+	"reflect"
+	"strings"
 	"time"
+	"unicode"
 
 	"gorm.io/gorm"
 )
@@ -30,28 +33,58 @@ func (s *StatusService) DeleteStatus(ctx context.Context, id uint) error {
 	return s.s.DeleteStatus(ctx, id)
 }
 
+type UpdateStatusParams struct {
+	Date                  *time.Time
+	MorningFitness        *int
+	MorningSleep          *int
+	EveningFitness        *int
+	Depressive            *int
+	Tense                 *int
+	MoodSwings            *int
+	Irritable             *int
+	LossOfInterest        *int
+	ConcentrationProblems *int
+	LackOfDrive           *int
+	AppetiteChanges       *int
+	SleepProblems         *int
+	Overwhelmed           *int
+}
+
+func toSnakeCase(str string) string {
+	var result strings.Builder
+	for i, r := range str {
+		if unicode.IsUpper(r) && i > 0 {
+			result.WriteRune('_')
+			result.WriteRune(unicode.ToLower(r))
+		} else {
+			result.WriteRune(unicode.ToLower(r))
+		}
+	}
+	return result.String()
+}
+
+func (p UpdateStatusParams) ToMap() map[string]any {
+	result := make(map[string]any)
+	val := reflect.ValueOf(p)
+	typ := reflect.TypeOf(p)
+	for i := range val.NumField() {
+		field := typ.Field(i)
+		fieldVal := val.Field(i)
+
+		if fieldVal.IsNil() {
+			continue
+		}
+		dbName := toSnakeCase(field.Name)
+		result[dbName] = fieldVal.Elem().Interface()
+	}
+	return result
+}
+
 func (s *StatusService) UpdateStatus(
 	ctx context.Context,
 	id uint,
-	params struct {
-		Date           *time.Time
-		MorningFitness *int
-		MorningSleep   *int
-		EveningFitness *int
-	},
+	params UpdateStatusParams,
 ) error {
-	values := make(map[string]any)
-	if params.Date != nil {
-		values["date"] = *params.Date
-	}
-	if params.MorningFitness != nil {
-		values["morning_fitness"] = *params.MorningFitness
-	}
-	if params.MorningSleep != nil {
-		values["morning_sleep"] = *params.MorningSleep
-	}
-	if params.EveningFitness != nil {
-		values["evening_fitness"] = *params.EveningFitness
-	}
+	values := params.ToMap()
 	return s.s.UpdateStatus(ctx, id, values)
 }

@@ -1,4 +1,4 @@
-h1:+gzNE0SIZrm+TBl+ukyQwayu+7n4mT2ohy+lHVbdy1w=
+h1:Tse6TyUSFcdtObSUmyl4g92r7ApzuYo787RIunwUp28=
 01_init.up.sql h1:bBHPF80iMRqX6AK+ikKt9RTKizc3Y9nr41RqcuH9gG0=
 02_symptoms.up.sql h1:glbwJqV17F46bu1qlM7aYFt41iFFiWtmfxKhyfH0xLI=
 03_authentification.up.sql h1:mpny0nu+aEV0w8BtGAvJpU69KWUxqyi8z94Q2LSEP+o=
@@ -20,3 +20,4 @@ h1:+gzNE0SIZrm+TBl+ukyQwayu+7n4mT2ohy+lHVbdy1w=
 19_nutrition_float.up.sql h1:s7GsvRyc6AEdoyMWp5mI1W/kCGNM760CKdpecWKRABA=
 20_templates.up.sql h1:ncIf54HK30vDDX3t1E2a65C+VfOR8tXVapg67K+aH6c=
 21_simplified.up.sql h1:PyueSgKUxPuRwIXsrlLUcYz8XEvBiQmaJ2nQnJIDuPY=
+22_more_status_attributes.up.sql h1:afh269xHBEnM1h7KlpM2LibpV6ibO/XSxJJjtSKISGo=

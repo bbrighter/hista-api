@@ -12,11 +12,21 @@ import (
 )
 
 type StatusResponse struct {
-	ID             uint               `json:"id"`
-	Date           time.Time          `json:"date"`
-	MorningFitness option.Option[int] `json:"morningFitness" encore:"optional"`
-	EveningFitness option.Option[int] `json:"eveningFitness" encore:"optional"`
-	MorningSleep   option.Option[int] `json:"morningSleep" encore:"optional"`
+	ID                    uint               `json:"id"`
+	Date                  time.Time          `json:"date"`
+	MorningFitness        option.Option[int] `json:"morningFitness" `
+	EveningFitness        option.Option[int] `json:"eveningFitness" `
+	MorningSleep          option.Option[int] `json:"morningSleep" `
+	Depressive            option.Option[int] `json:"depressive" `
+	Tense                 option.Option[int] `json:"tense" `
+	MoodSwings            option.Option[int] `json:"moodSwings" `
+	Irritable             option.Option[int] `json:"irritable" `
+	LossOfInterest        option.Option[int] `json:"lossOfInterest" `
+	ConcentrationProblems option.Option[int] `json:"concentrationProblems" `
+	LackOfDrive           option.Option[int] `json:"lackOfDrive" `
+	AppetiteChanges       option.Option[int] `json:"appetiteChanges" `
+	SleepProblems         option.Option[int] `json:"sleepProblems" `
+	Overwhelmed           option.Option[int] `json:"overwhelmed" `
 }
 
 type StatusListResponse struct {
@@ -36,11 +46,21 @@ func toStatusListResp(statuses []*status.Status) StatusListResponse {
 
 func toStatusResp(s *status.Status) StatusResponse {
 	return StatusResponse{
-		ID:             s.ID,
-		Date:           s.Date,
-		MorningFitness: option.FromPointer(s.MorningFitness),
-		EveningFitness: option.FromPointer(s.EveningFitness),
-		MorningSleep:   option.FromPointer(s.MorningSleep),
+		ID:                    s.ID,
+		Date:                  s.Date,
+		MorningFitness:        option.FromPointer(s.MorningFitness),
+		EveningFitness:        option.FromPointer(s.EveningFitness),
+		MorningSleep:          option.FromPointer(s.MorningSleep),
+		Depressive:            option.FromPointer(s.Depressive),
+		Tense:                 option.FromPointer(s.Tense),
+		MoodSwings:            option.FromPointer(s.MoodSwings),
+		Irritable:             option.FromPointer(s.Irritable),
+		LossOfInterest:        option.FromPointer(s.LossOfInterest),
+		ConcentrationProblems: option.FromPointer(s.ConcentrationProblems),
+		LackOfDrive:           option.FromPointer(s.LackOfDrive),
+		AppetiteChanges:       option.FromPointer(s.AppetiteChanges),
+		SleepProblems:         option.FromPointer(s.SleepProblems),
+		Overwhelmed:           option.FromPointer(s.Overwhelmed),
 	}
 }
 
@@ -58,24 +78,39 @@ func (service *Service) PostStatus(ctx context.Context, piid uuid.UUID, params D
 }
 
 type PatchStatusParams struct {
-	Date           option.Option[time.Time] `json:"date"`
-	MorningFitness option.Option[int]       `json:"morningFitness" encore:"optional"`
-	MorningSleep   option.Option[int]       `json:"morningSleep" encore:"optional"`
-	EveningFitness option.Option[int]       `json:"eveningFitness" encore:"optional"`
+	Date                  option.Option[time.Time] `json:"date"`
+	MorningFitness        option.Option[int]       `json:"morningFitness" `
+	MorningSleep          option.Option[int]       `json:"morningSleep" `
+	EveningFitness        option.Option[int]       `json:"eveningFitness" `
+	Depressive            option.Option[int]       `json:"depressive" `
+	Tense                 option.Option[int]       `json:"tense" `
+	MoodSwings            option.Option[int]       `json:"moodSwings" `
+	Irritable             option.Option[int]       `json:"irritable" `
+	LossOfInterest        option.Option[int]       `json:"lossOfInterest" `
+	ConcentrationProblems option.Option[int]       `json:"concentrationProblems" `
+	LackOfDrive           option.Option[int]       `json:"lackOfDrive" `
+	AppetiteChanges       option.Option[int]       `json:"appetiteChanges" `
+	SleepProblems         option.Option[int]       `json:"sleepProblems" `
+	Overwhelmed           option.Option[int]       `json:"overwhelmed" `
 }
 
 // encore:api auth method=PATCH path=/piid/:piid/status/:id
 func (service *Service) PatchStatus(ctx context.Context, piid uuid.UUID, id uint, params PatchStatusParams) error {
-	err := service.status.UpdateStatus(ctx, id, struct {
-		Date           *time.Time
-		MorningFitness *int
-		MorningSleep   *int
-		EveningFitness *int
-	}{
-		Date:           params.Date.PtrOrNil(),
-		MorningFitness: params.MorningFitness.PtrOrNil(),
-		MorningSleep:   params.MorningSleep.PtrOrNil(),
-		EveningFitness: params.EveningFitness.PtrOrNil(),
+	err := service.status.UpdateStatus(ctx, id, status.UpdateStatusParams{
+		Date:                  params.Date.PtrOrNil(),
+		MorningFitness:        params.MorningFitness.PtrOrNil(),
+		MorningSleep:          params.MorningSleep.PtrOrNil(),
+		EveningFitness:        params.EveningFitness.PtrOrNil(),
+		Depressive:            params.Depressive.PtrOrNil(),
+		Tense:                 params.Tense.PtrOrNil(),
+		MoodSwings:            params.MoodSwings.PtrOrNil(),
+		Irritable:             params.Irritable.PtrOrNil(),
+		LossOfInterest:        params.LossOfInterest.PtrOrNil(),
+		ConcentrationProblems: params.ConcentrationProblems.PtrOrNil(),
+		LackOfDrive:           params.LackOfDrive.PtrOrNil(),
+		AppetiteChanges:       params.AppetiteChanges.PtrOrNil(),
+		SleepProblems:         params.SleepProblems.PtrOrNil(),
+		Overwhelmed:           params.Overwhelmed.PtrOrNil(),
 	})
 	return errors.MapError(err)
 }
