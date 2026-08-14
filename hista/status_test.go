@@ -135,3 +135,46 @@ func (s *ApiTestSuite) TestUpdateStatus() {
 	}
 
 }
+
+func (s *ApiTestSuite) TestUpdateStatusAllAttributes() {
+	date := time.Date(2022, 6, 5, 4, 3, 2, 0, time.UTC)
+	statusId := s.createTestStatus()
+	var params = PatchStatusParams{
+		Date:                  option.Some(date),
+		MorningFitness:        option.Some(1),
+		MorningSleep:          option.Some(1),
+		EveningFitness:        option.Some(1),
+		Depressive:            option.Some(1),
+		Tense:                 option.Some(1),
+		MoodSwings:            option.Some(1),
+		Irritable:             option.Some(1),
+		LossOfInterest:        option.Some(1),
+		ConcentrationProblems: option.Some(1),
+		LackOfDrive:           option.Some(1),
+		AppetiteChanges:       option.Some(1),
+		SleepProblems:         option.Some(1),
+		Overwhelmed:           option.Some(1),
+	}
+
+	err := s.service.PatchStatus(s.ctx, s.piid, statusId, params)
+	s.NoError(err)
+
+	statuses, err := s.service.ListStatus(s.ctx, s.piid)
+	s.NoError(err)
+	status := statuses.Statuses[0]
+	s.True(date.Equal(status.Date))
+	one := 1
+	s.Equal(&one, status.MorningFitness.PtrOrNil())
+	s.Equal(&one, status.MorningSleep.PtrOrNil())
+	s.Equal(&one, status.EveningFitness.PtrOrNil())
+	s.Equal(&one, status.Depressive.PtrOrNil())
+	s.Equal(&one, status.Tense.PtrOrNil())
+	s.Equal(&one, status.MoodSwings.PtrOrNil())
+	s.Equal(&one, status.Irritable.PtrOrNil())
+	s.Equal(&one, status.LossOfInterest.PtrOrNil())
+	s.Equal(&one, status.ConcentrationProblems.PtrOrNil())
+	s.Equal(&one, status.LackOfDrive.PtrOrNil())
+	s.Equal(&one, status.AppetiteChanges.PtrOrNil())
+	s.Equal(&one, status.SleepProblems.PtrOrNil())
+	s.Equal(&one, status.Overwhelmed.PtrOrNil())
+}
