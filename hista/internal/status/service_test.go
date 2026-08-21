@@ -16,6 +16,7 @@ func TestUpdateStatusToMap(t *testing.T) {
 	two := 2
 	three := 3
 	date := time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC)
+	crash := false
 	tests := map[string]struct {
 		input  UpdateStatusParams
 		result map[string]any
@@ -24,6 +25,7 @@ func TestUpdateStatusToMap(t *testing.T) {
 		"all filled": {input: UpdateStatusParams{
 			MorningFitness:        &three,
 			MorningSleep:          &three,
+			DayFitness:            &three,
 			EveningFitness:        &three,
 			Depressive:            &two,
 			Tense:                 &two,
@@ -36,9 +38,11 @@ func TestUpdateStatusToMap(t *testing.T) {
 			SleepProblems:         &two,
 			Overwhelmed:           &two,
 			Date:                  &date,
+			Crash:                 &crash,
 		}, result: map[string]any{
 			"morning_fitness":        3,
 			"morning_sleep":          3,
+			"day_fitness":            3,
 			"evening_fitness":        3,
 			"depressive":             2,
 			"tense":                  2,
@@ -51,6 +55,7 @@ func TestUpdateStatusToMap(t *testing.T) {
 			"sleep_problems":         2,
 			"overwhelmed":            2,
 			"date":                   time.Date(2000, 1, 1, 1, 1, 1, 1, time.UTC),
+			"crash":                  false,
 		}},
 	}
 	for name, test := range tests {
