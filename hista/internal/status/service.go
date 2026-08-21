@@ -37,6 +37,7 @@ type UpdateStatusParams struct {
 	Date                  *time.Time
 	MorningFitness        *int
 	MorningSleep          *int
+	DayFitness            *int
 	EveningFitness        *int
 	Depressive            *int
 	Tense                 *int
@@ -48,6 +49,7 @@ type UpdateStatusParams struct {
 	AppetiteChanges       *int
 	SleepProblems         *int
 	Overwhelmed           *int
+	Crash                 *bool
 }
 
 func toSnakeCase(str string) string {

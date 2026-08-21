@@ -12,60 +12,6 @@ func (s *ApiTestSuite) TestCreateStatus() {
 	s.GreaterOrEqual(resp.ID, uint(1))
 }
 
-// func TestAddStatus(t *testing.T) {
-// 	service, ctx := initAPITest(t)
-
-// 	var err error
-// 	var resp, morningResp, eveningResp entity.StatusResponse
-// 	resp, err = service.PostStatus(ctx, DateParam{time.Now()})
-// 	defer service.DeleteStatus(ctx, resp.ID)
-// 	assert.NoError(t, err)
-
-// 	params := StatusParams{
-// 		TimeOfDay: entity.Morning,
-// 		Fitness:   entity.Good,
-// 		Sleep:     entity.Good,
-// 	}
-// 	morningResp, err = service.PutStatus(ctx, resp.ID, params)
-// 	assert.NoError(t, err)
-// 	assert.GreaterOrEqual(t, morningResp.Morning.ID, uint(1))
-
-// 	// Error if adding second time without fitting MorningID
-// 	_, err = service.PutStatus(ctx, resp.ID, params)
-// 	assert.Error(t, err)
-
-// 	eveningParams := StatusParams{
-// 		TimeOfDay: entity.Evening,
-// 		Fitness:   entity.Middle,
-// 	}
-// 	eveningResp, err = service.PutStatus(ctx, resp.ID, eveningParams)
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, entity.Middle, eveningResp.Evening.Fitness)
-// 	assert.Equal(t, entity.Good, eveningResp.Morning.Fitness)
-
-// }
-
-// func TestAddStatusIdempotent(t *testing.T) {
-// 	service, ctx := initAPITest(t)
-
-// 	resp, err := service.PostStatus(ctx, DateParam{time.Now()})
-// 	defer service.DeleteStatus(ctx, resp.ID)
-// 	assert.NoError(t, err)
-
-// 	params := StatusParams{
-// 		TimeOfDay: entity.Morning,
-// 		Fitness:   entity.Good,
-// 		Sleep:     entity.Good,
-// 	}
-// 	statusResp, err := service.PutStatus(ctx, resp.ID, params)
-// 	assert.NoError(t, err)
-// 	assert.GreaterOrEqual(t, statusResp.Morning.ID, uint(1))
-// 	params.ID = statusResp.Morning.ID
-// 	newStatusResp, err := service.PutStatus(ctx, resp.ID, params)
-// 	assert.NoError(t, err)
-// 	assert.Equal(t, newStatusResp.Morning.ID, statusResp.Morning.ID)
-// }
-
 func (s *ApiTestSuite) TestListStatus() {
 	tests := map[string]struct {
 		createStatus   bool
@@ -142,6 +88,7 @@ func (s *ApiTestSuite) TestUpdateStatusAllAttributes() {
 	var params = PatchStatusParams{
 		Date:                  option.Some(date),
 		MorningFitness:        option.Some(1),
+		DayFitness:            option.Some(1),
 		MorningSleep:          option.Some(1),
 		EveningFitness:        option.Some(1),
 		Depressive:            option.Some(1),
@@ -154,6 +101,7 @@ func (s *ApiTestSuite) TestUpdateStatusAllAttributes() {
 		AppetiteChanges:       option.Some(1),
 		SleepProblems:         option.Some(1),
 		Overwhelmed:           option.Some(1),
+		Crash:                 true,
 	}
 
 	err := s.service.PatchStatus(s.ctx, s.piid, statusId, params)
@@ -166,6 +114,7 @@ func (s *ApiTestSuite) TestUpdateStatusAllAttributes() {
 	one := 1
 	s.Equal(&one, status.MorningFitness.PtrOrNil())
 	s.Equal(&one, status.MorningSleep.PtrOrNil())
+	s.Equal(&one, status.DayFitness.PtrOrNil())
 	s.Equal(&one, status.EveningFitness.PtrOrNil())
 	s.Equal(&one, status.Depressive.PtrOrNil())
 	s.Equal(&one, status.Tense.PtrOrNil())
@@ -177,4 +126,5 @@ func (s *ApiTestSuite) TestUpdateStatusAllAttributes() {
 	s.Equal(&one, status.AppetiteChanges.PtrOrNil())
 	s.Equal(&one, status.SleepProblems.PtrOrNil())
 	s.Equal(&one, status.Overwhelmed.PtrOrNil())
+	s.True(status.Crash)
 }

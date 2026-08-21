@@ -11,6 +11,7 @@ type Status struct {
 	PIID                  uuid.UUID `gorm:"type:uuid;index;not null"`
 	Date                  time.Time
 	MorningFitness        *int
+	DayFitness            *int
 	EveningFitness        *int
 	MorningSleep          *int
 	Depressive            *int
@@ -23,6 +24,7 @@ type Status struct {
 	AppetiteChanges       *int
 	SleepProblems         *int
 	Overwhelmed           *int
+	Crash                 bool
 }
 
 func (s *Status) SetPiid(id uuid.UUID) {
