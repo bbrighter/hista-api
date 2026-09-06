@@ -137,3 +137,12 @@ func (s *ApiTestSuite) TestPostFoodByTemplate() {
 	s.NoError(err)
 	s.NotEqualValues(0, template.ID)
 }
+
+func (s *ApiTestSuite) TestPostFoodByNameIsNotArchived() {
+	mealId := s.createTestMeal()
+
+	resp, err := s.service.PostFood(s.ctx, s.piid, mealId, FoodParams{IngredientName: "New name", IngredientID: 0})
+	s.NoError(err)
+	s.Len(resp.Ingredients.Ingredients, 1)
+	s.False(resp.Ingredients.Ingredients[0].IsArchived)
+}
