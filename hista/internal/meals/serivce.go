@@ -12,16 +12,18 @@ import (
 const DefaultFoodCondition FoodCondition = Cooked
 
 type MealService struct {
-	m *MealRepository
-	t *templateRepo
-	i *ingredientRepo
+	m   *MealRepository
+	t   *templateRepo
+	i   *ingredientRepo
+	uow *UnitOfWork
 }
 
 func NewMealService(db *gorm.DB) *MealService {
 	m := NewMealRepository(db)
 	t := newTemplateRepo(db)
 	i := newIngredientRepo(db)
-	return &MealService{m: m, t: t, i: i}
+	uow := NewUnitOfWork(db)
+	return &MealService{m: m, t: t, i: i, uow: uow}
 }
 
 func (uc MealService) ListMeals(ctx context.Context) (Meals, error) {
@@ -91,13 +93,22 @@ func (uc MealService) CreateFoodByName(ctx context.Context, mealId uint, ingredi
 		return food, err
 	}
 }
+
 func (uc MealService) CreateFoodById(ctx context.Context, mealId uint, ingredientId uint) (Food, error) {
 	food := Food{MealID: mealId, IngredientID: ingredientId, Condition: DefaultFoodCondition}
-	if err := uc.m.CreateFood(ctx, &food); err != nil {
-		return food, err
-	}
-	return food, nil
+	err := uc.uow.Transaction(ctx, func(uow *UnitOfWork) error {
+		if err := uow.m.CreateFood(ctx, &food); err != nil {
+			return err
+		}
+		if err := uow.i.UpdateIngredient(ctx, ingredientId, map[string]any{"is_archived": false}); err != nil {
+			return err
+		}
+
+		return nil
+	})
+	return food, err
 }
+
 func (uc MealService) DeleteFood(ctx context.Context, foodId uint) error {
 	return uc.m.DeleteFood(ctx, foodId)
 }
