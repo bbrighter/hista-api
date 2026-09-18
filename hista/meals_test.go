@@ -3,7 +3,9 @@ package hista
 import (
 	"time"
 
+	"encore.app/hista/internal/meals"
 	"encore.dev/beta/errs"
+	"gorm.io/gorm"
 )
 
 func (s *ApiTestSuite) TestGetMealsAPI() {
@@ -142,6 +144,30 @@ func (s *ApiTestSuite) TestPostFoodByNameIsNotArchived() {
 	mealId := s.createTestMeal()
 
 	resp, err := s.service.PostFood(s.ctx, s.piid, mealId, FoodParams{IngredientName: "New name", IngredientID: 0})
+	s.NoError(err)
+	s.Len(resp.Ingredients.Ingredients, 1)
+	s.False(resp.Ingredients.Ingredients[0].IsArchived)
+}
+
+func (s *ApiTestSuite) TestPostArchivedFoodByIdIsNotArchived() {
+	mealId := s.createTestMeal()
+	var ingredient = meals.Ingredient{PIID: s.piid, Name: "Name", IsArchived: true}
+	err := gorm.G[meals.Ingredient](s.db).Create(s.ctx, &ingredient)
+	s.Require().NoError(err)
+
+	resp, err := s.service.PostFood(s.ctx, s.piid, mealId, FoodParams{IngredientID: ingredient.ID})
+	s.NoError(err)
+	s.Len(resp.Ingredients.Ingredients, 1)
+	s.False(resp.Ingredients.Ingredients[0].IsArchived)
+}
+
+func (s *ApiTestSuite) TestPostNonArchivedFoodByIdIsNotArchived() {
+	mealId := s.createTestMeal()
+	var ingredient = meals.Ingredient{PIID: s.piid, Name: "Name", IsArchived: false}
+	err := gorm.G[meals.Ingredient](s.db).Create(s.ctx, &ingredient)
+	s.Require().NoError(err)
+
+	resp, err := s.service.PostFood(s.ctx, s.piid, mealId, FoodParams{IngredientID: ingredient.ID})
 	s.NoError(err)
 	s.Len(resp.Ingredients.Ingredients, 1)
 	s.False(resp.Ingredients.Ingredients[0].IsArchived)
