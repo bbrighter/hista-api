@@ -3,14 +3,14 @@ pre-commit:
     - name: Update migration hash
       run: atlas migrate hash
       root: .
-    - name: OpenApi Spec hista
-      run: encore gen client -l openapi --services hista,authentication,users -e local -o ~/Dokumente/Code/hista-ui/src/api/generatedApi.ts
-    - name: OpenApi Spec ShoppingList
-      run: encore gen client -l openapi --services shoppinglist,authentication,users -e local -o ~/Dokumente/Code/shopping-list-ui/src/api/generatedApi.ts
       
 pre-push:
   parallel: true
   jobs:
     - name: Test
       run: encore test ./... -v
+    - name: OpenApi Spec hista
+      run: encore gen client -l openapi --services hista,authentication,users -e local -o ~/Dokumente/Code/hista-ui/src/api/generatedApi.ts
+    - name: OpenApi Spec ShoppingList
+      run: encore gen client -l openapi --services shoppinglist,authentication,users -e local -o ~/Dokumente/Code/shopping-list-ui/src/api/generatedApi.ts
 
