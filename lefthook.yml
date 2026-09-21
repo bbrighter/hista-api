@@ -8,9 +8,21 @@ pre-push:
   parallel: true
   jobs:
     - name: Test
-      run: encore test ./... -v
+      run: encore test ./... -coverprofile=coverage.out && go tool cover -html=coverage.out -o coverage.html 
     - name: OpenApi Spec hista
-      run: encore gen client -l openapi --services hista,authentication,users -e local -o ~/Dokumente/Code/hista-ui/src/api/generatedApi.ts
+      run: >
+        encore gen client 
+        --lang openapi 
+        --services hista,authentication,users 
+        --env local 
+        --output ~/Dokumente/Code/hista-ui/src/api/generatedApi.ts 
+        --openapi-exclude-private-endpoints 
     - name: OpenApi Spec ShoppingList
-      run: encore gen client -l openapi --services shoppinglist,authentication,users -e local -o ~/Dokumente/Code/shopping-list-ui/src/api/generatedApi.ts
+      run: >
+        encore gen client 
+        --lang typescript 
+        --services shoppinglist,authentication,users 
+        --env local 
+        --output ~/Dokumente/Code/shopping-list-ui/src/api/generatedApi.ts 
+        --openapi-exclude-private-endpoints 
 
