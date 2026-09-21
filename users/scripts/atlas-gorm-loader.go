@@ -7,14 +7,14 @@ import (
 
 	//	_ "ariga.io/atlas-go-sdk/recordriver"
 	gormSchema "ariga.io/atlas-provider-gorm/gormschema"
-	"encore.app/users/users"
+	"encore.app/users/internal/shared"
 )
 
 // Define the models to generate migrations for.
 var models = []any{
-	&users.User{},
-	&users.UserProductInstance{},
-	&users.UserAppPermission{},
+	&shared.User{},
+	&shared.UserProductInstance{},
+	&shared.UserAppPermission{},
 }
 
 func main() {
