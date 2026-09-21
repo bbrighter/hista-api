@@ -22,7 +22,7 @@ type NewUserPasswordParams struct {
 	NewPassword string `json:"newPassword"`
 }
 
-// encore:api private method=PATH path=/user/:id
+// encore:api private method=PATCH path=/user/:id/force
 func (s *Service) PatchPasswordWithoutValidation(ctx context.Context, id uuid.UUID, params NewUserPasswordParams) error {
 	err := s.u.ChangePasswordForced(ctx, id, params.NewPassword)
 	return errors.MapError(err)
