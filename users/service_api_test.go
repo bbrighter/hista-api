@@ -261,3 +261,21 @@ func (s *apiTestSuite) TestChangeSettings_OnlyAffectedChanged() {
 	s.Equal("en-US", settingsResp.Language)
 	s.Equal("spinner", settingsResp.LoadingMode)
 }
+
+func (s *apiTestSuite) TestGetSettings_NoValidUser() {
+	_, err := s.service.CreateUser(s.ctx, UserParams{Name: "name", Password: "password"})
+	s.NoError(err)
+
+	s.setUserAuth(uuid.FromStringOrNil("c5211c9e-67bc-49cb-824c-4950e3f50148"))
+	_, err = s.service.GetUserSettings(s.ctx)
+	s.assertErrCode(err, errs.NotFound)
+}
+
+func (s *apiTestSuite) TestPatchSettings_NoValidUser() {
+	_, err := s.service.CreateUser(s.ctx, UserParams{Name: "name", Password: "password"})
+	s.NoError(err)
+
+	s.setUserAuth(uuid.FromStringOrNil("c5211c9e-67bc-49cb-824c-4950e3f50148"))
+	err = s.service.PatchUserSettings(s.ctx, UserSettingsPatchParams{LoadingMode: option.Some("none"), Language: option.None[string]()})
+	s.assertErrCode(err, errs.NotFound)
+}

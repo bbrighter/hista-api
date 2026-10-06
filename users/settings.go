@@ -27,7 +27,6 @@ func settingsToUserSettingsResponse(s shared.UserSettings) UserSettingsResponse 
 func (s *Service) GetUserSettings(ctx context.Context) (UserSettingsResponse, error) {
 	id, ok := auth.UserID()
 	if !ok {
-		print("id", id)
 		return UserSettingsResponse{}, errors.ErrorNotFound
 	}
 	user, err := s.u.FindUser(ctx, uuid.FromStringOrNil(string(id)))

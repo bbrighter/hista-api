@@ -6,7 +6,7 @@ pre-push:
     - name: OpenApi Spec hista
       run: >
         encore gen client 
-        --lang openapi 
+        --lang typescript 
         --services hista,authentication,users 
         --env local 
         --output ~/Dokumente/Code/hista-ui/src/api/generatedApi.ts 
