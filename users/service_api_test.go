@@ -152,20 +152,25 @@ func (s *apiTestSuite) TestGetSettings() {
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
-			idResp, err := s.service.CreateUser(s.ctx, UserParams{})
-			s.Require().NoError(err)
-			userId := idResp.UserId
-			if !test.useExistingId {
+			var userId uuid.UUID
+
+			if test.useExistingId {
+				resp, err := s.service.CreateUser(s.ctx, UserParams{Name: "name", Password: "pw"})
+				s.Require().NoError(err)
+				userId = resp.UserId
+			} else {
 				userId = s.uuid()
 			}
 
-			settingsResp, err := s.service.GetUserSettings(s.ctx, userId)
+			s.setUserAuth(userId)
+			settingsResp, err := s.service.GetUserSettings(s.ctx)
 			if test.err != nil {
 				s.Error(err)
 				s.ErrorIs(err, test.err)
 				return
 			}
 
+			s.Require().NoError(err)
 			s.Equal("de-DE", settingsResp.Language)
 			s.Equal("spinner", settingsResp.LoadingMode)
 		})
@@ -190,16 +195,18 @@ func (s *apiTestSuite) TestChangeSettings() {
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
-			idResp, err := s.service.CreateUser(s.ctx, UserParams{Name: "name", Password: "password"})
-			s.Require().NoError(err)
 
-			otherId, err := uuid.NewV4()
-			s.Require().NoError(err)
-
-			var id = idResp.UserId
-			if !test.useExistingId {
-				id = otherId
+			var userId uuid.UUID
+			if test.useExistingId {
+				idResp, err := s.service.CreateUser(s.ctx, UserParams{Name: "name", Password: "password"})
+				s.Require().NoError(err)
+				userId = idResp.UserId
+			} else {
+				id, err := uuid.NewV4()
+				s.Require().NoError(err)
+				userId = id
 			}
+			s.setUserAuth(userId)
 
 			params := UserSettingsPatchParams{}
 			if test.setLanguage {
@@ -209,7 +216,7 @@ func (s *apiTestSuite) TestChangeSettings() {
 				params.LoadingMode = option.FromComparable(newLoadingMode)
 			}
 
-			err = s.service.PatchUserSettings(s.ctx, id, params)
+			err := s.service.PatchUserSettings(s.ctx, params)
 
 			if test.expectedErr != nil {
 				s.Error(err)
@@ -218,7 +225,7 @@ func (s *apiTestSuite) TestChangeSettings() {
 			}
 
 			s.NoError(err)
-			settingsResp, err := s.service.GetUserSettings(s.ctx, idResp.UserId)
+			settingsResp, err := s.service.GetUserSettings(s.ctx)
 			s.NoError(err)
 			if test.setLanguage {
 				s.Equal(newLanguage, settingsResp.Language)
@@ -241,13 +248,15 @@ func (s *apiTestSuite) TestChangeSettings_OnlyAffectedChanged() {
 	idResp, err := s.service.CreateUser(s.ctx, UserParams{Name: "name", Password: "password"})
 	s.NoError(err)
 
-	err = s.service.PatchUserSettings(s.ctx, idResp.UserId, UserSettingsPatchParams{
+	s.setUserAuth(idResp.UserId)
+	err = s.service.PatchUserSettings(s.ctx, UserSettingsPatchParams{
 		LoadingMode: option.None[string](),
 		Language:    option.Some("en-US"),
 	})
 	s.NoError(err)
 
-	settingsResp, err := s.service.GetUserSettings(s.ctx, idResp.UserId)
+	s.setUserAuth(idResp.UserId)
+	settingsResp, err := s.service.GetUserSettings(s.ctx)
 	s.NoError(err)
 	s.Equal("en-US", settingsResp.Language)
 	s.Equal("spinner", settingsResp.LoadingMode)

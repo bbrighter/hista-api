@@ -1,9 +1,3 @@
-pre-commit:
-  jobs:
-    - name: Update migration hash
-      run: atlas migrate hash
-      root: .
-      
 pre-push:
   parallel: true
   jobs:

@@ -37,7 +37,7 @@
 				"-l",
 				"typescript",
 				"--services",
-				"hista,authentication,errors",
+				"hista,authentication,errors,users",
 				"-e",
 				"local",
 				"-o",

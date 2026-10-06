@@ -3,6 +3,7 @@ package users
 import (
 	"context"
 
+	"encore.dev/beta/auth"
 	"encore.dev/beta/errs"
 	"encore.dev/et"
 	uuid "encore.dev/types/uuid"
@@ -45,6 +46,10 @@ func (s *testSuite) cleanup() {
 		err := s.db.Exec("DELETE FROM " + table).Error
 		s.Require().NoError(err)
 	}
+}
+
+func (s *testSuite) setUserAuth(id uuid.UUID) {
+	et.OverrideAuthInfo(auth.UID(id.String()), nil)
 }
 
 func (s *testSuite) assertErrCode(err error, code errs.ErrCode) {

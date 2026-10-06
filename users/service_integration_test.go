@@ -30,7 +30,8 @@ func (s *integrationTestSuite) TestUser() {
 	err = s.service.PatchPassword(s.ctx, userId, UserPasswordChangeParams{NewPassword: "New password", OldPassword: "Password"})
 	s.NoError(err)
 
-	settingsResp, err := s.service.GetUserSettings(s.ctx, userId)
+	s.setUserAuth(userId)
+	settingsResp, err := s.service.GetUserSettings(s.ctx)
 	s.NoError(err)
 	s.Equal("spinner", settingsResp.LoadingMode)
 	s.Equal("de-DE", settingsResp.Language)
