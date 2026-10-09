@@ -7,7 +7,7 @@ pre-push:
       run: >
         encore gen client 
         --lang typescript 
-        --services hista,authentication,users 
+        --services hista,authentication,errors,users 
         --env local 
         --output ~/Dokumente/Code/hista-ui/src/api/generatedApi.ts 
         --openapi-exclude-private-endpoints 
