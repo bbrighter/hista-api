@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"encore.app/users/internal/shared"
 	"encore.dev/types/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -14,7 +15,7 @@ type mockedUserRepo struct {
 	mock.Mock
 }
 
-func (m *mockedUserRepo) CreateUser(ctx context.Context, user *User) error {
+func (m *mockedUserRepo) CreateUser(ctx context.Context, user *shared.User) error {
 	args := m.Called(ctx, user)
 	return args.Error(0)
 }
@@ -26,34 +27,35 @@ func (m *mockedUserRepo) UpdateUser(ctx context.Context, id uuid.UUID, values ma
 	args := m.Called(ctx, id, values)
 	return args.Error(0)
 }
-func (m *mockedUserRepo) FindUser(ctx context.Context, id uuid.UUID) (User, error) {
+func (m *mockedUserRepo) FindUser(ctx context.Context, id uuid.UUID) (shared.User, error) {
 	args := m.Called(ctx, id)
-	return args.Get(0).(User), args.Error(1)
+	return args.Get(0).(shared.User), args.Error(1)
 }
-func (m *mockedUserRepo) FindPermissions(ctx context.Context, id uuid.UUID) ([]UserAppPermission, error) {
+func (m *mockedUserRepo) FindPermissions(ctx context.Context, id uuid.UUID) ([]shared.UserAppPermission, error) {
 	args := m.Called(ctx, id)
-	return args.Get(0).([]UserAppPermission), args.Error(1)
+	return args.Get(0).([]shared.UserAppPermission), args.Error(1)
 }
-func (m *mockedUserRepo) FindUserByName(ctx context.Context, name string) (User, error) {
+func (m *mockedUserRepo) FindUserByName(ctx context.Context, name string) (shared.User, error) {
 	args := m.Called(ctx, name)
-	return args.Get(0).(User), args.Error(1)
+	return args.Get(0).(shared.User), args.Error(1)
 }
-func (m *mockedUserRepo) ListUsers(ctx context.Context) ([]User, error) {
+func (m *mockedUserRepo) ListUsers(ctx context.Context) ([]shared.User, error) {
 	args := m.Called(ctx)
-	return args.Get(0).([]User), args.Error(1)
+	return args.Get(0).([]shared.User), args.Error(1)
 }
-func (m *mockedUserRepo) AddUserToProductInstance(ctx context.Context, instanceId uuid.UUID, productId string, user User, apps []string) error {
-	args := m.Called(ctx, instanceId, productId, user, apps)
-	return args.Error(0)
-}
-func (m *mockedUserRepo) RemoveUserFromProductInstance(ctx context.Context, instanceId uuid.UUID, user User) error {
-	args := m.Called(ctx, instanceId, user)
-	return args.Error(0)
-}
-func (m *mockedUserRepo) ListUserForInstance(ctx context.Context, instanceId uuid.UUID) ([]User, error) {
-	args := m.Called(ctx, instanceId)
-	return args.Get(0).([]User), args.Error(1)
-}
+
+// func (m *mockedUserRepo) AddUserToProductInstance(ctx context.Context, instanceId uuid.UUID, productId string, user User, apps []string) error {
+// 	args := m.Called(ctx, instanceId, productId, user, apps)
+// 	return args.Error(0)
+// }
+// func (m *mockedUserRepo) RemoveUserFromProductInstance(ctx context.Context, instanceId uuid.UUID, user User) error {
+// 	args := m.Called(ctx, instanceId, user)
+// 	return args.Error(0)
+// }
+// func (m *mockedUserRepo) ListUserForInstance(ctx context.Context, instanceId uuid.UUID) ([]User, error) {
+// 	args := m.Called(ctx, instanceId)
+// 	return args.Get(0).([]User), args.Error(1)
+// }
 
 type mockedEncryption struct {
 	mock.Mock
@@ -82,7 +84,7 @@ func (s *serviceTestSuite) SetupTest() {
 
 	s.ctx = s.T().Context()
 
-	s.service = &UserService{u: s.r, i: s.r, e: s.e}
+	s.service = &UserService{u: s.r, e: s.e}
 }
 
 func (s *serviceTestSuite) SetupSubTest() {
@@ -91,7 +93,7 @@ func (s *serviceTestSuite) SetupSubTest() {
 
 	s.ctx = s.T().Context()
 
-	s.service = &UserService{u: s.r, i: s.r, e: s.e}
+	s.service = &UserService{u: s.r, e: s.e}
 }
 
 func TestUserService(t *testing.T) {
@@ -100,7 +102,7 @@ func TestUserService(t *testing.T) {
 
 func (s *serviceTestSuite) TestCreateUser() {
 	s.e.On("GeneratePassword", "password").Return("xyz", nil)
-	s.r.On("CreateUser", s.ctx, mock.MatchedBy(func(u *User) bool {
+	s.r.On("CreateUser", s.ctx, mock.MatchedBy(func(u *shared.User) bool {
 		return u.Name == "name" && u.Password == "xyz"
 	})).Return(nil)
 
@@ -125,16 +127,16 @@ func (s *serviceTestSuite) TestChangePassword() {
 
 	var someErr = errors.New("some err")
 	tests := map[string]struct {
-		user          User
+		user          shared.User
 		findErr       error
 		validationErr error
 		updateErr     error
 		expectedError error
 	}{
-		"ok":               {user: User{Password: "xxx"}},
+		"ok":               {user: shared.User{Password: "xxx"}},
 		"user not found":   {findErr: someErr, expectedError: someErr},
-		"password invalid": {user: User{Password: "xxx"}, validationErr: someErr, expectedError: someErr},
-		"update failed":    {user: User{Password: "xxx"}, updateErr: someErr, expectedError: someErr},
+		"password invalid": {user: shared.User{Password: "xxx"}, validationErr: someErr, expectedError: someErr},
+		"update failed":    {user: shared.User{Password: "xxx"}, updateErr: someErr, expectedError: someErr},
 	}
 	for name, test := range tests {
 		s.Run(name, func() {
@@ -159,13 +161,13 @@ func (s *serviceTestSuite) TestLogin() {
 	id, err := uuid.NewV4()
 	s.Require().NoError(err)
 	someErr := errors.New("some")
-	someUser := User{Name: "name", ID: id, Password: "user password"}
-	somePerm := []UserAppPermission{{ID: 1, UserId: id, App: "app"}}
+	someUser := shared.User{Name: "name", ID: id, Password: "user password"}
+	somePerm := []shared.UserAppPermission{{ID: 1, UserId: id, App: "app"}}
 	tests := map[string]struct {
-		user        User
+		user        shared.User
 		findUserErr error
 		validateErr error
-		perm        []UserAppPermission
+		perm        []shared.UserAppPermission
 		permErr     error
 		expectError error
 	}{

@@ -1,4 +1,4 @@
-package users
+package shared
 
 import "encore.dev/types/uuid"
 
@@ -6,6 +6,7 @@ type User struct {
 	ID       uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name     string    `gorm:"uniqueIndex"`
 	Password string
+	Settings UserSettings `gorm:"embedded;embedded_prefix:settings_"`
 }
 
 type Users []User
@@ -31,18 +32,6 @@ type UserProductInstanceList []UserProductInstance
 
 type UserAppPermissionList []UserAppPermission
 
-// func (u User) ToResponse() UserResponse {
-// 	return UserResponse{ID: u.ID, Name: u.Name}
-// }
-
-// func (us Users) ToResponse() UserListResponse {
-// 	var users = []UserResponse{}
-// 	for _, u := range us {
-// 		users = append(users, u.ToResponse())
-// 	}
-// 	return UserListResponse{Users: users}
-// }
-
 func (uapl UserAppPermissionList) ToMap() map[uuid.UUID][]string {
 	permMap := make(map[uuid.UUID][]string)
 	for _, u := range uapl {
@@ -54,4 +43,9 @@ func (uapl UserAppPermissionList) ToMap() map[uuid.UUID][]string {
 		}
 	}
 	return permMap
+}
+
+type UserSettings struct {
+	LoadingMode string `gorm:"default:spinner;not null"`
+	Language    string `gorm:"default:de-DE;not null"`
 }

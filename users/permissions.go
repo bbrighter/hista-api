@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"encore.app/errors"
-	"encore.app/users/users"
+	"encore.app/users/internal/shared"
 )
 
 type LoginParams struct {
@@ -13,8 +13,8 @@ type LoginParams struct {
 }
 
 type PermissionResponse struct {
-	User        users.User                  `json:"user"`
-	Permissions users.UserAppPermissionList `json:"permissions"`
+	User        shared.User                  `json:"user"`
+	Permissions shared.UserAppPermissionList `json:"permissions"`
 }
 
 // encore:api private method=POST path=/internal/permissions
