@@ -29,7 +29,7 @@ func (r *MetaRepo) AreTodaysEntitiesFilled(ctx context.Context) ([]CountEntities
 	}
 	now := time.Now()
 	today := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
-	entities, err := gorm.G[CountEntities](r.db).Raw(`
+	entities, err := gorm.G[CountEntities](r.db.Debug()).Raw(`
 		SELECT 'headaches' AS entity, count(*) > 0 AS filled 
 		FROM headaches 
 		WHERE pi_id = @piid AND date > @date
