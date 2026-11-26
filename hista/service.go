@@ -9,6 +9,7 @@ import (
 	"encore.app/hista/internal/headaches"
 	"encore.app/hista/internal/meals"
 	"encore.app/hista/internal/medicines"
+	"encore.app/hista/internal/meta"
 	"encore.app/hista/internal/notes"
 	"encore.app/hista/internal/pollen"
 	"encore.app/hista/internal/statistics"
@@ -34,6 +35,7 @@ type Service struct {
 	status    *status.StatusService
 	pollens   *dwdPollen.DWDPollenService
 	diary     *diary.DiaryService
+	meta      *meta.MetaService
 }
 
 var HistaDB *sqldb.Database = sqldb.NewDatabase("hista_db", sqldb.DatabaseConfig{
@@ -74,6 +76,7 @@ func initServiceWithDb(db *gorm.DB, dwdClient dwdPollen.KarlsruheDataGetter) *Se
 	condRepo := symptoms.NewConditionRepo(db)
 	notesRepo := notes.NewNotesRepo(db)
 	pollenRepo := pollen.NewPollenRepo(db)
+	metaRepo := meta.NewMetaRepo(db)
 
 	return &Service{
 		DB: db,
@@ -87,5 +90,6 @@ func initServiceWithDb(db *gorm.DB, dwdClient dwdPollen.KarlsruheDataGetter) *Se
 		status:    status.NewStatusService(db),
 		pollens:   dwdPollen.NewDWDPollenService(db, dwdClient),
 		diary:     diary.NewDiaryService(mealRepo, condRepo, symptomRepo, notesRepo, pollenRepo, medRepo),
+		meta:      meta.NewMetaService(metaRepo),
 	}
 }
